@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 import {
   Building2,
   FileCheck2,
@@ -9,13 +9,10 @@ import {
 } from "lucide-react";
 
 const AdminLayout = () => {
-  const navigate = useNavigate();
-
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-
-    navigate("/login");
+    window.location.href = "/login";
   };
 
   const menuItems = [
