@@ -1,33 +1,52 @@
 import {
-  BrowserRouter,
-  Navigate,
-  Route,
-  Routes,
+    BrowserRouter,
+    Navigate,
+    Route,
+    Routes,
 } from "react-router-dom";
 
-import AdminLayout from "./components/layout/adminLayout.jsx";
-import AdminDashboard from "./pages/admin/adminDashboard.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
+import AdminLayout from "./components/layout/AdminLayout.jsx";
+import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
 
-const App = () => {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route
-          path="/"
-          element={<Navigate to="/admin" replace />}
-        />
+function App() {
+    const hasToken = Boolean(localStorage.getItem("token"));
 
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-        </Route>
+    return (
+        <BrowserRouter>
+            <Routes>
+                <Route
+                    path="/login"
+                    element={
+                        hasToken
+                            ? <Navigate to="/admin" replace />
+                            : <LoginPage />
+                    }
+                />
 
-        <Route
-          path="*"
-          element={<Navigate to="/admin" replace />}
-        />
-      </Routes>
-    </BrowserRouter>
-  );
-};
+                <Route
+                    path="/admin"
+                    element={
+                        hasToken
+                            ? <AdminLayout />
+                            : <Navigate to="/login" replace />
+                    }
+                >
+                    <Route index element={<AdminDashboard />} />
+                </Route>
+
+                <Route
+                    path="*"
+                    element={
+                        <Navigate
+                            to={hasToken ? "/admin" : "/login"}
+                            replace
+                        />
+                    }
+                />
+            </Routes>
+        </BrowserRouter>
+    );
+}
 
 export default App;
