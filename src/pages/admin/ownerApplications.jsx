@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
+import RejectReasonModal from "../../components/admin/RejectReasonModal";
 
 const OwnerApplications = () => {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ const OwnerApplications = () => {
   const [error, setError] = useState("");
   const [updatingId, setUpdatingId] =
     useState(null);
+  const [rejectingId, setRejectingId] = useState(null);
 
   const fetchApplications = async () => {
     setLoading(true);
@@ -53,14 +55,16 @@ const OwnerApplications = () => {
 
   const updateApplication = async (
     applicationId,
-    status
+    status,
+    rejectReason
   ) => {
     const action =
       status === "APPROVED" ? "approve" : "reject";
-
-    const confirmed = window.confirm(
-      `Are you sure you want to ${action} this application?`
-    );
+    const confirmed =
+      status === "REJECTED" ||
+      window.confirm(
+        `Are you sure you want to ${action} this application?`
+      );
 
     if (!confirmed) return;
 
@@ -70,8 +74,13 @@ const OwnerApplications = () => {
     try {
       await api.patch(
         `/admin/owner-applications/${applicationId}`,
-        { status }
+        status === "REJECTED"
+          ? { status, rejectReason }
+          : { status }
       );
+      if (status === "REJECTED") {
+        setRejectingId(null);
+      }
 
       setApplications((currentApplications) =>
         currentApplications.map((application) => {
@@ -80,7 +89,13 @@ const OwnerApplications = () => {
             application.applicationId;
 
           return currentId === applicationId
-            ? { ...application, status }
+            ? {
+                ...application,
+                status,
+                ...(rejectReason
+                  ? { rejectReason }
+                  : {}),
+              }
             : application;
         })
       );
@@ -256,12 +271,10 @@ const OwnerApplications = () => {
                                   updatingId ===
                                   applicationId
                                 }
-                                onClick={() =>
-                                  updateApplication(
-                                    applicationId,
-                                    "REJECTED"
-                                  )
-                                }
+                                onClick={() => {
+                                  setError("");
+                                  setRejectingId(applicationId);
+                                }}
                               >
                                 <X size={16} />
                                 Reject
@@ -278,6 +291,27 @@ const OwnerApplications = () => {
           </div>
         )}
       </div>
+
+      {rejectingId !== null && (
+        <RejectReasonModal
+          entityLabel="owner application"
+          isSubmitting={updatingId === rejectingId}
+          error={error}
+          onCancel={() => {
+            if (updatingId !== rejectingId) {
+              setRejectingId(null);
+              setError("");
+            }
+          }}
+          onReject={(rejectReason) =>
+            updateApplication(
+              rejectingId,
+              "REJECTED",
+              rejectReason
+            )
+          }
+        />
+      )}
     </section>
   );
 };

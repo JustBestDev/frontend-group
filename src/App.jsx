@@ -20,10 +20,26 @@ import ConversationList from "./pages/conversations/ConversationList.jsx";
 import OwnerApplicationDetail from "./pages/admin/ownerApplicationDetail.jsx";
 import PropertyApprovalDetail from "./pages/admin/propertyApprovalDetail.jsx";
 
+const getStoredUser = () => {
+  const storedUser = localStorage.getItem("user");
+
+  if (!storedUser) return null;
+
+  try {
+    return JSON.parse(storedUser);
+  } catch {
+    localStorage.removeItem("user");
+    return null;
+  }
+};
+
 const App = () => {
   const hasToken = Boolean(
     localStorage.getItem("token")
   );
+  const currentUser = getStoredUser();
+  const isAdmin =
+    hasToken && currentUser?.role === "ADMIN";
 
   return (
     <BrowserRouter>
@@ -51,7 +67,10 @@ const App = () => {
           path="/login"
           element={
             hasToken ? (
-              <Navigate to="/admin" replace />
+              <Navigate
+                to={isAdmin ? "/admin" : "/properties"}
+                replace
+              />
             ) : (
               <LoginPage />
             )
@@ -73,10 +92,13 @@ const App = () => {
         <Route
           path="/admin"
           element={
-            hasToken ? (
+            isAdmin ? (
               <AdminLayout />
             ) : (
-              <Navigate to="/login" replace />
+              <Navigate
+                to={hasToken ? "/properties" : "/login"}
+                replace
+              />
             )
           }
         >

@@ -64,7 +64,10 @@ const LoginPage = () => {
         );
       }
 
-      window.location.href = "/admin";
+      window.location.href =
+        user?.role === "ADMIN"
+          ? "/admin"
+          : "/properties";
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||

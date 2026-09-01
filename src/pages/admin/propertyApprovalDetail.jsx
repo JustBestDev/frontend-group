@@ -15,6 +15,7 @@ import {
   useParams,
 } from "react-router-dom";
 import api from "../../services/api";
+import RejectReasonModal from "../../components/admin/RejectReasonModal";
 
 const PropertyApprovalDetail = () => {
   const { propertyId } = useParams();
@@ -26,6 +27,7 @@ const PropertyApprovalDetail = () => {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
 
   const fetchProperty = async () => {
     setLoading(true);
@@ -65,16 +67,18 @@ const PropertyApprovalDetail = () => {
   }, [propertyId]);
 
   const updatePublishStatus = async (
-    publishStatus
+    publishStatus,
+    rejectReason
   ) => {
     const action =
       publishStatus === "APPROVED"
         ? "approve"
         : "reject";
-
-    const confirmed = window.confirm(
-      `Are you sure you want to ${action} this property?`
-    );
+    const confirmed =
+      publishStatus === "REJECTED" ||
+      window.confirm(
+        `Are you sure you want to ${action} this property?`
+      );
 
     if (!confirmed) return;
 
@@ -84,17 +88,23 @@ const PropertyApprovalDetail = () => {
     try {
       await api.patch(
         `/admin/properties/${propertyId}/publish-status`,
-        { publishStatus }
+        publishStatus === "REJECTED"
+          ? { publishStatus, rejectReason }
+          : { publishStatus }
       );
 
       setProperty((currentProperty) => ({
         ...currentProperty,
         publishStatus,
+        ...(rejectReason ? { rejectReason } : {}),
       }));
 
       window.alert(
         `Property ${publishStatus.toLowerCase()} successfully`
       );
+      if (publishStatus === "REJECTED") {
+        setRejectModalOpen(false);
+      }
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
@@ -397,9 +407,10 @@ const PropertyApprovalDetail = () => {
                 type="button"
                 className="admin-reject-button"
                 disabled={updating}
-                onClick={() =>
-                  updatePublishStatus("REJECTED")
-                }
+                onClick={() => {
+                  setError("");
+                  setRejectModalOpen(true);
+                }}
               >
                 <X size={18} />
                 Reject property
@@ -422,6 +433,23 @@ const PropertyApprovalDetail = () => {
           </Link>
         </aside>
       </div>
+
+      {rejectModalOpen && (
+        <RejectReasonModal
+          entityLabel="property"
+          isSubmitting={updating}
+          error={error}
+          onCancel={() => {
+            if (!updating) {
+              setRejectModalOpen(false);
+              setError("");
+            }
+          }}
+          onReject={(rejectReason) =>
+            updatePublishStatus("REJECTED", rejectReason)
+          }
+        />
+      )}
     </section>
   );
 };

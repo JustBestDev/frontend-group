@@ -33,9 +33,15 @@ const PropertyList = () => {
 
   const storedUser = localStorage.getItem("user");
 
-  const currentUser = storedUser
-    ? JSON.parse(storedUser)
-    : null;
+  let currentUser = null;
+
+  if (storedUser) {
+    try {
+      currentUser = JSON.parse(storedUser);
+    } catch {
+      localStorage.removeItem("user");
+    }
+  }
 
   const fetchProperties = async () => {
     setLoading(true);

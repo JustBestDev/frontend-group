@@ -7,12 +7,14 @@ import {
   X,
 } from "lucide-react";
 import api from "../../services/api";
+import RejectReasonModal from "../../components/admin/RejectReasonModal";
 
 const PropertyApprovals = () => {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
   const [error, setError] = useState("");
+  const [rejectingId, setRejectingId] = useState(null);
 
   const fetchProperties = async () => {
     setLoading(true);
@@ -38,14 +40,17 @@ const PropertyApprovals = () => {
 
   const updatePublishStatus = async (
     propertyId,
-    publishStatus
+    publishStatus,
+    rejectReason
   ) => {
     const action =
       publishStatus === "APPROVED" ? "approve" : "reject";
 
-    const confirmed = window.confirm(
-      `Are you sure you want to ${action} this property?`
-    );
+    const confirmed =
+      publishStatus === "REJECTED" ||
+      window.confirm(
+        `Are you sure you want to ${action} this property?`
+      );
 
     if (!confirmed) return;
 
@@ -55,16 +60,25 @@ const PropertyApprovals = () => {
     try {
       await api.patch(
         `/admin/properties/${propertyId}/publish-status`,
-        { publishStatus }
+        publishStatus === "REJECTED"
+          ? { publishStatus, rejectReason }
+          : { publishStatus }
       );
 
       setProperties((currentProperties) =>
         currentProperties.map((property) =>
           (property.id || property.propertyId) === propertyId
-            ? { ...property, publishStatus }
+            ? {
+                ...property,
+                publishStatus,
+                ...(rejectReason ? { rejectReason } : {}),
+              }
             : property
         )
       );
+      if (publishStatus === "REJECTED") {
+        setRejectingId(null);
+      }
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
@@ -232,12 +246,10 @@ const PropertyApprovals = () => {
                         type="button"
                         className="property-action reject-property"
                         disabled={updatingId === propertyId}
-                        onClick={() =>
-                          updatePublishStatus(
-                            propertyId,
-                            "REJECTED"
-                          )
-                        }
+                        onClick={() => {
+                          setError("");
+                          setRejectingId(propertyId);
+                        }}
                       >
                         <X size={18} />
                         Reject
@@ -253,6 +265,27 @@ const PropertyApprovals = () => {
             );
           })}
         </div>
+      )}
+
+      {rejectingId !== null && (
+        <RejectReasonModal
+          entityLabel="property"
+          isSubmitting={updatingId === rejectingId}
+          error={error}
+          onCancel={() => {
+            if (updatingId !== rejectingId) {
+              setRejectingId(null);
+              setError("");
+            }
+          }}
+          onReject={(rejectReason) =>
+            updatePublishStatus(
+              rejectingId,
+              "REJECTED",
+              rejectReason
+            )
+          }
+        />
       )}
     </section>
   );

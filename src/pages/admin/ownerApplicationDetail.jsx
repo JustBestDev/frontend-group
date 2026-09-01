@@ -15,6 +15,7 @@ import {
   useParams,
 } from "react-router-dom";
 import api from "../../services/api";
+import RejectReasonModal from "../../components/admin/RejectReasonModal";
 
 const OwnerApplicationDetail = () => {
   const { applicationId } = useParams();
@@ -25,6 +26,7 @@ const OwnerApplicationDetail = () => {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
 
   const fetchApplication = async () => {
     setLoading(true);
@@ -55,13 +57,14 @@ const OwnerApplicationDetail = () => {
     fetchApplication();
   }, [applicationId]);
 
-  const updateStatus = async (status) => {
+  const updateStatus = async (status, rejectReason) => {
     const action =
       status === "APPROVED" ? "approve" : "reject";
-
-    const confirmed = window.confirm(
-      `Are you sure you want to ${action} this application?`
-    );
+    const confirmed =
+      status === "REJECTED" ||
+      window.confirm(
+        `Are you sure you want to ${action} this application?`
+      );
 
     if (!confirmed) return;
 
@@ -71,17 +74,23 @@ const OwnerApplicationDetail = () => {
     try {
       await api.patch(
         `/admin/owner-applications/${applicationId}`,
-        { status }
+        status === "REJECTED"
+          ? { status, rejectReason }
+          : { status }
       );
 
       setApplication((currentApplication) => ({
         ...currentApplication,
         status,
+        ...(rejectReason ? { rejectReason } : {}),
       }));
 
       window.alert(
         `Application ${status.toLowerCase()} successfully`
       );
+      if (status === "REJECTED") {
+        setRejectModalOpen(false);
+      }
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
@@ -337,9 +346,10 @@ const OwnerApplicationDetail = () => {
                 type="button"
                 className="admin-reject-button"
                 disabled={updating}
-                onClick={() =>
-                  updateStatus("REJECTED")
-                }
+                onClick={() => {
+                  setError("");
+                  setRejectModalOpen(true);
+                }}
               >
                 <X size={18} />
                 Reject application
@@ -362,6 +372,23 @@ const OwnerApplicationDetail = () => {
           </Link>
         </aside>
       </div>
+
+      {rejectModalOpen && (
+        <RejectReasonModal
+          entityLabel="owner application"
+          isSubmitting={updating}
+          error={error}
+          onCancel={() => {
+            if (!updating) {
+              setRejectModalOpen(false);
+              setError("");
+            }
+          }}
+          onReject={(rejectReason) =>
+            updateStatus("REJECTED", rejectReason)
+          }
+        />
+      )}
     </section>
   );
 };

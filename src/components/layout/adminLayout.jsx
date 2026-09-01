@@ -14,7 +14,7 @@ const AdminLayout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
 
-    window.location.href = "/login";
+    window.location.href = "/";
   };
 
   const menuItems = [
