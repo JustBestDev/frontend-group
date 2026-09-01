@@ -6,12 +6,14 @@ import {
   LogOut,
   MessageCircle,
   ShieldCheck,
+  UsersRound,
 } from "lucide-react";
 
 const AdminLayout = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+
     window.location.href = "/login";
   };
 
@@ -21,6 +23,11 @@ const AdminLayout = () => {
       path: "/admin",
       icon: LayoutDashboard,
       end: true,
+    },
+    {
+      name: "Users",
+      path: "/admin/users",
+      icon: UsersRound,
     },
     {
       name: "Owner Applications",
