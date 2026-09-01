@@ -6,19 +6,19 @@ import {
 } from "react-router-dom";
 
 import LoginPage from "./pages/LoginPage.jsx";
-import RegisterPage from "./pages/registerPage.jsx";
+import RegisterPage from "./pages/RegisterPage.jsx";
 
 import PropertyList from "./pages/PropertyList.jsx";
 import PropertyDetail from "./pages/PropertyDetail.jsx";
 
-import AdminLayout from "./components/layout/adminLayout.jsx";
-import AdminDashboard from "./pages/admin/adminDashboard.jsx";
-import UserManagement from "./pages/admin/userManagement.jsx";
-import OwnerApplications from "./pages/admin/ownerApplications.jsx";
-import PropertyApprovals from "./pages/admin/propertyApprovals.jsx";
+import AdminLayout from "./components/layout/AdminLayout.jsx";
+import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
+import UserManagement from "./pages/admin/UserManagement.jsx";
+import OwnerApplications from "./pages/admin/OwnerApplications.jsx";
+import PropertyApprovals from "./pages/admin/PropertyApprovals.jsx";
 import ConversationList from "./pages/conversations/ConversationList.jsx";
-import OwnerApplicationDetail from "./pages/admin/ownerApplicationDetail.jsx";
-import PropertyApprovalDetail from "./pages/admin/propertyApprovalDetail.jsx";
+import OwnerApplicationDetail from "./pages/admin/OwnerApplicationDetail.jsx";
+import PropertyApprovalDetail from "./pages/admin/PropertyApprovalDetail.jsx";
 
 const getStoredUser = () => {
   const storedUser = localStorage.getItem("user");
