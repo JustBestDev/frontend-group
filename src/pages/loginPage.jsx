@@ -86,7 +86,7 @@ function LoginPage() {
                             id="email"
                             name="email"
                             type="email"
-                            placeholder="admin@gmail.com"
+                            placeholder="Enter your email"
                             value={formData.email}
                             onChange={handleChange}
                             autoComplete="email"
