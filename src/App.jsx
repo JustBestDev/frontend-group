@@ -5,11 +5,11 @@ import {
   Routes,
 } from "react-router-dom";
 
-import LoginPage from "./pages/loginPage.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/registerPage.jsx";
 
-import PropertyList from "./pages/propertyList.jsx";
-import PropertyDetail from "./pages/propertyDetail.jsx";
+import PropertyList from "./pages/PropertyList.jsx";
+import PropertyDetail from "./pages/PropertyDetail.jsx";
 
 import AdminLayout from "./components/layout/adminLayout.jsx";
 import AdminDashboard from "./pages/admin/adminDashboard.jsx";

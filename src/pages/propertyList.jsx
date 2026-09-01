@@ -13,7 +13,7 @@ import {
   RefreshCw,
   Search,
 } from "lucide-react";
-import api from "../services/api";
+import api from "../services/api.js";
 import AuthModal from "../components/auth/AuthModal.jsx";
 
 const PropertyList = () => {
