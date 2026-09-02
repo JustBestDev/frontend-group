@@ -1,0 +1,122 @@
+/* ================================
+   ADMIN LAYOUT
+================================ */
+
+.admin-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.admin-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 10;
+  display: flex;
+  width: 265px;
+  flex-direction: column;
+  padding: 30px 20px 24px;
+  color: #ffffff;
+  background:
+    linear-gradient(
+      180deg,
+      #758a73 0%,
+      #60745f 100%
+    );
+  box-shadow: 10px 0 30px rgba(53, 70, 56, 0.12);
+}
+
+.admin-brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 0 10px 31px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.17);
+}
+
+.admin-brand-icon {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 15px;
+  color: var(--sage-dark);
+  background: #ffffff;
+}
+
+.admin-brand h1 {
+  margin: 0;
+  font-family: "Playfair Display", serif;
+  font-size: 21px;
+  letter-spacing: 0.2px;
+}
+
+.admin-brand span {
+  display: block;
+  margin-top: 3px;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.admin-navigation {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 29px;
+}
+
+.admin-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 13px 15px;
+  border-radius: 13px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 14px;
+  font-weight: 500;
+  transition:
+    color 180ms ease,
+    background 180ms ease,
+    transform 180ms ease;
+}
+
+.admin-nav-link:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(3px);
+}
+
+.admin-nav-link.active {
+  color: var(--sage-dark);
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(45, 64, 48, 0.15);
+}
+
+.admin-logout-button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 13px;
+  padding: 13px 15px;
+  border-radius: 13px;
+  color: rgba(255, 255, 255, 0.75);
+  background: transparent;
+  cursor: pointer;
+  transition: 180ms ease;
+}
+
+.admin-logout-button:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.admin-main {
+  width: calc(100% - 265px);
+  min-height: 100vh;
+  margin-left: 265px;
+  padding: 38px;
+}
+

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router";
 import {
   ArrowLeft,
   BedDouble,
@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import api from "../services/api";
 
-const PropertyDetail = () => {
+const PropertyDetailPage = () => {
   const { propertyId } = useParams();
 
   const [property, setProperty] = useState(null);
@@ -47,7 +47,7 @@ const PropertyDetail = () => {
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
-          "Unable to retrieve property details"
+        "Unable to retrieve property details"
       );
     } finally {
       setLoading(false);
@@ -116,24 +116,6 @@ const PropertyDetail = () => {
 
   return (
     <main className="property-detail-page">
-      <header className="public-header">
-        <Link
-          className="public-brand"
-          to="/properties"
-        >
-          <div className="public-brand-icon">
-            <Building2 size={24} />
-          </div>
-
-          <span>RoomShare</span>
-        </Link>
-
-        <nav className="public-navigation">
-          <Link to="/properties">Properties</Link>
-          <Link to="/login">Log in</Link>
-        </nav>
-      </header>
-
       <div className="property-detail-container">
         <Link
           to="/properties"
@@ -211,8 +193,8 @@ const PropertyDetail = () => {
                 <strong>
                   {property.price
                     ? `฿${Number(
-                        property.price
-                      ).toLocaleString()}`
+                      property.price
+                    ).toLocaleString()}`
                     : "Contact"}
                 </strong>
                 <span>per month</span>
@@ -282,8 +264,8 @@ const PropertyDetail = () => {
                       <strong>
                         {room.price
                           ? `฿${Number(
-                              room.price
-                            ).toLocaleString()}`
+                            room.price
+                          ).toLocaleString()}`
                           : ""}
                       </strong>
                     </article>
@@ -338,4 +320,4 @@ const PropertyDetail = () => {
   );
 };
 
-export default PropertyDetail;
+export default PropertyDetailPage;
