@@ -1,6 +1,6 @@
 import React from "react";
 
-import "../../index.css";
+import "../../styles/pages/room-detail.css";
 import SubRoomCard from "../../components/roomDetail/SubRoomCard";
 
 export default function RoomDetail() {
@@ -11,7 +11,7 @@ export default function RoomDetail() {
         <Link className="public-brand" to="/properties">
           <div className="public-brand-icon">
             <Building2 size={24} />
-          </div>
+          </div>ß
 
           <span>RoomShare</span>
         </Link>
