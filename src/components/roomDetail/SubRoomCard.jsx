@@ -11,21 +11,22 @@ export default function SubRoomCard() {
       />
       <div className="room-card-info">
         <div className="room-card-header">
-            {/* TODO : roomname */}
-          <h3>ห้องนอน 1</h3>
-          <span className="room-tag tag-available">ว่าง</span>
+          <h3>{room.roomName}</h3>
+          <span
+            className={`room-tag ${room.status === "AVAILABLE" ? "tag-available" : "tag-unavailable"}`}
+          >
+            {room.status === "AVAILABLE" ? "AVAILABLE" : "RENTED"}
+          </span>
         </div>
-        {/* TODO : Monthly Rent */}
         <div className="room-price">
-          ฿9,500 <span>/ เดือน</span>
+          ฿{Number(room.monthlyRent).toLocaleString()}
+          <span>/ Mounth</span>
         </div>
         {/* Discription */}
-        <div className="room-features">
-          เตียงเดี่ยว · ตู้เสื้อผ้า · โต๊ะทำงาน
-        </div>
+        <div className="room-features">{room.description || "No details"}</div>
       </div>
-      <div className="room-card-action">
-      </div>
+      {/* TODO : เพิ่มุปุ่ม Edit กับ Delect และกำหนดให้ Owner เห็นเท่านั้น */}
+      <div className="room-card-action"></div>
     </div>
   );
 }

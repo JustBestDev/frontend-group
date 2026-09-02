@@ -8,33 +8,17 @@ export default function RoomDetail() {
     <div className="property-detail-page">
       {/* Navbar Header */}
       <header className="public-header">
-        <a href="#home" className="public-brand">
+        <Link className="public-brand" to="/properties">
           <div className="public-brand-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19 9.3V4h-3v2.6L12 3 2 12h3v8h5v-6h4v6h5v-8h3l-3-2.7z" />
-            </svg>
+            <Building2 size={24} />
           </div>
-          RoomShare
-        </a>
+
+          <span>RoomShare</span>
+        </Link>
+
         <nav className="public-navigation">
-          <a href="#rent">Rent</a>
-          <button className="public-logout-button">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-              <polyline points="16 17 21 12 16 7"></polyline>
-              <line x1="21" y1="12" x2="9" y2="12"></line>
-            </svg>
-            Logout
-          </button>
+          <Link to="/properties">Properties</Link>
+          <Link to="/login">Log in</Link>
         </nav>
       </header>
 
@@ -94,11 +78,11 @@ export default function RoomDetail() {
             <div className="property-header-info">
               {/* TODO : titile ของ Property */}
               <h1 className="property-main-title">
-                อพาร์ตเมนต์ 4 ห้องนอน Ziroom Youjia Beiyuan
+                {property.title}
               </h1>
               {/* TODO : ใส่ Property address */}
               <p className="property-sub-location">
-                ยูนิต 05 · Wangchun Garden
+                {property.address}
               </p>
               <div className="property-specs">
                 <span>
@@ -125,20 +109,7 @@ export default function RoomDetail() {
                   >
                     <path d="M2 4v16M2 8h20M2 16h20M22 4v16" />
                   </svg>
-                  3 ห้องนอน
-                </span>
-                <span>
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M4 12h16M4 12V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v6M4 12v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6" />
-                  </svg>
-                  1 ห้องน้ำ
+                  {rooms.length}
                 </span>
                 <span>
                   <svg
@@ -151,7 +122,7 @@ export default function RoomDetail() {
                   >
                     <path d="M3 21h18M3 7v14M21 7v14M6 3h12v4H6z" />
                   </svg>
-                  อพาร์ตเมนต์
+                  {property.propertyType || "Property"}
                 </span>
               </div>
               {/* TODO : Price / Monthy Rent / Rent type */}
