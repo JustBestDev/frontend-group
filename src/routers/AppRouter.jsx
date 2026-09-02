@@ -15,6 +15,7 @@ import HomePage from "../pages/HomePage.jsx";
 import OwnerLayout from "../layouts/OwnerLayout.jsx";
 import OwnerDashboard from "../pages/owner/OwnerDashboardPage.jsx";
 import OwnerPlaceholder from "../pages/owner/OwnerPlaceholderPage.jsx";
+import RoomDetail from "../pages/properties/RoomDetail.jsx";
 
 const guestRouter = createBrowserRouter([
   {
@@ -82,6 +83,10 @@ const userRouter = createBrowserRouter([
       {
         path: "properties/:propertyId",
         Component: PropertyDetailPage,
+      },
+      {
+        path: "properties/:propertyId/rooms",
+        Component: RoomDetail,
       },
     ],
   },
