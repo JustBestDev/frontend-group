@@ -39,13 +39,22 @@ function LoginPage() {
                 response.data.data?.token ||
                 response.data.data?.accessToken;
 
-            if (!token) {
-                throw new Error("Login succeeded, but no token was returned");
+            const user =
+                response.data.user ||
+                response.data.data?.user ||
+                response.data.data?.userData;
+
+            if (!token || !user) {
+                throw new Error("Login succeeded, but authentication data was incomplete");
             }
 
             localStorage.setItem("token", token);
+            localStorage.setItem("user", JSON.stringify(user));
 
-            navigate("/admin", { replace: true });
+            navigate(
+                user.role === "ADMIN" ? "/admin" : "/properties",
+                { replace: true }
+            );
         } catch (requestError) {
             setError(
                 requestError.response?.data?.message ||
