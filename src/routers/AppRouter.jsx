@@ -85,7 +85,7 @@ const userRouter = createBrowserRouter([
         Component: PropertyDetailPage,
       },
       {
-        path: "properties/:propertyId/rooms",
+        path: "properties/:propertyId/:roomId",
         Component: RoomDetail,
       },
     ],

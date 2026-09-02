@@ -1,4 +1,3 @@
-
 /* ================================================
    PROPERTY DETAIL PAGE STYLES (RoomShare Theme)
 ================================================ */
@@ -55,8 +54,8 @@
 /* Image Gallery Grid */
 .gallery-grid {
   display: grid;
-  grid-template-columns: 1.8fr repeat(2, 1fr);
-  grid-template-rows: repeat(2, 160px);
+  /* grid-template-columns: 1.8fr repeat(1, 1fr); */
+  /* grid-template-rows: repeat(1, 160px); */
   gap: 12px;
   margin-bottom: 28px;
   border-radius: 20px;
@@ -72,7 +71,8 @@
 .gallery-grid img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
   transition: transform 0.3s ease;
 }
 
@@ -133,9 +133,31 @@
   color: var(--terracotta);
 }
 
+.topic {
+  font-size: larger;
+  font-weight: 700;
+}
+
+.menubar {
+  font-size: larger;
+  font-weight: 300;
+  gap: 20px;
+}
+
+.unit-state {
+  display: flex;
+  gap: 30px;
+}
 /* Unit Status Card */
 .unit-status-card {
-  padding: 20px 24px;
+  width: 100%;
+  text-align: center;
+  margin: 0px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 15px 24px;
   margin-bottom: 32px;
   border-radius: 16px;
   background: rgba(228, 228, 217, 0.5);
@@ -196,7 +218,9 @@
   background: var(--surface);
   border: 1px solid var(--border);
   box-shadow: 0 4px 15px rgba(50, 66, 54, 0.04);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .room-card:hover {
@@ -326,7 +350,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 3px;
   padding: 18px 12px;
   border-radius: 14px;
   background: var(--sage-light);
@@ -497,6 +521,34 @@
   opacity: 1;
 }
 
+.status-form {
+  display: flex;
+  flex-direction: flex;
+}
+
+.room-title {
+  margin: 0px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  font-size: clamp(30px, 2.5vw, 45px);
+  font-weight: 700;
+}
+
+.status-format {
+  display: flex;
+  flex-direction: flex;
+  justify-content: center;
+  align-items: center;
+  width: 150px;
+  padding-left: 10px;
+  padding-right: 10px;
+  gap: 10px;
+  border-radius: 20px;
+  background: #f1ede2;
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 30px rgba(50, 66, 54, 0.06);
+}
+
 /* ================================================
    RESPONSIVE DESIGN
 ================================================ */
@@ -513,7 +565,7 @@
 
 @media (max-width: 768px) {
   .gallery-grid {
-    grid-template-columns: 1fr 1fr;
+    /* grid-template-columns: 1fr 1fr; */
     grid-template-rows: auto;
   }
 
