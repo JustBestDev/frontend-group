@@ -1,10 +1,12 @@
 @import "./styles/base.css";
 @import "./styles/layouts/admin-layout.css";
+@import "./styles/layouts/owner-layout.css";
 @import "./styles/pages/admin-dashboard.css";
 @import "./styles/pages/auth.css";
 @import "./styles/pages/admin-common.css";
 @import "./styles/pages/conversations.css";
 @import "./styles/pages/home.css";
+@import "./styles/pages/owner-dashboard.css";
 @import "./styles/components/auth-modal.css";
 @import "./styles/pages/admin-detail.css";
 @import "./styles/components/reject-modal.css";

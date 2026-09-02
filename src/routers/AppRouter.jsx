@@ -12,6 +12,9 @@ import UserManagement from "../pages/admin/UserManagement.jsx";
 import ConversationList from "../pages/conversations/ConversationList.jsx";
 import AdminDashboard from "../pages/admin/AdminDashboard.jsx";
 import HomePage from "../pages/HomePage.jsx";
+import OwnerLayout from "../layouts/OwnerLayout.jsx";
+import OwnerDashboard from "../pages/owner/OwnerDashboardPage.jsx";
+import OwnerPlaceholder from "../pages/owner/OwnerPlaceholderPage.jsx";
 
 const publicRoutes = [
     { path: "/", Component: HomeLayout },
@@ -69,6 +72,23 @@ const userRouter = createBrowserRouter([
     },
 ]);
 
+const ownerRouter = createBrowserRouter([
+    {
+        path: "/owner",
+        Component: OwnerLayout,
+        children: [
+            { index: true, Component: OwnerDashboard },
+            { path: "properties", Component: OwnerPlaceholder },
+            { path: "properties/new", Component: OwnerPlaceholder },
+            { path: "rooms", Component: OwnerPlaceholder },
+            { path: "rentals", Component: OwnerPlaceholder },
+            { path: "messages", Component: OwnerPlaceholder },
+            { path: "profile", Component: OwnerPlaceholder },
+        ],
+    },
+    { path: "*", element: <Navigate to="/owner" replace /> },
+]);
+
 const clearStoredAuthentication = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -104,7 +124,14 @@ const AppRouter = () => {
     const { token, user } = getStoredAuthentication();
     console.log('token', token)
     console.log('user', user)
-    const finalRouter = !token ? guestRouter : user.role === "ADMIN" ? adminRouter : userRouter;
+
+    const finalRouter = !token
+        ? guestRouter
+        : user.role === "ADMIN"
+            ? adminRouter
+            : user.role === "OWNER"
+                ? ownerRouter
+                : userRouter;
 
     return <RouterProvider router={finalRouter} />;
 };
