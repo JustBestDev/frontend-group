@@ -13,7 +13,7 @@ import {
   Link,
   useNavigate,
   useParams,
-} from "react-router-dom";
+} from "react-router";
 import api from "../../services/api";
 import RejectReasonModal from "../../components/admin/RejectReasonModal";
 

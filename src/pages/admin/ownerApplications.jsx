@@ -5,7 +5,7 @@ import {
   RefreshCw,
   X,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import api from "../../services/api";
 import RejectReasonModal from "../../components/admin/RejectReasonModal";
 
