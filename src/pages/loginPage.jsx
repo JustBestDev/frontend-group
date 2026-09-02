@@ -49,20 +49,17 @@ const LoginPage = () => {
         response.data.data?.user ||
         response.data.data?.userData;
 
-      if (!token) {
+      if (!token || !user) {
         throw new Error(
-          "Login succeeded, but no token was returned"
+          "Login succeeded, but authentication data was incomplete"
         );
       }
 
       localStorage.setItem("token", token);
-
-      if (user) {
-        localStorage.setItem(
-          "user",
-          JSON.stringify(user)
-        );
-      }
+      localStorage.setItem(
+        "user",
+        JSON.stringify(user)
+      );
 
       window.location.href =
         user?.role === "ADMIN"
