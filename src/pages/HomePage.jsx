@@ -1,47 +1,23 @@
-import {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import {
   BedDouble,
   Building2,
   Filter,
-  LogOut,
   MapPin,
   RefreshCw,
   Search,
 } from "lucide-react";
 import api from "../services/api.js";
-import AuthModal from "../components/auth/AuthModal.jsx";
 
-const PropertyList = () => {
+const HomePage = () => {
   const [properties, setProperties] = useState([]);
   const [search, setSearch] = useState("");
-  const [propertyType, setPropertyType] =
-    useState("ALL");
-  const [priceRange, setPriceRange] =
-    useState("ALL");
+  const [propertyType, setPropertyType] = useState("ALL");
+  const [priceRange, setPriceRange] = useState("ALL");
   const [bedrooms, setBedrooms] = useState("ALL");
-  const [isAuthModalOpen, setIsAuthModalOpen] =
-    useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  const token = localStorage.getItem("token");
-
-  const storedUser = localStorage.getItem("user");
-
-  let currentUser = null;
-
-  if (storedUser) {
-    try {
-      currentUser = JSON.parse(storedUser);
-    } catch {
-      localStorage.removeItem("user");
-    }
-  }
 
   const fetchProperties = async () => {
     setLoading(true);
@@ -62,7 +38,7 @@ const PropertyList = () => {
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
-          "Unable to retrieve properties"
+        "Unable to retrieve properties"
       );
     } finally {
       setLoading(false);
@@ -96,7 +72,9 @@ const PropertyList = () => {
         property.type ||
         "OTHER";
 
-      const price = Number(property.price || 0);
+      const price = Number(
+        property.monthlyRent ?? property.price ?? 0
+      );
 
       const roomCount =
         property.rooms?.length ||
@@ -157,56 +135,8 @@ const PropertyList = () => {
     setBedrooms("ALL");
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    window.location.reload();
-  };
-
   return (
     <main className="property-list-page">
-      <header className="public-header">
-        <Link
-          className="public-brand"
-          to="/properties"
-        >
-          <div className="public-brand-icon">
-            <Building2 size={24} />
-          </div>
-
-          <span>RoomShare</span>
-        </Link>
-
-        <nav className="public-navigation">
-          <Link to="/properties">Rent</Link>
-
-          {currentUser?.role === "ADMIN" && (
-            <Link to="/admin">Admin panel</Link>
-          )}
-
-          {token ? (
-            <button
-              type="button"
-              className="public-logout-button"
-              onClick={handleLogout}
-            >
-              <LogOut size={17} />
-              Log out
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="public-login-button"
-              onClick={() =>
-                setIsAuthModalOpen(true)
-              }
-            >
-              Log in
-            </button>
-          )}
-        </nav>
-      </header>
-
       <section className="property-hero">
         <p>Find your next place</p>
         <h1>A better way to find a room</h1>
@@ -316,9 +246,7 @@ const PropertyList = () => {
         <div className="property-results-heading">
           <div>
             <h2>Properties for rent</h2>
-            <p>
-              {filteredProperties.length} listings found
-            </p>
+            <p>{filteredProperties.length} listings found</p>
           </div>
         </div>
 
@@ -402,10 +330,10 @@ const PropertyList = () => {
 
                     <div className="public-property-footer">
                       <strong>
-                        {property.price
+                        {(property.monthlyRent ?? property.price) != null
                           ? `฿${Number(
-                              property.price
-                            ).toLocaleString()}`
+                            property.monthlyRent ?? property.price
+                          ).toLocaleString()}`
                           : "Contact for price"}
                       </strong>
 
@@ -423,12 +351,8 @@ const PropertyList = () => {
         )}
       </section>
 
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-      />
     </main>
   );
 };
 
-export default PropertyList;
+export default HomePage;

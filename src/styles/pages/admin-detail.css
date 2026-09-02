@@ -1,0 +1,259 @@
+.view-button {
+  color: #586e59;
+  background: #e8eee5;
+}
+
+.admin-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 22px;
+  padding: 0;
+  color: #687968;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.admin-detail-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 26px;
+}
+
+.admin-detail-heading h1 {
+  margin: 4px 0 8px;
+  color: #415041;
+  font-size: 32px;
+}
+
+.admin-detail-heading > div > p:last-child {
+  margin: 0;
+  color: #899188;
+}
+
+.admin-detail-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 22px;
+  align-items: start;
+}
+
+.admin-detail-main {
+  display: grid;
+  gap: 20px;
+}
+
+.admin-detail-card,
+.admin-decision-card {
+  padding: 24px;
+  border: 1px solid #e0e5dd;
+  border-radius: 17px;
+  background: white;
+  box-shadow: 0 8px 25px rgba(65, 80, 65, 0.06);
+}
+
+.admin-detail-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 21px;
+  color: #6c806d;
+}
+
+.admin-detail-card-heading h2 {
+  margin: 0;
+  color: #4c5c4c;
+  font-size: 18px;
+}
+
+.admin-information-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.admin-information-grid > div {
+  padding: 15px;
+  border-radius: 11px;
+  background: #f5f7f3;
+}
+
+.admin-information-grid span,
+.application-detail-section span {
+  display: block;
+  margin-bottom: 7px;
+  color: #929b91;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.admin-information-grid strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #536253;
+  font-size: 14px;
+  text-transform: capitalize;
+}
+
+.application-detail-section {
+  display: grid;
+  gap: 16px;
+}
+
+.application-detail-section > div {
+  padding: 16px;
+  border: 1px solid #e5e9e2;
+  border-radius: 11px;
+}
+
+.application-detail-section p {
+  margin: 0;
+  color: #667166;
+  line-height: 1.65;
+  white-space: pre-line;
+}
+
+.application-detail-section a {
+  color: #637b64;
+  font-weight: 800;
+}
+
+.admin-decision-card {
+  position: sticky;
+  top: 25px;
+}
+
+.admin-decision-card h2 {
+  margin: 0 0 9px;
+  color: #4b5a4b;
+  font-size: 19px;
+}
+
+.admin-decision-card > p {
+  margin: 0;
+  color: #899188;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.admin-decision-actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 21px;
+}
+
+.admin-approve-button,
+.admin-reject-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 12px;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+}
+
+.admin-approve-button {
+  color: white;
+  background: #718873;
+}
+
+.admin-reject-button {
+  color: #aa4d49;
+  background: #fbe6e4;
+}
+
+.admin-approve-button:disabled,
+.admin-reject-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.admin-decision-result {
+  margin-top: 20px;
+  padding: 13px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.result-approved {
+  color: #47724f;
+  background: #e5f2e5;
+}
+
+.result-rejected {
+  color: #ae504d;
+  background: #fde8e6;
+}
+
+.admin-return-link {
+  display: block;
+  margin-top: 18px;
+  color: #687968;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+}
+
+.admin-detail-error {
+  min-height: 460px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 11px;
+  color: #879087;
+  text-align: center;
+}
+
+.admin-detail-error h1,
+.admin-detail-error p {
+  margin: 0;
+}
+
+.admin-detail-error button,
+.admin-detail-error a {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 14px;
+  color: white;
+  border: 0;
+  border-radius: 9px;
+  background: #718873;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+@media (max-width: 900px) {
+  .admin-detail-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-decision-card {
+    position: static;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-detail-heading {
+    flex-direction: column;
+  }
+
+  .admin-information-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
