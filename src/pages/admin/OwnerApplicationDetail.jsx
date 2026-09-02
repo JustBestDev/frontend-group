@@ -17,6 +17,9 @@ import {
 import api from "../../services/api";
 import RejectReasonModal from "../../components/admin/RejectReasonModal";
 
+const isPdfDocument = (url = "") =>
+  /\.pdf(?:$|\?)/i.test(url);
+
 const OwnerApplicationDetail = () => {
   const { applicationId } = useParams();
   const navigate = useNavigate();
@@ -46,7 +49,7 @@ const OwnerApplicationDetail = () => {
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
-          "Unable to retrieve owner application"
+        "Unable to retrieve owner application"
       );
     } finally {
       setLoading(false);
@@ -94,7 +97,7 @@ const OwnerApplicationDetail = () => {
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
-          "Unable to update application"
+        "Unable to update application"
       );
     } finally {
       setUpdating(false);
@@ -161,6 +164,10 @@ const OwnerApplicationDetail = () => {
     "OWNER";
 
   const status = application.status || "PENDING";
+
+  const documents = (application.documents || []).filter(
+    (document) => document.signedUrl
+  );
 
   return (
     <section className="admin-content">
@@ -258,8 +265,8 @@ const OwnerApplicationDetail = () => {
                 <strong>
                   {application.createdAt
                     ? new Date(
-                        application.createdAt
-                      ).toLocaleString()
+                      application.createdAt
+                    ).toLocaleString()
                     : "—"}
                 </strong>
               </div>
@@ -303,17 +310,38 @@ const OwnerApplicationDetail = () => {
                 </>
               )}
 
-              {application.documentUrl && (
+              {documents.length > 0 && (
                 <div>
-                  <span>Supporting document</span>
+                  <span>Supporting documents</span>
 
-                  <a
-                    href={application.documentUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    View document
-                  </a>
+                  <div className="owner-document-grid">
+                    {documents.map((document, index) => (
+                      <div
+                        className="owner-document-item"
+                        key={document.id}
+                      >
+                        {isPdfDocument(document.signedUrl) ? (
+                          <iframe
+                            src={document.signedUrl}
+                            title={`Supporting document ${index + 1}`}
+                          />
+                        ) : (
+                          <img
+                            src={document.signedUrl}
+                            alt={`Supporting document ${index + 1}`}
+                          />
+                        )}
+
+                        <a
+                          href={document.signedUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Open document {index + 1}
+                        </a>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
