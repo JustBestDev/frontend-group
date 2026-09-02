@@ -16,23 +16,37 @@ import OwnerLayout from "../layouts/OwnerLayout.jsx";
 import OwnerDashboard from "../pages/owner/OwnerDashboardPage.jsx";
 import OwnerPlaceholder from "../pages/owner/OwnerPlaceholderPage.jsx";
 
-const publicRoutes = [
-    { path: "/", Component: HomeLayout },
-    { path: "/properties", Component: HomeLayout },
-    { path: "/properties/:propertyId", Component: PropertyDetailPage },
-];
-
 const guestRouter = createBrowserRouter([
-    {
-        path: "/", Component: HomeLayout,
-        children: [
-            { index: true, Component: HomePage },
-            { path: "/login", Component: LoginPage },
-            { path: "/register", Component: RegisterPage },
-            { path: "/properties/:propertyId", Component: PropertyDetailPage },
-            { path: "*", element: <Navigate to="/" replace />, },
-        ]
-    },
+  {
+    path: "/",
+    Component: HomeLayout,
+    children: [
+      {
+        index: true,
+        element: <Navigate to="/properties" replace />,
+      },
+      {
+        path: "properties",
+        Component: HomePage,
+      },
+      {
+        path: "properties/:propertyId",
+        Component: PropertyDetailPage,
+      },
+      {
+        path: "login",
+        Component: LoginPage,
+      },
+      {
+        path: "register",
+        Component: RegisterPage,
+      },
+    ],
+  },
+  {
+    path: "*",
+    element: <Navigate to="/properties" replace />,
+  },
 ]);
 
 const adminRouter = createBrowserRouter([
@@ -53,23 +67,40 @@ const adminRouter = createBrowserRouter([
 ]);
 
 const userRouter = createBrowserRouter([
-    ...publicRoutes,
-    {
-        path: "/login",
+  {
+    path: "/",
+    Component: HomeLayout,
+    children: [
+      {
+        index: true,
         element: <Navigate to="/properties" replace />,
-    },
-    {
-        path: "/register",
-        element: <Navigate to="/properties" replace />,
-    },
-    {
-        path: "/admin/*",
-        element: <Navigate to="/properties" replace />,
-    },
-    {
-        path: "*",
-        element: <Navigate to="/properties" replace />,
-    },
+      },
+      {
+        path: "properties",
+        Component: HomePage,
+      },
+      {
+        path: "properties/:propertyId",
+        Component: PropertyDetailPage,
+      },
+    ],
+  },
+  {
+    path: "/login",
+    element: <Navigate to="/properties" replace />,
+  },
+  {
+    path: "/register",
+    element: <Navigate to="/properties" replace />,
+  },
+  {
+    path: "/admin/*",
+    element: <Navigate to="/properties" replace />,
+  },
+  {
+    path: "*",
+    element: <Navigate to="/properties" replace />,
+  },
 ]);
 
 const ownerRouter = createBrowserRouter([
@@ -122,8 +153,6 @@ const getStoredAuthentication = () => {
 
 const AppRouter = () => {
     const { token, user } = getStoredAuthentication();
-    console.log('token', token)
-    console.log('user', user)
 
     const finalRouter = !token
         ? guestRouter
