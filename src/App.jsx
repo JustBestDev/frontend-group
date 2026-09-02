@@ -1,9 +1,4 @@
-import {
-  BrowserRouter,
-  Navigate,
-  Route,
-  Routes,
-} from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
@@ -19,6 +14,7 @@ import PropertyApprovals from "./pages/admin/PropertyApprovals.jsx";
 import ConversationList from "./pages/conversations/ConversationList.jsx";
 import OwnerApplicationDetail from "./pages/admin/OwnerApplicationDetail.jsx";
 import PropertyApprovalDetail from "./pages/admin/PropertyApprovalDetail.jsx";
+import RoomDetail from "./pages/properties/RoomDetail.jsx";
 
 const getStoredUser = () => {
   const storedUser = localStorage.getItem("user");
@@ -34,43 +30,29 @@ const getStoredUser = () => {
 };
 
 const App = () => {
-  const hasToken = Boolean(
-    localStorage.getItem("token")
-  );
+  const hasToken = Boolean(localStorage.getItem("token"));
   const currentUser = getStoredUser();
-  const isAdmin =
-    hasToken && currentUser?.role === "ADMIN";
+  const isAdmin = hasToken && currentUser?.role === "ADMIN";
 
   return (
     <BrowserRouter>
       <Routes>
         {/* Public routes */}
-        <Route
-          path="/"
-          element={
-            <Navigate to="/properties" replace />
-          }
-        />
+        <Route path="/" element={<Navigate to="/properties" replace />} />
 
-        <Route
-          path="/properties"
-          element={<PropertyList />}
-        />
+        <Route path="/properties" element={<PropertyList />} />
 
-        <Route
-          path="/properties/:propertyId"
-          element={<PropertyDetail />}
-        />
+        <Route path="/properties/:propertyId" element={<PropertyDetail />} />
+
+        {/* Room Route */}
+        <Route path="room/:roomId" element={<RoomDetail />} />
 
         {/* Authentication routes */}
         <Route
           path="/login"
           element={
             hasToken ? (
-              <Navigate
-                to={isAdmin ? "/admin" : "/properties"}
-                replace
-              />
+              <Navigate to={isAdmin ? "/admin" : "/properties"} replace />
             ) : (
               <LoginPage />
             )
@@ -80,11 +62,7 @@ const App = () => {
         <Route
           path="/register"
           element={
-            hasToken ? (
-              <Navigate to="/properties" replace />
-            ) : (
-              <RegisterPage />
-            )
+            hasToken ? <Navigate to="/properties" replace /> : <RegisterPage />
           }
         />
 
@@ -95,53 +73,33 @@ const App = () => {
             isAdmin ? (
               <AdminLayout />
             ) : (
-              <Navigate
-                to={hasToken ? "/properties" : "/login"}
-                replace
-              />
+              <Navigate to={hasToken ? "/properties" : "/login"} replace />
             )
           }
         >
           <Route index element={<AdminDashboard />} />
 
-          <Route
-            path="users"
-            element={<UserManagement />}
-          />
+          <Route path="users" element={<UserManagement />} />
 
-          <Route
-            path="owner-applications"
-            element={<OwnerApplications />}
-          />
+          <Route path="owner-applications" element={<OwnerApplications />} />
 
           <Route
             path="owner-applications/:applicationId"
             element={<OwnerApplicationDetail />}
           />
 
-          <Route
-            path="properties"
-            element={<PropertyApprovals />}
-          />
+          <Route path="properties" element={<PropertyApprovals />} />
 
           <Route
             path="properties/:propertyId"
             element={<PropertyApprovalDetail />}
           />
 
-          <Route
-            path="conversations"
-            element={<ConversationList />}
-          />
+          <Route path="conversations" element={<ConversationList />} />
         </Route>
 
         {/* Unknown route */}
-        <Route
-          path="*"
-          element={
-            <Navigate to="/properties" replace />
-          }
-        />
+        <Route path="*" element={<Navigate to="/properties" replace />} />
       </Routes>
     </BrowserRouter>
   );
