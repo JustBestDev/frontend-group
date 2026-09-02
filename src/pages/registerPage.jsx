@@ -1,142 +1,191 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
-import api from "../services/api";
-import { LockKeyhole, Mail, ShieldCheck } from "lucide-react";
+import {
+  LockKeyhole,
+  Mail,
+  ShieldCheck,
+  UserRound,
+} from "lucide-react";
+import api from "../services/api.js";
 
-function LoginPage() {
-    const navigate = useNavigate();
+const RegisterPage = () => {
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-    const [formData, setFormData] = useState({
-        email: "",
-        password: "",
-    });
+  const handleChange = (event) => {
+    const { name, value } = event.target;
 
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
+    setFormData((currentForm) => ({
+      ...currentForm,
+      [name]: value,
+    }));
+    setError("");
+  };
 
-    const handleChange = (event) => {
-        const { name, value } = event.target;
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError("");
 
-        setFormData((currentForm) => ({
-            ...currentForm,
-            [name]: value,
-        }));
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
 
-        setError("");
-    };
+    setLoading(true);
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        setError("");
-        setLoading(true);
+    try {
+      await api.post("/auth/register", formData);
 
-        try {
-            const response = await api.post("/auth/login", formData);
+      const response = await api.post("/auth/login", {
+        email: formData.email,
+        password: formData.password,
+      });
 
-            const token =
-                response.data.token ||
-                response.data.accessToken ||
-                response.data.data?.token ||
-                response.data.data?.accessToken;
+      const token =
+        response.data.token ||
+        response.data.accessToken ||
+        response.data.data?.token ||
+        response.data.data?.accessToken;
+      const user =
+        response.data.user ||
+        response.data.data?.user ||
+        response.data.data?.userData;
 
-            const user =
-                response.data.user ||
-                response.data.data?.user ||
-                response.data.data?.userData;
+      if (!token || !user) {
+        throw new Error(
+          "Registration succeeded, but authentication data was incomplete"
+        );
+      }
 
-            if (!token || !user) {
-                throw new Error("Login succeeded, but authentication data was incomplete");
-            }
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
 
-            localStorage.setItem("token", token);
-            localStorage.setItem("user", JSON.stringify(user));
+      window.location.href =
+        user.role === "ADMIN" ? "/admin" : "/properties";
+    } catch (requestError) {
+      const responseMessage =
+        requestError.response?.data?.message;
 
-            navigate(
-                user.role === "ADMIN" ? "/admin" : "/properties",
-                { replace: true }
-            );
-        } catch (requestError) {
-            setError(
-                requestError.response?.data?.message ||
-                    requestError.message ||
-                    "Unable to log in"
-            );
-        } finally {
-            setLoading(false);
-        }
-    };
+      if (responseMessage && typeof responseMessage === "object") {
+        const firstError = Object.values(responseMessage)
+          .flat()
+          .find(Boolean);
 
-    return (
-        <main className="login-page">
-            <section className="login-card">
-                <div className="login-brand">
-                    <div className="login-logo">
-                        <ShieldCheck size={32} />
-                    </div>
+        setError(firstError || "Unable to register");
+      } else {
+        setError(
+          responseMessage ||
+            requestError.message ||
+            "Unable to register"
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
-                    <div>
-                        <h1>RoomRoomShare</h1>
-                        <p>Admin Panel</p>
-                    </div>
-                </div>
+  return (
+    <main className="login-page">
+      <section className="login-card">
+        <div className="login-brand">
+          <div className="login-logo">
+            <ShieldCheck size={32} />
+          </div>
 
-                <div className="login-heading">
-                    <h2>Welcome back</h2>
-                    <p>Log in with your administrator account</p>
-                </div>
+          <div>
+            <h1>RoomShare</h1>
+            <p>Create an account</p>
+          </div>
+        </div>
 
-                <form className="login-form" onSubmit={handleSubmit}>
-                    <label htmlFor="email">Email</label>
+        <div className="login-heading">
+          <h2>Join RoomShare</h2>
+          <p>Register to find your next place.</p>
+        </div>
 
-                    <div className="login-input">
-                        <Mail size={19} />
+        <form className="login-form" onSubmit={handleSubmit}>
+          <label htmlFor="username">Username</label>
+          <div className="login-input">
+            <UserRound size={19} />
+            <input
+              id="username"
+              name="username"
+              type="text"
+              placeholder="Enter your username"
+              value={formData.username}
+              onChange={handleChange}
+              autoComplete="username"
+              required
+            />
+          </div>
 
-                        <input
-                            id="email"
-                            name="email"
-                            type="email"
-                            placeholder="admin@gmail.com"
-                            value={formData.email}
-                            onChange={handleChange}
-                            autoComplete="email"
-                            required
-                        />
-                    </div>
+          <label htmlFor="email">Email</label>
+          <div className="login-input">
+            <Mail size={19} />
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="Enter your email"
+              value={formData.email}
+              onChange={handleChange}
+              autoComplete="email"
+              required
+            />
+          </div>
 
-                    <label htmlFor="password">Password</label>
+          <label htmlFor="password">Password</label>
+          <div className="login-input">
+            <LockKeyhole size={19} />
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="Enter your password"
+              value={formData.password}
+              onChange={handleChange}
+              autoComplete="new-password"
+              required
+            />
+          </div>
 
-                    <div className="login-input">
-                        <LockKeyhole size={19} />
+          <label htmlFor="confirmPassword">Confirm password</label>
+          <div className="login-input">
+            <LockKeyhole size={19} />
+            <input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              placeholder="Confirm your password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              autoComplete="new-password"
+              required
+            />
+          </div>
 
-                        <input
-                            id="password"
-                            name="password"
-                            type="password"
-                            placeholder="Enter your password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            autoComplete="current-password"
-                            required
-                        />
-                    </div>
+          {error && (
+            <p className="login-error" role="alert">
+              {error}
+            </p>
+          )}
 
-                    {error && (
-                        <p className="login-error" role="alert">
-                            {error}
-                        </p>
-                    )}
+          <button
+            className="login-button"
+            type="submit"
+            disabled={loading}
+          >
+            {loading ? "Creating account..." : "Register"}
+          </button>
+        </form>
+      </section>
+    </main>
+  );
+};
 
-                    <button
-                        className="login-button"
-                        type="submit"
-                        disabled={loading}
-                    >
-                        {loading ? "Logging in..." : "Log in"}
-                    </button>
-                </form>
-            </section>
-        </main>
-    );
-}
-
-export default LoginPage;
+export default RegisterPage;
