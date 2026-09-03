@@ -10,10 +10,10 @@ import {
   ScrollText,
 } from "lucide-react";
 import { Link } from "react-router";
+import useAuthStore from "../../stores/authStore.js";
 
 const OwnerDashboard = () => {
-  let user = {};
-  try { user = JSON.parse(localStorage.getItem("user") || "{}"); } catch { user = {}; }
+  const user = useAuthStore((state) => state.user) || {};
 
   const displayName = user.profile?.firstName || user.username || "Owner";
   const initials = displayName.slice(0, 2).toUpperCase();

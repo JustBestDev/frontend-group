@@ -9,9 +9,16 @@ import {
   UsersRound,
   X,
 } from "lucide-react";
-import api from "../../services/api";
+import { useNavigate } from "react-router";
+import {
+  login,
+  register,
+} from "../../services/authService.js";
+import useAuthStore from "../../stores/authStore.js";
 
 const AuthModal = ({ isOpen, onClose }) => {
+  const navigate = useNavigate();
+  const setAuth = useAuthStore((state) => state.setAuth);
   const [mode, setMode] = useState("login");
   const [accountPurpose, setAccountPurpose] =
     useState("CUSTOMER");
@@ -49,46 +56,22 @@ const AuthModal = ({ isOpen, onClose }) => {
     setSuccess("");
   };
 
-  const saveAuthentication = (response) => {
-    const token =
-      response.data.token ||
-      response.data.accessToken ||
-      response.data.data?.token ||
-      response.data.data?.accessToken;
-
-    const user =
-      response.data.user ||
-      response.data.data?.user ||
-      response.data.data?.userData;
-
-    if (!token || !user) {
-      throw new Error(
-        "Login succeeded, but authentication data was incomplete"
-      );
-    }
-
-    localStorage.setItem("token", token);
-    localStorage.setItem(
-      "user",
-      JSON.stringify(user)
-    );
-
-    return user;
-  };
-
   const handleLogin = async () => {
-    const response = await api.post("/auth/login", {
+    const authentication = await login({
       email: formData.email,
       password: formData.password,
     });
+    setAuth(authentication);
+    onClose();
 
-    const user = saveAuthentication(response);
-
-    if (user?.role === "ADMIN") {
-      window.location.href = "/admin";
-    } else {
-      window.location.href = "/properties";
-    }
+    navigate(
+      authentication.user.role === "ADMIN"
+        ? "/admin"
+        : authentication.user.role === "OWNER"
+          ? "/owner"
+          : "/properties",
+          { replace: true }
+    );
   };
 
   const handleRegister = async () => {
@@ -98,7 +81,7 @@ const AuthModal = ({ isOpen, onClose }) => {
       throw new Error("Passwords do not match");
     }
 
-    await api.post("/auth/register", {
+    await register({
       username: formData.username,
       email: formData.email,
       password: formData.password,
@@ -121,22 +104,18 @@ const AuthModal = ({ isOpen, onClose }) => {
       return;
     }
 
-    const loginResponse = await api.post(
-      "/auth/login",
-      {
-        email: formData.email,
-        password: formData.password,
-      }
-    );
-
-    saveAuthentication(loginResponse);
+    const authentication = await login({
+      email: formData.email,
+      password: formData.password,
+    });
+    setAuth(authentication);
 
     sessionStorage.setItem(
       "ownerApplicantType",
       applicantType
     );
 
-    window.location.href = "/owner-application";
+    navigate("/owner-application");
   };
 
   const handleSubmit = async (event) => {
