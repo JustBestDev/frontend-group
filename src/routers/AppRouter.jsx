@@ -18,6 +18,7 @@ import OwnerPlaceholder from "../pages/owner/OwnerPlaceholderPage.jsx";
 import RoomDetail from "../pages/properties/RoomDetail.jsx";
 import useAuthStore from "../stores/authStore.js";
 import CreateRoomDetail from "../pages/properties/CreateRoomDetail.jsx";
+import CommunityPage from "../pages/community/CommunityPage.jsx";
 
 const guestRouter = createBrowserRouter([
   {
@@ -96,6 +97,10 @@ const userRouter = createBrowserRouter([
       {
         path: "properties/:propertyId/roomId",
         Component: CreateRoomDetail,
+      },
+      {
+        path: "community-posts",
+        Component: CommunityPage,
       },
     ],
   },
