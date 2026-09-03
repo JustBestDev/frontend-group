@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate, RouterProvider, } from "react-router";
+import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
 import AdminLayout from "../layouts/AdminLayout.jsx";
 import HomeLayout from "../layouts/HomeLayout.jsx";
 import LoginPage from "../pages/LoginPage.jsx";
@@ -21,6 +21,7 @@ import OwnerRentalsPage from "../pages/owner/OwnerRentalsPage.jsx";
 import OwnerProfilePage from "../pages/owner/OwnerProfilePage.jsx";
 import RoomDetail from "../pages/properties/RoomDetail.jsx";
 import useAuthStore from "../stores/authStore.js";
+import CreateRoomDetail from "../pages/properties/CreateRoomDetail.jsx";
 
 const guestRouter = createBrowserRouter([
   {
@@ -60,10 +61,20 @@ const adminRouter = createBrowserRouter([
     path: "/admin",
     Component: AdminLayout,
     children: [
+<<<<<<< HEAD
+      { index: true, Component: AdminDashboard },
+      { path: "users", Component: UserManagement },
+      { path: "owner-applications", Component: OwnerApplications },
+      {
+        path: "owner-applications/:applicationId",
+        Component: OwnerApplicationDetail,
+      },
+=======
       { index: true, Component: AdminDashboard, },
       { path: "users", Component: UserManagement },
       { path: "owner-applications", Component: OwnerApplications },
       { path: "owner-applications/:applicationId", Component: OwnerApplicationDetail },
+>>>>>>> origin/dev
       { path: "properties", Component: PropertyApprovals },
       { path: "properties/:propertyId", Component: PropertyApprovalDetail },
       { path: "conversations", Component: ConversationList },
@@ -93,6 +104,10 @@ const userRouter = createBrowserRouter([
         path: "properties/:propertyId/:roomId",
         Component: RoomDetail,
       },
+      {
+        path: "properties/:propertyId/roomId",
+        Component: CreateRoomDetail,
+      },
     ],
   },
   { path: "*", element: <Navigate to="/properties" replace /> },
@@ -104,12 +119,21 @@ const ownerRouter = createBrowserRouter([
     Component: OwnerLayout,
     children: [
       { index: true, Component: OwnerDashboard },
+<<<<<<< HEAD
+      { path: "properties", Component: OwnerPlaceholder },
+      { path: "properties/new", Component: OwnerPlaceholder },
+      { path: "rooms", Component: OwnerPlaceholder },
+      { path: "rentals", Component: OwnerPlaceholder },
+      { path: "messages", Component: OwnerPlaceholder },
+      { path: "profile", Component: OwnerPlaceholder },
+=======
       { path: "properties", Component: OwnerPropertiesPage },
       { path: "properties/new", Component: OwnerPlaceholder },
       { path: "rooms", Component: OwnerRoomsPage },
       { path: "rentals", Component: OwnerRentalsPage },
       { path: "messages", Component: ConversationList },
       { path: "profile", Component: OwnerProfilePage },
+>>>>>>> origin/dev
     ],
   },
   { path: "*", element: <Navigate to="/owner" replace /> },
@@ -119,6 +143,16 @@ const AppRouter = () => {
   const token = useAuthStore((state) => state.token);
   const user = useAuthStore((state) => state.user);
 
+<<<<<<< HEAD
+  const finalRouter =
+    !token || !user
+      ? guestRouter
+      : user.role === "ADMIN"
+        ? adminRouter
+        : user.role === "OWNER"
+          ? ownerRouter
+          : userRouter;
+=======
   const finalRouter = !token || !user
     ? guestRouter
     : user.role === "ADMIN"
@@ -126,6 +160,7 @@ const AppRouter = () => {
       : user.role === "OWNER"
         ? ownerRouter
         : userRouter;
+>>>>>>> origin/dev
 
   return <RouterProvider router={finalRouter} />;
 };
