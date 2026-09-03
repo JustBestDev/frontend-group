@@ -1,3 +1,4 @@
+
 @import "./styles/base.css";
 @import "./styles/layouts/admin-layout.css";
 @import "./styles/layouts/owner-layout.css";
@@ -10,3 +11,4 @@
 @import "./styles/components/auth-modal.css";
 @import "./styles/pages/admin-detail.css";
 @import "./styles/components/reject-modal.css";
+@import "./styles/pages/room-detail.css"
