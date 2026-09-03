@@ -6,12 +6,13 @@ import OwnerApplicationModal from "./ownerApplication/OwnerApplicationModal.jsx"
 import useAuthStore from "../stores/authStore.js";
 import { getMyOwnerApplication } from "../services/ownerApplicationService.js";
 import UserAvatar from "./UserAvatar.jsx";
+import EditProfileModal from "./profile/EditProfileModal.jsx";
 
 const HeaderComponent = () => {
-  const [isAuthModalOpen, setIsAuthModalOpen] =
-    useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isOwnerApplicationModalOpen, setIsOwnerApplicationModalOpen] =
     useState(false);
+  const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
   const [ownerApplication, setOwnerApplication] = useState(null);
   const [applicationState, setApplicationState] = useState("idle");
   const navigate = useNavigate();
@@ -74,10 +75,7 @@ const HeaderComponent = () => {
           <span>RoomShare</span>
         </Link>
 
-        <nav
-          className="public-navigation"
-          aria-label="Main navigation"
-        >
+        <nav className="public-navigation" aria-label="Main navigation">
           <Link to="/properties">Rent</Link>
 
           {currentUser?.role === "ADMIN" && (
@@ -85,7 +83,10 @@ const HeaderComponent = () => {
           )}
 
           {currentUser?.role === "USER" && applicationState === "loading" && (
-            <span className="owner-application-header-placeholder" aria-label="Loading owner application status" />
+            <span
+              className="owner-application-header-placeholder"
+              aria-label="Loading owner application status"
+            />
           )}
 
           {currentUser?.role === "USER" && applicationState === "none" && (
@@ -98,22 +99,47 @@ const HeaderComponent = () => {
             </button>
           )}
 
-          {currentUser?.role === "USER" && applicationState === "ready" && ownerApplication?.status === "APPROVED" && (
-            <Link className="public-login-button" to="/owner">Owner Portal</Link>
-          )}
+          {currentUser?.role === "USER" &&
+            applicationState === "ready" &&
+            ownerApplication?.status === "APPROVED" && (
+              <Link className="public-login-button" to="/owner">
+                Owner Portal
+              </Link>
+            )}
 
-          {currentUser?.role === "USER" && applicationState === "ready" && ownerApplication?.status !== "APPROVED" && (
-            <button type="button" className={`owner-application-header-status status-${ownerApplication.status.toLowerCase().replaceAll("_", "-")}`} onClick={() => setIsOwnerApplicationModalOpen(true)}>
-              Owner application · {ownerApplication.status === "PENDING" ? "Under review" : ownerApplication.status === "NEED_MORE_DOCUMENTS" ? "Action required" : "Rejected"}
+          {currentUser?.role === "USER" &&
+            applicationState === "ready" &&
+            ownerApplication?.status !== "APPROVED" && (
+              <button
+                type="button"
+                className={`owner-application-header-status status-${ownerApplication.status.toLowerCase().replaceAll("_", "-")}`}
+                onClick={() => setIsOwnerApplicationModalOpen(true)}
+              >
+                Owner application ·{" "}
+                {ownerApplication.status === "PENDING"
+                  ? "Under review"
+                  : ownerApplication.status === "NEED_MORE_DOCUMENTS"
+                    ? "Action required"
+                    : "Rejected"}
+              </button>
+            )}
+
+          {currentUser?.role === "USER" && applicationState === "error" && (
+            <button
+              type="button"
+              className="owner-application-header-error"
+              onClick={loadOwnerApplication}
+            >
+              Application status unavailable · Retry
             </button>
           )}
 
-          {currentUser?.role === "USER" && applicationState === "error" && (
-            <button type="button" className="owner-application-header-error" onClick={loadOwnerApplication}>Application status unavailable · Retry</button>
-          )}
-
           {isAuthenticated ? (
-            <UserAvatar user={currentUser} onLogout={handleLogout} />
+            <UserAvatar
+              user={currentUser}
+              onLogout={handleLogout}
+              onEditProfile={() => setIsEditProfileModalOpen(true)}
+            />
           ) : (
             <button
               type="button"
@@ -136,6 +162,11 @@ const HeaderComponent = () => {
         onClose={() => setIsOwnerApplicationModalOpen(false)}
         application={ownerApplication}
         onSubmitted={loadOwnerApplication}
+      />
+
+      <EditProfileModal
+        isOpen={isEditProfileModalOpen}
+        onClose={() => setIsEditProfileModalOpen(false)}
       />
     </>
   );
