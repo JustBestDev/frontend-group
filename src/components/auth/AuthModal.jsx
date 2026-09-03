@@ -108,14 +108,13 @@ const AuthModal = ({ isOpen, onClose }) => {
       email: formData.email,
       password: formData.password,
     });
-    setAuth(authentication);
-
     sessionStorage.setItem(
-      "ownerApplicantType",
-      applicantType
+      "openOwnerApplicationModal",
+      "true"
     );
-
-    navigate("/owner-application");
+    setAuth(authentication);
+    onClose();
+    navigate("/properties", { replace: true });
   };
 
   const handleSubmit = async (event) => {
@@ -165,13 +164,16 @@ const AuthModal = ({ isOpen, onClose }) => {
     >
       <section
         className="auth-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="auth-modal-title"
         onMouseDown={(event) =>
           event.stopPropagation()
         }
       >
         <header className="auth-modal-header">
           <div>
-            <h2>Welcome to RoomShare</h2>
+            <h2 id="auth-modal-title">Welcome to RoomShare</h2>
 
             <p>
               Find a room or start listing your property.

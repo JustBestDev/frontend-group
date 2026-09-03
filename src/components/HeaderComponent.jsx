@@ -1,17 +1,38 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { Building2, LogOut } from "lucide-react";
 import AuthModal from "./auth/AuthModal.jsx";
+import OwnerApplicationModal from "./ownerApplication/OwnerApplicationModal.jsx";
 import useAuthStore from "../stores/authStore.js";
 
 const HeaderComponent = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] =
+    useState(false);
+  const [isOwnerApplicationModalOpen, setIsOwnerApplicationModalOpen] =
     useState(false);
   const navigate = useNavigate();
   const token = useAuthStore((state) => state.token);
   const currentUser = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const isAuthenticated = Boolean(token && currentUser);
+
+  useEffect(() => {
+    const shouldOpen =
+      sessionStorage.getItem("openOwnerApplicationModal") === "true";
+
+    if (
+      !isAuthenticated ||
+      currentUser?.role !== "USER" ||
+      !shouldOpen
+    ) {
+      return;
+    }
+
+    // The session flag is external state and must be consumed after auth updates.
+    // oxlint-disable-next-line react/set-state-in-effect
+    setIsOwnerApplicationModalOpen(true);
+    sessionStorage.removeItem("openOwnerApplicationModal");
+  }, [isAuthenticated, currentUser?.role]);
 
   const handleLogout = () => {
     logout();
@@ -39,6 +60,16 @@ const HeaderComponent = () => {
             <Link className="font-semibold text-ink transition hover:text-terracotta" to="/admin">Admin panel</Link>
           )}
 
+          {currentUser?.role === "USER" && (
+            <button
+              type="button"
+              className="public-login-button"
+              onClick={() => setIsOwnerApplicationModalOpen(true)}
+            >
+              List a property
+            </button>
+          )}
+
           {isAuthenticated ? (
             <button
               type="button"
@@ -63,6 +94,11 @@ const HeaderComponent = () => {
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
+      />
+
+      <OwnerApplicationModal
+        isOpen={isOwnerApplicationModalOpen}
+        onClose={() => setIsOwnerApplicationModalOpen(false)}
       />
     </>
   );

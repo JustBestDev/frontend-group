@@ -27,6 +27,7 @@
 @import "./styles/pages/owner-dashboard.css";
 @import "./styles/pages/owner-pages.css";
 @import "./styles/components/auth-modal.css";
+@import "./styles/components/owner-application-modal.css";
 @import "./styles/pages/admin-detail.css";
 @import "./styles/components/reject-modal.css";
 @import "./styles/pages/room-detail.css";
