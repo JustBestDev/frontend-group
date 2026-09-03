@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate, RouterProvider, } from "react-router";
+import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
 import AdminLayout from "../layouts/AdminLayout.jsx";
 import HomeLayout from "../layouts/HomeLayout.jsx";
 import LoginPage from "../pages/LoginPage.jsx";
@@ -21,6 +21,7 @@ import OwnerProfilePage from "../pages/owner/OwnerProfilePage.jsx";
 import OwnerCreatePropertyPage from "../pages/owner/OwnerCreatePropertyPage.jsx";
 import RoomDetail from "../pages/properties/RoomDetail.jsx";
 import useAuthStore from "../stores/authStore.js";
+import CreateRoomDetail from "../pages/properties/CreateRoomDetail.jsx";
 
 const guestRouter = createBrowserRouter([
   {
@@ -92,6 +93,10 @@ const userRouter = createBrowserRouter([
       {
         path: "properties/:propertyId/:roomId",
         Component: RoomDetail,
+      },
+      {
+        path: "properties/:propertyId/roomId",
+        Component: CreateRoomDetail,
       },
     ],
   },

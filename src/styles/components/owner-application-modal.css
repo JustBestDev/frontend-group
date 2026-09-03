@@ -98,6 +98,7 @@
 .owner-application-files strong { overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
 .owner-application-files small { margin-top: 2px; color: #929b91; font-size: 11px; }
 .owner-application-files button { color: #7f8b7e; }
+.owner-application-files a { display: grid; place-items: center; padding: 6px; color: #607560; border-radius: 8px; }
 .owner-application-error { margin: 0; padding: 11px 13px; color: #ad4e49; border-radius: 9px; background: #ffebe8; font-size: 13px; }
 .owner-application-actions { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; margin-top: 4px; }
 .owner-application-actions button,
@@ -112,9 +113,43 @@
 .owner-application-success p { margin: 0 0 8px; color: #748073; }
 .owner-application-success button { width: 100%; }
 
+.owner-application-status-details { display: grid; gap: 18px; }
+.owner-application-status-card { padding: 17px; color: #66551f; border: 1px solid #e7d68e; border-radius: 14px; background: #fff9df; }
+.owner-application-status-card > span { display: block; margin-bottom: 5px; font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+.owner-application-status-card > strong { font-size: 20px; }
+.owner-application-status-card p { margin: 7px 0 0; font-size: 13px; line-height: 1.5; }
+.owner-application-status-card.status-need-more-documents { color: #7a3f15; border-color: #e5aa72; background: #fff0df; }
+.owner-application-status-card.status-rejected { color: #8b3833; border-color: #e5aaa5; background: #fff0ee; }
+.owner-application-status-card.status-approved { color: #416044; border-color: #b7cfb8; background: #edf6ed; }
+.owner-application-admin-message { padding: 14px; color: #7d3d37; border-left: 4px solid #c66b61; border-radius: 8px; background: #fff1ef; }
+.owner-application-admin-message p { margin: 5px 0 0; font-size: 13px; line-height: 1.5; }
+.owner-application-metadata { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0; }
+.owner-application-metadata div { padding: 13px; border: 1px solid #e0e5de; border-radius: 11px; background: #fafbf9; }
+.owner-application-metadata dt { color: #849083; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+.owner-application-metadata dd { margin: 5px 0 0; color: #4d5c4d; font-size: 13px; }
+.owner-application-document-section h3 { margin: 0 0 10px; color: #4d5c4d; font-size: 14px; }
+.owner-application-empty, .owner-application-unavailable { margin: 0; color: #7f8b7e; font-size: 13px; }
+.owner-application-unavailable { padding: 12px; border-radius: 9px; background: #f3f5f1; }
+.owner-application-resubmit { display: grid; gap: 12px; padding-top: 4px; border-top: 1px solid #e1e6df; }
+.owner-application-resubmit > p { margin: 10px 0 0; color: #6f7c6e; font-size: 13px; line-height: 1.5; }
+.owner-application-resubmit .owner-application-submit { padding: 13px; border-radius: 11px; cursor: pointer; font: inherit; font-weight: 800; }
+.owner-application-resubmit .owner-application-submit:disabled { cursor: not-allowed; opacity: 0.6; }
+.owner-application-success-message { margin: 0; padding: 12px; color: #416044; border-radius: 9px; background: #edf6ed; font-size: 13px; }
+.owner-application-done { width: 100%; padding: 13px; color: white; border: 0; border-radius: 11px; background: #718873; cursor: pointer; font: inherit; font-weight: 800; }
+
+.owner-application-header-status,
+.owner-application-header-error { padding: 10px 15px; border-radius: 999px; cursor: pointer; font: inherit; font-size: 13px; font-weight: 800; }
+.owner-application-header-status { color: #6b581d; border: 1px solid #ddc96f; background: #fff8d8; }
+.owner-application-header-status.status-need-more-documents { color: #874315; border-color: #d88f50; background: #ffead3; }
+.owner-application-header-status.status-rejected { color: #8b3f39; border-color: #d9a09b; background: #fff0ee; }
+.owner-application-header-error { color: #7b504d; border: 1px solid #d6b5b1; background: white; }
+.owner-application-header-placeholder { width: 185px; height: 38px; border-radius: 999px; background: #e8ece6; animation: owner-application-pulse 1.2s ease-in-out infinite alternate; }
+@keyframes owner-application-pulse { to { opacity: 0.45; } }
+
 @media (max-width: 650px) {
   .owner-application-overlay { align-items: end; padding: 0; }
   .owner-application-modal { width: 100%; max-height: 92vh; border-radius: 22px 22px 0 0; }
   .owner-application-header,
   .owner-application-content { padding-left: 21px; padding-right: 21px; }
+  .owner-application-metadata { grid-template-columns: 1fr; }
 }
