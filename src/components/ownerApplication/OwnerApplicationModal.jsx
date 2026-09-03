@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ExternalLink, FileText, Upload, X } from "lucide-react";
-import { submitOwnerApplication } from "../../services/ownerApplicationService.js";
+import { resubmitOwnerApplication, submitOwnerApplication } from "../../services/ownerApplicationService.js";
 import { updateMyProfile } from "../../services/profileService.js";
 
 const MAX_FILES = 5;
@@ -27,16 +27,25 @@ const OwnerApplicationModal = ({ isOpen, onClose, application, onSubmitted }) =>
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [success, setSuccess] = useState("");
+  const isAppending = application?.status === "NEED_MORE_DOCUMENTS";
+  const maximumNewFiles = isAppending
+    ? Math.max(0, MAX_FILES - (application.documents?.length || 0))
+    : MAX_FILES;
 
   if (!isOpen) return null;
   const closeModal = () => {
     if (isSubmitting) return;
-    setPhone(""); setFiles([]); setError(""); setIsSubmitted(false); onClose();
+    setPhone(""); setFiles([]); setError(""); setSuccess(""); setIsSubmitted(false); onClose();
   };
   const handleFiles = (event) => {
     const selected = Array.from(event.target.files || []);
     event.target.value = ""; setError("");
-    if (files.length + selected.length > MAX_FILES) return setError("You can upload up to 5 documents.");
+    if (files.length + selected.length > maximumNewFiles) {
+      return setError(isAppending
+        ? `You can add ${maximumNewFiles} more document${maximumNewFiles === 1 ? "" : "s"}; an application can have at most 5.`
+        : "You can upload up to 5 documents.");
+    }
     const invalid = selected.find((file) => !ALLOWED_TYPES.includes(file.type));
     if (invalid) return setError(`${invalid.name} is not a JPEG, PNG, WebP, or PDF file.`);
     const oversized = selected.find((file) => file.size > MAX_FILE_SIZE);
@@ -59,6 +68,20 @@ const OwnerApplicationModal = ({ isOpen, onClose, application, onSubmitted }) =>
       setError(requestError.response?.status === 409 ? "You already have an owner application." : getBackendMessage(requestError) || "Unable to submit your application. Please try again.");
     } finally { setIsSubmitting(false); }
   };
+  const handleResubmit = async (event) => {
+    event.preventDefault();
+    if (isSubmitting) return;
+    if (!files.length) return setError(isAppending ? "Please select at least one additional document." : "Please select at least one replacement document.");
+    setIsSubmitting(true); setError(""); setSuccess("");
+    try {
+      await resubmitOwnerApplication(files);
+      setFiles([]);
+      setSuccess("Documents submitted successfully. Your application is now under review.");
+      await onSubmitted?.();
+    } catch (requestError) {
+      setError(getBackendMessage(requestError) || "Unable to resubmit your documents. Please try again.");
+    } finally { setIsSubmitting(false); }
+  };
   const statusContent = application && (STATUS_CONTENT[application.status] || { label: application.status, description: "This application has an unknown status." });
 
   return <div className="owner-application-overlay" onMouseDown={closeModal}>
@@ -67,10 +90,19 @@ const OwnerApplicationModal = ({ isOpen, onClose, application, onSubmitted }) =>
       <div className="owner-application-content">
         {application ? <div className="owner-application-status-details">
           <div className={`owner-application-status-card status-${application.status.toLowerCase().replaceAll("_", "-")}`}><span>Current status</span><strong>{statusContent.label}</strong><p>{statusContent.description}</p></div>
-          {(application.rejectReason || application.adminMessage) && <div className="owner-application-admin-message"><strong>{application.status === "REJECTED" ? "Reason for rejection" : "Message from the review team"}</strong><p>{application.rejectReason || application.adminMessage}</p></div>}
+          {(application.rejectReason || application.adminMessage) && <div className="owner-application-admin-message"><strong>Admin message</strong><p>{application.rejectReason || application.adminMessage}</p></div>}
           <dl className="owner-application-metadata"><div><dt>Submitted</dt><dd>{formatDate(application.createdAt)}</dd></div><div><dt>Phone number</dt><dd>{application.phone || "Not available"}</dd></div></dl>
-          <section className="owner-application-document-section"><h3>Submitted documents</h3>{application.documents?.length ? <ul className="owner-application-files">{application.documents.map((document, index) => <li key={document.id}><FileText size={19} aria-hidden="true" /><span><strong>Document {index + 1}</strong><small>Submitted {formatDate(document.createdAt)}</small></span>{document.signedUrl && <a href={document.signedUrl} target="_blank" rel="noreferrer" aria-label={`View document ${index + 1}`}><ExternalLink size={17} /></a>}</li>)}</ul> : <p className="owner-application-empty">No documents are available.</p>}</section>
-          {["NEED_MORE_DOCUMENTS", "REJECTED"].includes(application.status) && <p className="owner-application-unavailable">Document updates and resubmission are not available yet.</p>}
+          <section className="owner-application-document-section"><h3>{["NEED_MORE_DOCUMENTS", "REJECTED"].includes(application.status) ? "Previously submitted documents" : "Submitted documents"}</h3>{application.documents?.length ? <ul className="owner-application-files">{application.documents.map((document, index) => <li key={document.id}><FileText size={19} aria-hidden="true" /><span><strong>Document {index + 1}</strong><small>Submitted {formatDate(document.createdAt)}</small></span>{document.signedUrl && <a href={document.signedUrl} target="_blank" rel="noreferrer" aria-label={`View document ${index + 1}`}><ExternalLink size={17} /></a>}</li>)}</ul> : <p className="owner-application-empty">No documents are available.</p>}</section>
+          {["NEED_MORE_DOCUMENTS", "REJECTED"].includes(application.status) && <form className="owner-application-resubmit" onSubmit={handleResubmit} noValidate>
+            <p>{isAppending ? `Add only the documents requested by the review team. Your ${application.documents?.length || 0} previous document${application.documents?.length === 1 ? "" : "s"} will be kept.` : "Select the complete corrected document set. A successful resubmission will replace all previously submitted documents."}</p>
+            <label className="owner-application-upload" htmlFor="owner-resubmit-documents"><Upload size={28} /><strong>{isAppending ? "Select additional documents" : "Select replacement documents"}</strong><span>JPEG, PNG, WebP, or PDF · Up to {maximumNewFiles} file{maximumNewFiles === 1 ? "" : "s"} · 5 MB each</span></label>
+            <input id="owner-resubmit-documents" className="owner-application-file-input" type="file" multiple accept={ALLOWED_TYPES.join(",")} onChange={handleFiles} disabled={isSubmitting || maximumNewFiles === 0} />
+            {maximumNewFiles === 0 && <p className="owner-application-error">This application already has the maximum of 5 documents. Contact support if another file was requested.</p>}
+            {!!files.length && <ul className="owner-application-files" aria-label={isAppending ? "New additional documents" : "New replacement documents"}>{files.map((file, index) => <li key={`${file.name}-${file.lastModified}-${index}`}><FileText size={19} /><span><strong>{file.name}</strong><small>{formatFileSize(file.size)}</small></span><button type="button" onClick={() => setFiles((current) => current.filter((_, fileIndex) => fileIndex !== index))} disabled={isSubmitting} aria-label={`Remove ${file.name}`}><X size={17} /></button></li>)}</ul>}
+            {error && <p className="owner-application-error" role="alert">{error}</p>}
+            <button type="submit" className="owner-application-submit" disabled={isSubmitting || !files.length}>{isSubmitting ? "Uploading..." : isAppending ? "Submit additional documents" : "Resubmit application"}</button>
+          </form>}
+          {success && <p className="owner-application-success-message" role="status">{success}</p>}
           <button type="button" className="owner-application-done" onClick={closeModal}>Done</button>
         </div> : isSubmitted ? <div className="owner-application-success" role="status"><div><FileText size={30} /></div><h3>Application submitted</h3><p>Your application was sent successfully and is waiting for review.</p><button type="button" onClick={closeModal}>Done</button></div> :
           <form onSubmit={handleSubmit} noValidate>

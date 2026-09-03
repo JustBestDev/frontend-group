@@ -130,6 +130,11 @@
 .owner-application-document-section h3 { margin: 0 0 10px; color: #4d5c4d; font-size: 14px; }
 .owner-application-empty, .owner-application-unavailable { margin: 0; color: #7f8b7e; font-size: 13px; }
 .owner-application-unavailable { padding: 12px; border-radius: 9px; background: #f3f5f1; }
+.owner-application-resubmit { display: grid; gap: 12px; padding-top: 4px; border-top: 1px solid #e1e6df; }
+.owner-application-resubmit > p { margin: 10px 0 0; color: #6f7c6e; font-size: 13px; line-height: 1.5; }
+.owner-application-resubmit .owner-application-submit { padding: 13px; border-radius: 11px; cursor: pointer; font: inherit; font-weight: 800; }
+.owner-application-resubmit .owner-application-submit:disabled { cursor: not-allowed; opacity: 0.6; }
+.owner-application-success-message { margin: 0; padding: 12px; color: #416044; border-radius: 9px; background: #edf6ed; font-size: 13px; }
 .owner-application-done { width: 100%; padding: 13px; color: white; border: 0; border-radius: 11px; background: #718873; cursor: pointer; font: inherit; font-weight: 800; }
 
 .owner-application-header-status,

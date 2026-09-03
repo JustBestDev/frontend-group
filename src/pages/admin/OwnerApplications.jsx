@@ -3,6 +3,7 @@ import {
   Check,
   Eye,
   RefreshCw,
+  FileWarning,
   X,
 } from "lucide-react";
 import { useNavigate } from "react-router";
@@ -18,6 +19,7 @@ const OwnerApplications = () => {
   const [updatingId, setUpdatingId] =
     useState(null);
   const [rejectingId, setRejectingId] = useState(null);
+  const [requestingDocumentsId, setRequestingDocumentsId] = useState(null);
 
   const fetchApplications = async () => {
     setLoading(true);
@@ -58,10 +60,9 @@ const OwnerApplications = () => {
     status,
     rejectReason
   ) => {
-    const action =
-      status === "APPROVED" ? "approve" : "reject";
+    const action = status === "APPROVED" ? "approve" : "update";
     const confirmed =
-      status === "REJECTED" ||
+      ["REJECTED", "NEED_MORE_DOCUMENTS"].includes(status) ||
       window.confirm(
         `Are you sure you want to ${action} this application?`
       );
@@ -74,13 +75,12 @@ const OwnerApplications = () => {
     try {
       await api.patch(
         `/admin/owner-applications/${applicationId}`,
-        status === "REJECTED"
+        ["REJECTED", "NEED_MORE_DOCUMENTS"].includes(status)
           ? { status, rejectReason }
           : { status }
       );
-      if (status === "REJECTED") {
-        setRejectingId(null);
-      }
+      if (status === "REJECTED") setRejectingId(null);
+      if (status === "NEED_MORE_DOCUMENTS") setRequestingDocumentsId(null);
 
       setApplications((currentApplications) =>
         currentApplications.map((application) => {
@@ -165,7 +165,7 @@ const OwnerApplications = () => {
                 <tr>
                   <th>Applicant</th>
                   <th>Email</th>
-                  <th>Reason</th>
+                  <th>Admin message</th>
                   <th>Status</th>
                   <th>Submitted</th>
                   <th>Actions</th>
@@ -208,14 +208,15 @@ const OwnerApplications = () => {
                       </td>
 
                       <td className="reason-cell">
-                        {application.reason ||
+                        {application.rejectReason ||
+                          application.reason ||
                           application.message ||
                           "—"}
                       </td>
 
                       <td>
                         <span
-                          className={`status-badge status-${status.toLowerCase()}`}
+                          className={`status-badge status-${status.toLowerCase().replaceAll("_", "-")}`}
                         >
                           {status}
                         </span>
@@ -246,6 +247,19 @@ const OwnerApplications = () => {
 
                           {status === "PENDING" && (
                             <>
+                              <button
+                                type="button"
+                                className="action-button view-button"
+                                disabled={updatingId === applicationId}
+                                onClick={() => {
+                                  setError("");
+                                  setRequestingDocumentsId(applicationId);
+                                }}
+                              >
+                                <FileWarning size={16} />
+                                Request documents
+                              </button>
+
                               <button
                                 type="button"
                                 className="action-button approve-button"
@@ -310,6 +324,27 @@ const OwnerApplications = () => {
               rejectReason
             )
           }
+        />
+      )}
+
+      {requestingDocumentsId !== null && (
+        <RejectReasonModal
+          entityLabel="owner application"
+          title="Request more documents"
+          description="Explain which corrected or additional documents the applicant must provide."
+          fieldLabel="Admin message"
+          placeholder="Describe the documents required"
+          submitLabel="Request documents"
+          submittingLabel="Requesting..."
+          isSubmitting={updatingId === requestingDocumentsId}
+          error={error}
+          onCancel={() => {
+            if (updatingId !== requestingDocumentsId) {
+              setRequestingDocumentsId(null);
+              setError("");
+            }
+          }}
+          onReject={(message) => updateApplication(requestingDocumentsId, "NEED_MORE_DOCUMENTS", message)}
         />
       )}
     </section>
