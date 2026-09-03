@@ -14,11 +14,11 @@ import AdminDashboard from "../pages/admin/AdminDashboard.jsx";
 import HomePage from "../pages/HomePage.jsx";
 import OwnerLayout from "../layouts/OwnerLayout.jsx";
 import OwnerDashboard from "../pages/owner/OwnerDashboardPage.jsx";
-import OwnerPlaceholder from "../pages/owner/OwnerPlaceholderPage.jsx";
 import OwnerPropertiesPage from "../pages/owner/OwnerPropertiesPage.jsx";
 import OwnerRoomsPage from "../pages/owner/OwnerRoomsPage.jsx";
 import OwnerRentalsPage from "../pages/owner/OwnerRentalsPage.jsx";
 import OwnerProfilePage from "../pages/owner/OwnerProfilePage.jsx";
+import OwnerCreatePropertyPage from "../pages/owner/OwnerCreatePropertyPage.jsx";
 import RoomDetail from "../pages/properties/RoomDetail.jsx";
 import useAuthStore from "../stores/authStore.js";
 import CreateRoomDetail from "../pages/properties/CreateRoomDetail.jsx";
@@ -110,7 +110,7 @@ const ownerRouter = createBrowserRouter([
     children: [
       { index: true, Component: OwnerDashboard },
       { path: "properties", Component: OwnerPropertiesPage },
-      { path: "properties/new", Component: OwnerPlaceholder },
+      { path: "properties/new", Component: OwnerCreatePropertyPage },
       { path: "rooms", Component: OwnerRoomsPage },
       { path: "rentals", Component: OwnerRentalsPage },
       { path: "messages", Component: ConversationList },
