@@ -1,0 +1,120 @@
+.owner-application-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  overflow-y: auto;
+  background: rgba(25, 31, 27, 0.67);
+  backdrop-filter: blur(3px);
+}
+
+.owner-application-modal {
+  width: min(560px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  border-radius: 22px;
+  background: white;
+  box-shadow: 0 30px 90px rgba(19, 25, 20, 0.35);
+}
+
+.owner-application-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 23px 27px;
+  color: white;
+  background: #354838;
+}
+
+.owner-application-header h2 { margin: 0 0 5px; font-family: Georgia, serif; font-size: 24px; }
+.owner-application-header p { margin: 0; color: #dce6dc; font-size: 13px; }
+.owner-application-header button,
+.owner-application-files button { display: grid; place-items: center; padding: 6px; border: 0; border-radius: 8px; background: transparent; cursor: pointer; }
+.owner-application-header button { color: white; }
+.owner-application-header button:disabled,
+.owner-application-files button:disabled { cursor: not-allowed; opacity: 0.55; }
+.owner-application-content { padding: 27px; }
+.owner-application-content form { display: grid; gap: 14px; }
+
+.owner-application-phone-field {
+  display: grid;
+  gap: 7px;
+}
+
+.owner-application-phone-field label {
+  color: #637263;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.owner-application-phone-field input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px 14px;
+  color: #465446;
+  border: 1px solid #d8dfd6;
+  border-radius: 12px;
+  outline: 0;
+  background: #fbfcfa;
+  font: inherit;
+}
+
+.owner-application-phone-field input:focus {
+  border-color: #829583;
+  box-shadow: 0 0 0 4px rgba(130, 149, 131, 0.13);
+}
+
+.owner-application-phone-field input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.owner-application-upload {
+  display: grid;
+  place-items: center;
+  gap: 7px;
+  padding: 28px 18px;
+  color: #657765;
+  border: 2px dashed #bdc9ba;
+  border-radius: 14px;
+  background: #f8faf6;
+  cursor: pointer;
+  text-align: center;
+}
+
+.owner-application-upload:hover { border-color: #718873; background: #f1f5ef; }
+.owner-application-upload span,
+.owner-application-help { color: #8a9588; font-size: 12px; }
+.owner-application-file-input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+.owner-application-help { margin: -5px 0 0; }
+.owner-application-files { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.owner-application-files li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; color: #637263; border: 1px solid #d8dfd6; border-radius: 10px; }
+.owner-application-files li > span { min-width: 0; flex: 1; }
+.owner-application-files strong,
+.owner-application-files small { display: block; }
+.owner-application-files strong { overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.owner-application-files small { margin-top: 2px; color: #929b91; font-size: 11px; }
+.owner-application-files button { color: #7f8b7e; }
+.owner-application-error { margin: 0; padding: 11px 13px; color: #ad4e49; border-radius: 9px; background: #ffebe8; font-size: 13px; }
+.owner-application-actions { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; margin-top: 4px; }
+.owner-application-actions button,
+.owner-application-success button { padding: 13px; border-radius: 11px; cursor: pointer; font: inherit; font-weight: 800; }
+.owner-application-skip { color: #637263; border: 1px solid #d5ddd3; background: white; }
+.owner-application-submit,
+.owner-application-success button { color: white; border: 0; background: #718873; }
+.owner-application-actions button:disabled { cursor: not-allowed; opacity: 0.6; }
+.owner-application-success { display: grid; justify-items: center; gap: 10px; text-align: center; }
+.owner-application-success > div { display: grid; place-items: center; width: 58px; height: 58px; color: #718572; border-radius: 17px; background: #edf2eb; }
+.owner-application-success h3 { margin: 5px 0 0; color: #465446; }
+.owner-application-success p { margin: 0 0 8px; color: #748073; }
+.owner-application-success button { width: 100%; }
+
+@media (max-width: 650px) {
+  .owner-application-overlay { align-items: end; padding: 0; }
+  .owner-application-modal { width: 100%; max-height: 92vh; border-radius: 22px 22px 0 0; }
+  .owner-application-header,
+  .owner-application-content { padding-left: 21px; padding-right: 21px; }
+}

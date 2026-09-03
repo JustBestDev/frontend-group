@@ -9,6 +9,7 @@
 @import "./styles/pages/home.css";
 @import "./styles/pages/owner-dashboard.css";
 @import "./styles/components/auth-modal.css";
+@import "./styles/components/owner-application-modal.css";
 @import "./styles/pages/admin-detail.css";
 @import "./styles/components/reject-modal.css";
 @import "./styles/pages/room-detail.css"
