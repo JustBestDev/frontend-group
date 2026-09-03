@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from "react-router";
+import { NavLink, Outlet, useNavigate } from "react-router";
 import {
   Building2,
   FileCheck2,
@@ -8,13 +8,15 @@ import {
   ShieldCheck,
   UsersRound,
 } from "lucide-react";
+import useAuthStore from "../stores/authStore.js";
 
 const AdminLayout = () => {
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  const navigate = useNavigate();
+  const logout = useAuthStore((state) => state.logout);
 
-    window.location.href = "/";
+  const handleLogout = () => {
+    logout();
+    navigate("/properties");
   };
 
   const menuItems = [

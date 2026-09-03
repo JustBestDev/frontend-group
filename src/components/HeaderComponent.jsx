@@ -1,33 +1,21 @@
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { Building2, LogOut } from "lucide-react";
 import AuthModal from "./auth/AuthModal.jsx";
-
-const getStoredUser = () => {
-  const storedUser = localStorage.getItem("user");
-
-  if (!storedUser) return null;
-
-  try {
-    return JSON.parse(storedUser);
-  } catch {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    return null;
-  }
-};
+import useAuthStore from "../stores/authStore.js";
 
 const HeaderComponent = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] =
     useState(false);
-  const token = localStorage.getItem("token");
-  const currentUser = getStoredUser();
+  const navigate = useNavigate();
+  const token = useAuthStore((state) => state.token);
+  const currentUser = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
   const isAuthenticated = Boolean(token && currentUser);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    window.location.href = "/properties";
+    logout();
+    navigate("/properties");
   };
 
   return (

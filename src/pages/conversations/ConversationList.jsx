@@ -6,6 +6,7 @@ import {
   Send,
 } from "lucide-react";
 import api from "../../services/api";
+import useAuthStore from "../../stores/authStore.js";
 
 const ConversationList = () => {
   const [conversations, setConversations] = useState([]);
@@ -18,10 +19,7 @@ const ConversationList = () => {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
 
-  const storedUser = localStorage.getItem("user");
-  const currentUser = storedUser
-    ? JSON.parse(storedUser)
-    : null;
+  const currentUser = useAuthStore((state) => state.user);
 
   const fetchConversations = async () => {
     setLoading(true);

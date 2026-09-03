@@ -4,9 +4,13 @@ import {
   Mail,
   ShieldCheck,
 } from "lucide-react";
-import api from "../services/api";
+import { useNavigate } from "react-router";
+import { login } from "../services/authService.js";
+import useAuthStore from "../stores/authStore.js";
 
 const LoginPage = () => {
+  const navigate = useNavigate();
+  const setAuth = useAuthStore((state) => state.setAuth);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -33,35 +37,16 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      const response = await api.post(
-        "/auth/login",
-        formData
-      );
+      const authentication = await login(formData);
+      setAuth(authentication);
 
-      const token =
-        response.data.token ||
-        response.data.accessToken ||
-        response.data.data?.token ||
-        response.data.data?.accessToken;
-
-      const user =
-        response.data.user ||
-        response.data.data?.user ||
-        response.data.data?.userData;
-
-      if (!token || !user) {
-        throw new Error(
-          "Login succeeded, but authentication data was incomplete"
-        );
-      }
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-
-      window.location.href =
-        user?.role === "ADMIN"
+      navigate(
+        authentication.user.role === "ADMIN"
           ? "/admin"
-          : "/properties";
+          : authentication.user.role === "OWNER"
+            ? "/owner"
+            : "/properties"
+      );
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||

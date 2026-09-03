@@ -16,6 +16,7 @@ import OwnerLayout from "../layouts/OwnerLayout.jsx";
 import OwnerDashboard from "../pages/owner/OwnerDashboardPage.jsx";
 import OwnerPlaceholder from "../pages/owner/OwnerPlaceholderPage.jsx";
 import RoomDetail from "../pages/properties/RoomDetail.jsx";
+import useAuthStore from "../stores/authStore.js";
 
 const guestRouter = createBrowserRouter([
   {
@@ -125,41 +126,11 @@ const ownerRouter = createBrowserRouter([
     { path: "*", element: <Navigate to="/owner" replace /> },
 ]);
 
-const clearStoredAuthentication = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-};
-
-const getStoredAuthentication = () => {
-    const token = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
-
-    if (!token || !storedUser) {
-        if (token || storedUser) {
-            clearStoredAuthentication();
-        }
-
-        return { token: null, user: null };
-    }
-
-    try {
-        const user = JSON.parse(storedUser);
-
-        if (!user || typeof user !== "object") {
-            throw new Error("Invalid stored user");
-        }
-
-        return { token, user };
-    } catch {
-        clearStoredAuthentication();
-        return { token: null, user: null };
-    }
-};
-
 const AppRouter = () => {
-    const { token, user } = getStoredAuthentication();
+    const token = useAuthStore((state) => state.token);
+    const user = useAuthStore((state) => state.user);
 
-    const finalRouter = !token
+    const finalRouter = !token || !user
         ? guestRouter
         : user.role === "ADMIN"
             ? adminRouter
