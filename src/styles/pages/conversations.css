@@ -1,4 +1,4 @@
-.conversation-container {
+﻿.conversation-container {
   height: calc(100vh - 190px);
   min-height: 570px;
   display: grid;
