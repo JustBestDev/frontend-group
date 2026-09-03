@@ -15,6 +15,10 @@ import HomePage from "../pages/HomePage.jsx";
 import OwnerLayout from "../layouts/OwnerLayout.jsx";
 import OwnerDashboard from "../pages/owner/OwnerDashboardPage.jsx";
 import OwnerPlaceholder from "../pages/owner/OwnerPlaceholderPage.jsx";
+import OwnerPropertiesPage from "../pages/owner/OwnerPropertiesPage.jsx";
+import OwnerRoomsPage from "../pages/owner/OwnerRoomsPage.jsx";
+import OwnerRentalsPage from "../pages/owner/OwnerRentalsPage.jsx";
+import OwnerProfilePage from "../pages/owner/OwnerProfilePage.jsx";
 import RoomDetail from "../pages/properties/RoomDetail.jsx";
 import useAuthStore from "../stores/authStore.js";
 
@@ -52,20 +56,20 @@ const guestRouter = createBrowserRouter([
 ]);
 
 const adminRouter = createBrowserRouter([
-    {
-        path: "/admin",
-        Component: AdminLayout,
-        children: [
-            { index: true, Component: AdminDashboard, },
-            { path: "users", Component: UserManagement },
-            { path: "owner-applications", Component: OwnerApplications },
-            { path: "owner-applications/:applicationId", Component: OwnerApplicationDetail },
-            { path: "properties", Component: PropertyApprovals },
-            { path: "properties/:propertyId", Component: PropertyApprovalDetail },
-            { path: "conversations", Component: ConversationList },
-        ],
-    },
-    { path: "*", element: <Navigate to="/admin" replace /> },
+  {
+    path: "/admin",
+    Component: AdminLayout,
+    children: [
+      { index: true, Component: AdminDashboard, },
+      { path: "users", Component: UserManagement },
+      { path: "owner-applications", Component: OwnerApplications },
+      { path: "owner-applications/:applicationId", Component: OwnerApplicationDetail },
+      { path: "properties", Component: PropertyApprovals },
+      { path: "properties/:propertyId", Component: PropertyApprovalDetail },
+      { path: "conversations", Component: ConversationList },
+    ],
+  },
+  { path: "*", element: <Navigate to="/admin" replace /> },
 ]);
 
 const userRouter = createBrowserRouter([
@@ -91,54 +95,39 @@ const userRouter = createBrowserRouter([
       },
     ],
   },
-  {
-    path: "/login",
-    element: <Navigate to="/properties" replace />,
-  },
-  {
-    path: "/register",
-    element: <Navigate to="/properties" replace />,
-  },
-  {
-    path: "/admin/*",
-    element: <Navigate to="/properties" replace />,
-  },
-  {
-    path: "*",
-    element: <Navigate to="/properties" replace />,
-  },
+  { path: "*", element: <Navigate to="/properties" replace /> },
 ]);
 
 const ownerRouter = createBrowserRouter([
-    {
-        path: "/owner",
-        Component: OwnerLayout,
-        children: [
-            { index: true, Component: OwnerDashboard },
-            { path: "properties", Component: OwnerPlaceholder },
-            { path: "properties/new", Component: OwnerPlaceholder },
-            { path: "rooms", Component: OwnerPlaceholder },
-            { path: "rentals", Component: OwnerPlaceholder },
-            { path: "messages", Component: OwnerPlaceholder },
-            { path: "profile", Component: OwnerPlaceholder },
-        ],
-    },
-    { path: "*", element: <Navigate to="/owner" replace /> },
+  {
+    path: "/owner",
+    Component: OwnerLayout,
+    children: [
+      { index: true, Component: OwnerDashboard },
+      { path: "properties", Component: OwnerPropertiesPage },
+      { path: "properties/new", Component: OwnerPlaceholder },
+      { path: "rooms", Component: OwnerRoomsPage },
+      { path: "rentals", Component: OwnerRentalsPage },
+      { path: "messages", Component: ConversationList },
+      { path: "profile", Component: OwnerProfilePage },
+    ],
+  },
+  { path: "*", element: <Navigate to="/owner" replace /> },
 ]);
 
 const AppRouter = () => {
-    const token = useAuthStore((state) => state.token);
-    const user = useAuthStore((state) => state.user);
+  const token = useAuthStore((state) => state.token);
+  const user = useAuthStore((state) => state.user);
 
-    const finalRouter = !token || !user
-        ? guestRouter
-        : user.role === "ADMIN"
-            ? adminRouter
-            : user.role === "OWNER"
-                ? ownerRouter
-                : userRouter;
+  const finalRouter = !token || !user
+    ? guestRouter
+    : user.role === "ADMIN"
+      ? adminRouter
+      : user.role === "OWNER"
+        ? ownerRouter
+        : userRouter;
 
-    return <RouterProvider router={finalRouter} />;
+  return <RouterProvider router={finalRouter} />;
 };
 
 export default AppRouter;

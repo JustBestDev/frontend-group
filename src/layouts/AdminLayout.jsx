@@ -49,20 +49,20 @@ const AdminLayout = () => {
   ];
 
   return (
-    <div className="admin-shell">
-      <aside className="admin-sidebar">
-        <div className="admin-brand">
-          <div className="admin-brand-icon">
+    <div className="min-h-screen bg-[#f4f7f4] md:flex">
+      <aside className="z-10 flex w-full flex-col bg-[#263d50] p-4 text-white md:fixed md:inset-y-0 md:left-0 md:w-[260px] md:p-6">
+        <div className="flex items-center gap-3 border-b border-white/15 pb-5">
+          <div className="grid size-11 place-items-center rounded-xl bg-white text-[#263d50]">
             <ShieldCheck size={25} />
           </div>
 
           <div>
-            <h1>RoomShare</h1>
-            <span>Admin panel</span>
+            <h1 className="font-serif text-xl font-bold">RoomShare</h1>
+            <span className="text-[10px] uppercase tracking-[.15em] text-white/60">Admin panel</span>
           </div>
         </div>
 
-        <nav className="admin-navigation">
+        <nav className="grid flex-1 gap-2 pt-6">
           {menuItems.map((item) => {
             const Icon = item.icon;
 
@@ -73,8 +73,8 @@ const AdminLayout = () => {
                 end={item.end}
                 className={({ isActive }) =>
                   isActive
-                    ? "admin-nav-link active"
-                    : "admin-nav-link"
+                    ? "flex items-center gap-3 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-[#263d50]"
+                    : "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"
                 }
               >
                 <Icon size={20} />
@@ -86,7 +86,7 @@ const AdminLayout = () => {
 
         <button
           type="button"
-          className="admin-logout-button"
+          className="mt-4 flex items-center gap-3 rounded-xl bg-transparent px-4 py-3 text-sm font-semibold text-white/70 hover:bg-white/10 hover:text-white"
           onClick={handleLogout}
         >
           <LogOut size={20} />
@@ -94,7 +94,7 @@ const AdminLayout = () => {
         </button>
       </aside>
 
-      <main className="admin-main">
+      <main className="min-h-screen w-full p-5 md:ml-[260px] md:w-[calc(100%-260px)] md:p-9">
         <Outlet />
       </main>
     </div>
