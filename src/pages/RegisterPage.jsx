@@ -5,9 +5,13 @@ import {
   ShieldCheck,
   UserRound,
 } from "lucide-react";
-import api from "../services/api.js";
+import { useNavigate } from "react-router";
+import { login, register } from "../services/authService.js";
+import useAuthStore from "../stores/authStore.js";
 
 const RegisterPage = () => {
+  const navigate = useNavigate();
+  const setAuth = useAuthStore((state) => state.setAuth);
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -39,34 +43,21 @@ const RegisterPage = () => {
     setLoading(true);
 
     try {
-      await api.post("/auth/register", formData);
+      await register(formData);
 
-      const response = await api.post("/auth/login", {
+      const authentication = await login({
         email: formData.email,
         password: formData.password,
       });
+      setAuth(authentication);
 
-      const token =
-        response.data.token ||
-        response.data.accessToken ||
-        response.data.data?.token ||
-        response.data.data?.accessToken;
-      const user =
-        response.data.user ||
-        response.data.data?.user ||
-        response.data.data?.userData;
-
-      if (!token || !user) {
-        throw new Error(
-          "Registration succeeded, but authentication data was incomplete"
-        );
-      }
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-
-      window.location.href =
-        user.role === "ADMIN" ? "/admin" : "/properties";
+      navigate(
+        authentication.user.role === "ADMIN"
+          ? "/admin"
+          : authentication.user.role === "OWNER"
+            ? "/owner"
+            : "/properties"
+      );
     } catch (requestError) {
       const responseMessage =
         requestError.response?.data?.message;

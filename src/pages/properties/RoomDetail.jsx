@@ -7,7 +7,6 @@ import {
   SquareX,
   UserRound,
 } from "lucide-react";
-import "../../styles/pages/room-detail.css";
 
 export default function RoomDetail() {
   return (

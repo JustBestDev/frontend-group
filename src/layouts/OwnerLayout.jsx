@@ -8,9 +8,12 @@ import {
   ShieldCheck,
   UserRound,
 } from "lucide-react";
-import { NavLink, Outlet } from "react-router";
+import { NavLink, Outlet, useNavigate } from "react-router";
+import useAuthStore from "../stores/authStore.js";
 
 const OwnerLayout = () => {
+  const navigate = useNavigate();
+  const logout = useAuthStore((state) => state.logout);
   const menuItems = [
     { name: "Overview", path: "/owner", icon: LayoutDashboard, end: true },
     { name: "My Properties", path: "/owner/properties", icon: Building2 },
@@ -21,9 +24,8 @@ const OwnerLayout = () => {
   ];
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    window.location.href = "/";
+    logout();
+    navigate("/properties");
   };
 
   return (

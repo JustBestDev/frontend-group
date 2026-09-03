@@ -1,22 +1,119 @@
-.owner-shell { display: flex; min-height: 100vh; background: var(--cream); }
-.owner-sidebar { position: fixed; inset: 0 auto 0 0; z-index: 10; display: flex; width: 255px; flex-direction: column; padding: 28px 18px 23px; color: #fff; background: linear-gradient(180deg, #758a73, #60745f); box-shadow: 10px 0 30px rgba(53,70,56,.1); }
-.owner-brand { display: flex; align-items: center; gap: 12px; padding: 0 9px 27px; border-bottom: 1px solid rgba(255,255,255,.17); }
-.owner-brand-icon { display: grid; width: 45px; height: 45px; place-items: center; border-radius: 14px; color: var(--sage-dark); background: #fff; }
-.owner-brand strong { display: block; font-family: "Playfair Display", serif; font-size: 21px; }
-.owner-brand div span { display: block; margin-top: 3px; color: rgba(255,255,255,.67); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; }
-.owner-navigation { display: flex; flex: 1; flex-direction: column; gap: 7px; padding-top: 27px; }
-.owner-nav-link, .owner-logout { display: flex; align-items: center; gap: 13px; padding: 13px 15px; border-radius: 13px; color: rgba(255,255,255,.74); font-size: 14px; font-weight: 600; transition: 180ms ease; }
-.owner-nav-link:hover, .owner-logout:hover { color: #fff; background: rgba(255,255,255,.1); }
-.owner-nav-link.active { color: var(--sage-dark); background: #fff; box-shadow: 0 8px 20px rgba(45,64,48,.14); }
-.owner-logout { width: 100%; cursor: pointer; background: transparent; }
-.owner-main { width: calc(100% - 255px); min-height: 100vh; margin-left: 255px; padding: 35px; }
+.owner-shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--cream);
+}
+.owner-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 10;
+  display: flex;
+  width: 255px;
+  flex-direction: column;
+  padding: 28px 18px 23px;
+  color: #fff;
+  background: linear-gradient(180deg, #758a73, #60745f);
+  box-shadow: 10px 0 30px rgba(53, 70, 56, 0.1);
+}
+.owner-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 9px 27px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.17);
+}
+.owner-brand-icon {
+  display: grid;
+  width: 45px;
+  height: 45px;
+  place-items: center;
+  border-radius: 14px;
+  color: var(--sage-dark);
+  background: #fff;
+}
+.owner-brand strong {
+  display: block;
+  font-family: "Playfair Display", serif;
+  font-size: 21px;
+}
+.owner-brand div span {
+  display: block;
+  margin-top: 3px;
+  color: rgba(255, 255, 255, 0.67);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.owner-navigation {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 7px;
+  padding-top: 27px;
+}
+.owner-nav-link,
+.owner-logout {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 13px 15px;
+  border-radius: 13px;
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 14px;
+  font-weight: 600;
+  transition: 180ms ease;
+}
+.owner-nav-link:hover,
+.owner-logout:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+.owner-nav-link.active {
+  color: var(--sage-dark);
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(45, 64, 48, 0.14);
+}
+.owner-logout {
+  width: 100%;
+  cursor: pointer;
+  background: transparent;
+}
+.owner-main {
+  width: calc(100% - 255px);
+  min-height: 100vh;
+  margin-left: 255px;
+  padding: 35px;
+}
 @media (max-width: 760px) {
-  .owner-shell { display: block; }
-  .owner-sidebar { position: static; width: 100%; padding: 16px; }
-  .owner-brand { padding-bottom: 16px; }
-  .owner-navigation { display: grid; grid-template-columns: repeat(3, 1fr); padding-top: 16px; }
-  .owner-nav-link { justify-content: center; padding: 11px 8px; }
-  .owner-nav-link span { display: none; }
-  .owner-logout { margin-top: 10px; }
-  .owner-main { width: 100%; margin-left: 0; padding: 24px 18px; }
+  .owner-shell {
+    display: block;
+  }
+  .owner-sidebar {
+    position: static;
+    width: 100%;
+    padding: 16px;
+  }
+  .owner-brand {
+    padding-bottom: 16px;
+  }
+  .owner-navigation {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    padding-top: 16px;
+  }
+  .owner-nav-link {
+    justify-content: center;
+    padding: 11px 8px;
+  }
+  .owner-nav-link span {
+    display: none;
+  }
+  .owner-logout {
+    margin-top: 10px;
+  }
+  .owner-main {
+    width: 100%;
+    margin-left: 0;
+    padding: 24px 18px;
+  }
 }

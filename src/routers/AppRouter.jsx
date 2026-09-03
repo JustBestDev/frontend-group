@@ -16,6 +16,7 @@ import OwnerLayout from "../layouts/OwnerLayout.jsx";
 import OwnerDashboard from "../pages/owner/OwnerDashboardPage.jsx";
 import OwnerPlaceholder from "../pages/owner/OwnerPlaceholderPage.jsx";
 import RoomDetail from "../pages/properties/RoomDetail.jsx";
+import useAuthStore from "../stores/authStore.js";
 
 const guestRouter = createBrowserRouter([
   {
@@ -110,6 +111,7 @@ const ownerRouter = createBrowserRouter([
   { path: "*", element: <Navigate to="/owner" replace /> },
 ]);
 
+<<<<<<< HEAD
 const clearStoredAuthentication = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
@@ -151,6 +153,19 @@ const AppRouter = () => {
       : user.role === "OWNER"
         ? ownerRouter
         : userRouter;
+=======
+const AppRouter = () => {
+    const token = useAuthStore((state) => state.token);
+    const user = useAuthStore((state) => state.user);
+
+    const finalRouter = !token || !user
+        ? guestRouter
+        : user.role === "ADMIN"
+            ? adminRouter
+            : user.role === "OWNER"
+                ? ownerRouter
+                : userRouter;
+>>>>>>> dev
 
   return <RouterProvider router={finalRouter} />;
 };
