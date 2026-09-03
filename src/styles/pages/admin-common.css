@@ -256,6 +256,11 @@
     background: #fde8e6;
 }
 
+.status-need-more-documents {
+  color: #8a4b17;
+  background: #ffead3;
+}
+
 .table-actions {
     display: flex;
     gap: 8px;

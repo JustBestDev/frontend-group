@@ -7,6 +7,12 @@ const RejectReasonModal = ({
   error,
   onCancel,
   onReject,
+  title,
+  description,
+  fieldLabel = "Rejection reason",
+  placeholder = "Enter the reason that will be sent with this rejection",
+  submitLabel = "Reject",
+  submittingLabel = "Rejecting...",
 }) => {
   const [reason, setReason] = useState("");
   const submissionStarted = useRef(false);
@@ -55,9 +61,9 @@ const RejectReasonModal = ({
       >
         <div className="reject-modal-header">
           <div>
-            <h2 id={titleId}>Reject {entityLabel}</h2>
+            <h2 id={titleId}>{title || `Reject ${entityLabel}`}</h2>
             <p id={descriptionId}>
-              Please confirm this decision and explain why the {entityLabel} is being rejected.
+              {description || `Please confirm this decision and explain why the ${entityLabel} is being rejected.`}
             </p>
           </div>
 
@@ -74,7 +80,7 @@ const RejectReasonModal = ({
 
         <form onSubmit={handleSubmit}>
           <label htmlFor={`${titleId}-reason`}>
-            Rejection reason
+            {fieldLabel}
           </label>
           <textarea
             id={`${titleId}-reason`}
@@ -82,7 +88,7 @@ const RejectReasonModal = ({
             rows={5}
             value={reason}
             disabled={isSubmitting}
-            placeholder="Enter the reason that will be sent with this rejection"
+            placeholder={placeholder}
             onChange={(event) => setReason(event.target.value)}
           />
 
@@ -106,7 +112,7 @@ const RejectReasonModal = ({
               className="reject-modal-submit"
               disabled={!trimmedReason || isSubmitting}
             >
-              {isSubmitting ? "Rejecting..." : "Reject"}
+              {isSubmitting ? submittingLabel : submitLabel}
             </button>
           </div>
         </form>

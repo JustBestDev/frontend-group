@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   Check,
   FileCheck2,
+  FileWarning,
   Mail,
   Phone,
   RefreshCw,
@@ -30,6 +31,7 @@ const OwnerApplicationDetail = () => {
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [moreDocumentsModalOpen, setMoreDocumentsModalOpen] = useState(false);
 
   const fetchApplication = async () => {
     setLoading(true);
@@ -61,10 +63,9 @@ const OwnerApplicationDetail = () => {
   }, [applicationId]);
 
   const updateStatus = async (status, rejectReason) => {
-    const action =
-      status === "APPROVED" ? "approve" : "reject";
+    const action = status === "APPROVED" ? "approve" : "update";
     const confirmed =
-      status === "REJECTED" ||
+      ["REJECTED", "NEED_MORE_DOCUMENTS"].includes(status) ||
       window.confirm(
         `Are you sure you want to ${action} this application?`
       );
@@ -77,7 +78,7 @@ const OwnerApplicationDetail = () => {
     try {
       await api.patch(
         `/admin/owner-applications/${applicationId}`,
-        status === "REJECTED"
+        ["REJECTED", "NEED_MORE_DOCUMENTS"].includes(status)
           ? { status, rejectReason }
           : { status }
       );
@@ -94,6 +95,7 @@ const OwnerApplicationDetail = () => {
       if (status === "REJECTED") {
         setRejectModalOpen(false);
       }
+      if (status === "NEED_MORE_DOCUMENTS") setMoreDocumentsModalOpen(false);
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
@@ -195,7 +197,7 @@ const OwnerApplicationDetail = () => {
         </div>
 
         <span
-          className={`status-badge status-${status.toLowerCase()}`}
+          className={`status-badge status-${status.toLowerCase().replaceAll("_", "-")}`}
         >
           {status}
         </span>
@@ -290,6 +292,13 @@ const OwnerApplicationDetail = () => {
                 </p>
               </div>
 
+              {application.rejectReason && (
+                <div>
+                  <span>Admin message</span>
+                  <p>{application.rejectReason}</p>
+                </div>
+              )}
+
               {applicantType === "AGENT" && (
                 <>
                   <div>
@@ -360,6 +369,19 @@ const OwnerApplicationDetail = () => {
             <div className="admin-decision-actions">
               <button
                 type="button"
+                className="admin-reject-button"
+                disabled={updating}
+                onClick={() => {
+                  setError("");
+                  setMoreDocumentsModalOpen(true);
+                }}
+              >
+                <FileWarning size={18} />
+                Request more documents
+              </button>
+
+              <button
+                type="button"
                 className="admin-approve-button"
                 disabled={updating}
                 onClick={() =>
@@ -385,7 +407,7 @@ const OwnerApplicationDetail = () => {
             </div>
           ) : (
             <div
-              className={`admin-decision-result result-${status.toLowerCase()}`}
+              className={`admin-decision-result result-${status.toLowerCase().replaceAll("_", "-")}`}
             >
               This application has been{" "}
               {status.toLowerCase()}.
@@ -415,6 +437,27 @@ const OwnerApplicationDetail = () => {
           onReject={(rejectReason) =>
             updateStatus("REJECTED", rejectReason)
           }
+        />
+      )}
+
+      {moreDocumentsModalOpen && (
+        <RejectReasonModal
+          entityLabel="owner application"
+          title="Request more documents"
+          description="Explain which corrected or additional documents the applicant must provide."
+          fieldLabel="Admin message"
+          placeholder="Describe the documents required"
+          submitLabel="Request documents"
+          submittingLabel="Requesting..."
+          isSubmitting={updating}
+          error={error}
+          onCancel={() => {
+            if (!updating) {
+              setMoreDocumentsModalOpen(false);
+              setError("");
+            }
+          }}
+          onReject={(message) => updateStatus("NEED_MORE_DOCUMENTS", message)}
         />
       )}
     </section>
