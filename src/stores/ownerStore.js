@@ -8,30 +8,32 @@ import {
 
 const useOwnerStore = create((set) => ({
     profile: null,
+    profileLoading: false,
+    profileError: null,
     properties: [],
     rentals: [],
     rentalPagination: null,
     isLoading: false,
     error: null,
     getMyProfile: async () => {
-        set({ isLoading: true, error: null });
+        set({ profileLoading: true, profileError: null });
         try {
             const { profile } = await getMyProfileApi();
-            set({ profile, isLoading: false });
+            set({ profile, profileLoading: false });
             return profile;
         } catch (error) {
-            set({ error: error.response?.data?.message || error.message, isLoading: false });
+            set({ profileError: error.response?.data?.message || error.message, profileLoading: false });
             throw error;
         }
     },
     updateMyProfile: async (profileData) => {
-        set({ isLoading: true, error: null });
+        set({ profileLoading: true, profileError: null });
         try {
             const { profile } = await updateMyProfileApi(profileData);
-            set({ profile, isLoading: false });
+            set({ profile, profileLoading: false });
             return profile;
         } catch (error) {
-            set({ error: error.response?.data?.message || error.message, isLoading: false });
+            set({ profileError: error.response?.data?.message || error.message, profileLoading: false });
             throw error;
         }
     },

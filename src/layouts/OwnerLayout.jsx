@@ -30,7 +30,7 @@ const OwnerLayout = () => {
 
   return (
     <div className="min-h-screen bg-cream md:flex">
-      <aside className="z-10 flex w-full flex-col bg-gradient-to-b from-[#244b3c] to-forest px-4 py-4 text-white shadow-[10px_0_30px_rgba(27,57,46,.12)] md:fixed md:inset-y-0 md:left-0 md:w-[255px] md:px-[18px] md:py-7">
+      <aside className="z-10 flex w-full flex-col bg-linear-to-b from-[#244b3c] to-forest px-4 py-4 text-white shadow-[10px_0_30px_rgba(27,57,46,.12)] md:fixed md:inset-y-0 md:left-0 md:w-63.75 md:px-4.5 md:py-7">
         <div className="flex items-center gap-3 border-b border-white/20 px-2 pb-4 md:pb-7">
           <span className="grid size-11 place-items-center rounded-[14px] bg-white text-sage-dark"><ShieldCheck size={25} /></span>
           <div><strong className="block font-serif text-[21px]">RoomShare</strong><span className="mt-0.5 block text-[10px] uppercase tracking-[.15em] text-white/65">Owner portal</span></div>
@@ -43,7 +43,7 @@ const OwnerLayout = () => {
               <NavLink key={item.path} to={item.path} end={item.end}
                 aria-label={item.name}
                 title={item.name}
-                className={({ isActive }) => `relative flex items-center justify-center gap-3 rounded-xl px-2 py-3 text-sm font-semibold transition hover:bg-white/10 hover:text-white focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-white md:justify-start md:px-4 ${isActive ? "bg-white/20 text-white before:absolute before:-left-[18px] before:inset-y-2 before:w-1 before:rounded-r before:bg-terracotta" : "text-white/75"}`}>
+                className={({ isActive }) => `relative flex items-center justify-center gap-3 rounded-xl px-2 py-3 text-sm font-semibold transition hover:bg-white/10 hover:text-white focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-white md:justify-start md:px-4 ${isActive ? "bg-white/20 text-white before:absolute before:-left-4.5 before:inset-y-2 before:w-1 before:rounded-r before:bg-terracotta" : "text-white/75"}`}>
                 <Icon size={20} aria-hidden="true" /><span className="hidden md:inline">{item.name}</span>
               </NavLink>
             );
@@ -55,7 +55,9 @@ const OwnerLayout = () => {
         </button>
       </aside>
 
-      <main className="min-h-screen w-full px-[18px] py-6 md:ml-[255px] md:w-[calc(100%-255px)] md:px-[38px] md:py-8"><Outlet /></main>
+      <main className="min-h-screen w-full px-4.5 py-6 md:ml-63.75 md:w-[calc(100%-255px)] md:px-9.5 md:py-8">
+        <Outlet />
+      </main>
     </div>
   );
 };
