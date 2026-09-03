@@ -20,9 +20,9 @@ const HeaderComponent = () => {
 
   return (
     <>
-      <header className="public-header">
-        <Link className="public-brand" to="/properties">
-          <div className="public-brand-icon">
+      <header className="sticky top-0 z-20 flex min-h-18 items-center justify-between border-b border-line bg-surface/95 px-5 backdrop-blur md:px-12">
+        <Link className="flex items-center gap-3 font-serif text-xl font-bold text-ink" to="/properties">
+          <div className="grid size-10 place-items-center rounded-xl bg-sage-dark text-white">
             <Building2 size={24} aria-hidden="true" />
           </div>
 
@@ -30,19 +30,19 @@ const HeaderComponent = () => {
         </Link>
 
         <nav
-          className="public-navigation"
+          className="flex items-center gap-3 md:gap-6"
           aria-label="Main navigation"
         >
-          <Link to="/properties">Rent</Link>
+          <Link className="font-semibold text-ink transition hover:text-terracotta" to="/properties">Rent</Link>
 
           {currentUser?.role === "ADMIN" && (
-            <Link to="/admin">Admin panel</Link>
+            <Link className="font-semibold text-ink transition hover:text-terracotta" to="/admin">Admin panel</Link>
           )}
 
           {isAuthenticated ? (
             <button
               type="button"
-              className="public-logout-button"
+              className="flex items-center gap-2 rounded-xl border border-line bg-transparent px-4 py-2 font-semibold text-ink hover:bg-sage-light"
               onClick={handleLogout}
             >
               <LogOut size={17} aria-hidden="true" />
@@ -51,7 +51,7 @@ const HeaderComponent = () => {
           ) : (
             <button
               type="button"
-              className="public-login-button"
+              className="rounded-xl bg-terracotta px-5 py-2.5 font-bold text-white transition hover:brightness-95"
               onClick={() => setIsAuthModalOpen(true)}
             >
               Log in

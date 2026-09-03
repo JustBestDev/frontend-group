@@ -1,7 +1,6 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap");
-
+﻿@layer base {
 :root {
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-sans);
   color: #29342d;
   background: #f8f5ec;
   font-synthesis: none;
@@ -62,5 +61,6 @@ a {
 
 #root {
   min-height: 100vh;
+}
 }
 

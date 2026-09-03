@@ -1,14 +1,32 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "DM Sans", sans-serif;
+  --font-serif: "Playfair Display", serif;
+  --color-sage: #a9bba3;
+  --color-sage-dark: #687b67;
+  --color-sage-light: #e6ede3;
+  --color-cream: #f8f5ec;
+  --color-surface: #fffdf8;
+  --color-terracotta: #b9683f;
+  --color-terracotta-light: #f2e2d5;
+  --color-forest: #17382e;
+  --color-ink: #29342d;
+  --color-muted-copy: #6f7a73;
+  --color-line: #e4e4d9;
+  --color-danger: #b95858;
+}
 
 @import "./styles/base.css";
-@import "./styles/layouts/admin-layout.css";
-@import "./styles/layouts/owner-layout.css";
 @import "./styles/pages/admin-dashboard.css";
 @import "./styles/pages/auth.css";
 @import "./styles/pages/admin-common.css";
 @import "./styles/pages/conversations.css";
 @import "./styles/pages/home.css";
 @import "./styles/pages/owner-dashboard.css";
+@import "./styles/pages/owner-pages.css";
 @import "./styles/components/auth-modal.css";
 @import "./styles/pages/admin-detail.css";
 @import "./styles/components/reject-modal.css";
-@import "./styles/pages/room-detail.css"
+@import "./styles/pages/room-detail.css";

@@ -15,6 +15,10 @@ import HomePage from "../pages/HomePage.jsx";
 import OwnerLayout from "../layouts/OwnerLayout.jsx";
 import OwnerDashboard from "../pages/owner/OwnerDashboardPage.jsx";
 import OwnerPlaceholder from "../pages/owner/OwnerPlaceholderPage.jsx";
+import OwnerPropertiesPage from "../pages/owner/OwnerPropertiesPage.jsx";
+import OwnerRoomsPage from "../pages/owner/OwnerRoomsPage.jsx";
+import OwnerRentalsPage from "../pages/owner/OwnerRentalsPage.jsx";
+import OwnerProfilePage from "../pages/owner/OwnerProfilePage.jsx";
 import RoomDetail from "../pages/properties/RoomDetail.jsx";
 import useAuthStore from "../stores/authStore.js";
 
@@ -100,72 +104,28 @@ const ownerRouter = createBrowserRouter([
     Component: OwnerLayout,
     children: [
       { index: true, Component: OwnerDashboard },
-      { path: "properties", Component: OwnerPlaceholder },
+      { path: "properties", Component: OwnerPropertiesPage },
       { path: "properties/new", Component: OwnerPlaceholder },
-      { path: "rooms", Component: OwnerPlaceholder },
-      { path: "rentals", Component: OwnerPlaceholder },
-      { path: "messages", Component: OwnerPlaceholder },
-      { path: "profile", Component: OwnerPlaceholder },
+      { path: "rooms", Component: OwnerRoomsPage },
+      { path: "rentals", Component: OwnerRentalsPage },
+      { path: "messages", Component: ConversationList },
+      { path: "profile", Component: OwnerProfilePage },
     ],
   },
   { path: "*", element: <Navigate to="/owner" replace /> },
 ]);
 
-<<<<<<< HEAD
-const clearStoredAuthentication = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
-};
-
-const getStoredAuthentication = () => {
-  const token = localStorage.getItem("token");
-  const storedUser = localStorage.getItem("user");
-
-  if (!token || !storedUser) {
-    if (token || storedUser) {
-      clearStoredAuthentication();
-    }
-
-    return { token: null, user: null };
-  }
-
-  try {
-    const user = JSON.parse(storedUser);
-
-    if (!user || typeof user !== "object") {
-      throw new Error("Invalid stored user");
-    }
-
-    return { token, user };
-  } catch {
-    clearStoredAuthentication();
-    return { token: null, user: null };
-  }
-};
-
 const AppRouter = () => {
-  const { token, user } = getStoredAuthentication();
+  const token = useAuthStore((state) => state.token);
+  const user = useAuthStore((state) => state.user);
 
-  const finalRouter = !token
+  const finalRouter = !token || !user
     ? guestRouter
     : user.role === "ADMIN"
       ? adminRouter
       : user.role === "OWNER"
         ? ownerRouter
         : userRouter;
-=======
-const AppRouter = () => {
-    const token = useAuthStore((state) => state.token);
-    const user = useAuthStore((state) => state.user);
-
-    const finalRouter = !token || !user
-        ? guestRouter
-        : user.role === "ADMIN"
-            ? adminRouter
-            : user.role === "OWNER"
-                ? ownerRouter
-                : userRouter;
->>>>>>> dev
 
   return <RouterProvider router={finalRouter} />;
 };
