@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { Building2, LogOut } from "lucide-react";
+import { Building2 } from "lucide-react";
 import AuthModal from "./auth/AuthModal.jsx";
 import OwnerApplicationModal from "./ownerApplication/OwnerApplicationModal.jsx";
 import useAuthStore from "../stores/authStore.js";
 import { getMyOwnerApplication } from "../services/ownerApplicationService.js";
+import UserAvatar from "./UserAvatar.jsx";
 
 const HeaderComponent = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] =
@@ -112,14 +113,7 @@ const HeaderComponent = () => {
           )}
 
           {isAuthenticated ? (
-            <button
-              type="button"
-              className="public-logout-button"
-              onClick={handleLogout}
-            >
-              <LogOut size={17} aria-hidden="true" />
-              <span>Log out</span>
-            </button>
+            <UserAvatar user={currentUser} onLogout={handleLogout} />
           ) : (
             <button
               type="button"
