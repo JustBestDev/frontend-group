@@ -46,18 +46,20 @@ const UserAvatar = ({ user, onLogout, onEditProfile }) => {
         aria-expanded={isOpen}
         onClick={() => setIsOpen((current) => !current)}
       >
-        {showImage ? (
-          <img
-            src={profileImageUrl}
-            alt=""
-            className="user-avatar-image"
-            onError={() => setFailedImageUrl(profileImageUrl)}
-          />
-        ) : (
-          <span className="user-avatar-fallback" aria-hidden="true">
-            {fallbackInitial}
-          </span>
-        )}
+        <span className="user-avatar-visual">
+          {showImage ? (
+            <img
+              src={profileImageUrl}
+              alt=""
+              className="user-avatar-image"
+              onError={() => setFailedImageUrl(profileImageUrl)}
+            />
+          ) : (
+            <span className="user-avatar-fallback" aria-hidden="true">
+              {fallbackInitial}
+            </span>
+          )}
+        </span>
         <span className="user-avatar-indicator" aria-hidden="true">
           {isOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
         </span>

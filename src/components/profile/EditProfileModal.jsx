@@ -6,6 +6,25 @@ import "../../styles/components/edit-profile-modal.css";
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const EMPTY_FORM = {
+  username: "",
+  firstName: "",
+  lastName: "",
+  phone: "",
+  bio: "",
+  gender: "",
+  birthdate: "",
+  occupation: "",
+  currentAddress: "",
+};
+
+const toDateInputValue = (value) => value ? new Date(value).toISOString().slice(0, 10) : "";
+const todayDateInputValue = () => {
+  const today = new Date();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${today.getFullYear()}-${month}-${day}`;
+};
 
 const getErrorMessage = (error) => {
   const message = error.response?.data?.message;
@@ -21,7 +40,7 @@ const EditProfileModal = ({ isOpen, onClose }) => {
   const setAuth = useAuthStore((state) => state.setAuth);
   const titleId = useId();
   const fileInputRef = useRef(null);
-  const [form, setForm] = useState({ username: "", firstName: "", lastName: "", phone: "" });
+  const [form, setForm] = useState(EMPTY_FORM);
   const [imageFile, setImageFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [error, setError] = useState("");
@@ -45,6 +64,11 @@ const EditProfileModal = ({ isOpen, onClose }) => {
           firstName: profile.firstName || "",
           lastName: profile.lastName || "",
           phone: profile.phone || "",
+          bio: profile.bio || "",
+          gender: profile.gender || "",
+          birthdate: toDateInputValue(profile.birthdate),
+          occupation: profile.occupation || "",
+          currentAddress: profile.currentAddress || "",
         });
         setAuth({ token, user: { ...user, profile } });
       })
@@ -101,6 +125,11 @@ const EditProfileModal = ({ isOpen, onClose }) => {
       payload.append("firstName", form.firstName.trim());
       payload.append("lastName", form.lastName.trim());
       payload.append("phone", form.phone.trim());
+      payload.append("bio", form.bio.trim());
+      payload.append("gender", form.gender);
+      payload.append("birthdate", form.birthdate);
+      payload.append("occupation", form.occupation.trim());
+      payload.append("currentAddress", form.currentAddress.trim());
       if (imageFile) payload.append("profileImage", imageFile);
       const profile = await updateMyProfile(payload);
       setAuth({ token, user: { ...user, username: profile.user.username, profile } });
@@ -128,13 +157,26 @@ const EditProfileModal = ({ isOpen, onClose }) => {
             <div><button type="button" className="edit-profile-photo-button" onClick={() => fileInputRef.current?.click()} disabled={isLoading || isSaving}><Camera size={17} />Choose photo</button><small>JPEG, PNG, or WebP · Maximum 5 MB</small></div>
             <input ref={fileInputRef} className="edit-profile-file-input" type="file" accept={ALLOWED_IMAGE_TYPES.join(",")} onChange={handleImageChange} />
           </div>
-          <div className="edit-profile-fields">
-            <label><span>Username</span><input value={form.username} minLength={3} required onChange={(event) => setForm((current) => ({ ...current, username: event.target.value }))} disabled={isLoading || isSaving} /></label>
-            <label><span>Email</span><input type="email" value={user?.email || ""} readOnly aria-readonly="true" /><small>Your login email cannot be changed here.</small></label>
-            <label><span>First name</span><input value={form.firstName} onChange={(event) => setForm((current) => ({ ...current, firstName: event.target.value }))} disabled={isLoading || isSaving} /></label>
-            <label><span>Last name</span><input value={form.lastName} onChange={(event) => setForm((current) => ({ ...current, lastName: event.target.value }))} disabled={isLoading || isSaving} /></label>
-            <label className="edit-profile-phone"><span>Phone</span><input type="tel" value={form.phone} onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))} disabled={isLoading || isSaving} /></label>
-          </div>
+          <section className="edit-profile-section">
+            <h3>Basic information</h3>
+            <div className="edit-profile-fields">
+              <label><span>Username</span><input value={form.username} minLength={3} required onChange={(event) => setForm((current) => ({ ...current, username: event.target.value }))} disabled={isLoading || isSaving} /></label>
+              <label><span>Email</span><input type="email" value={user?.email || ""} readOnly aria-readonly="true" /></label>
+              <label><span>First name</span><input value={form.firstName} onChange={(event) => setForm((current) => ({ ...current, firstName: event.target.value }))} disabled={isLoading || isSaving} /></label>
+              <label><span>Last name</span><input value={form.lastName} onChange={(event) => setForm((current) => ({ ...current, lastName: event.target.value }))} disabled={isLoading || isSaving} /></label>
+              <label className="edit-profile-full-width"><span>Phone</span><input type="tel" value={form.phone} onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))} disabled={isLoading || isSaving} /></label>
+            </div>
+          </section>
+          <section className="edit-profile-section">
+            <h3>About you</h3>
+            <div className="edit-profile-fields">
+              <label className="edit-profile-full-width"><span>Bio</span><textarea rows={3} maxLength={1000} value={form.bio} onChange={(event) => setForm((current) => ({ ...current, bio: event.target.value }))} disabled={isLoading || isSaving} /></label>
+              <label><span>Gender</span><select value={form.gender} onChange={(event) => setForm((current) => ({ ...current, gender: event.target.value }))} disabled={isLoading || isSaving}><option value="">Prefer not to specify</option><option value="MALE">Male</option><option value="FEMALE">Female</option><option value="OTHER">Other</option></select></label>
+              <label><span>Birthdate</span><input type="date" min="1900-01-01" max={todayDateInputValue()} value={form.birthdate} onChange={(event) => setForm((current) => ({ ...current, birthdate: event.target.value }))} disabled={isLoading || isSaving} /></label>
+              <label><span>Occupation</span><input maxLength={191} value={form.occupation} onChange={(event) => setForm((current) => ({ ...current, occupation: event.target.value }))} disabled={isLoading || isSaving} /></label>
+              <label className="edit-profile-full-width"><span>Current address</span><textarea rows={2} maxLength={191} value={form.currentAddress} onChange={(event) => setForm((current) => ({ ...current, currentAddress: event.target.value }))} disabled={isLoading || isSaving} /></label>
+            </div>
+          </section>
           {isLoading && <p className="edit-profile-status" role="status">Loading profile…</p>}
           {error && <p className="edit-profile-error" role="alert">{error}</p>}
           <footer className="edit-profile-actions"><button type="button" className="edit-profile-cancel" onClick={closeModal} disabled={isSaving}>Cancel</button><button type="submit" className="edit-profile-save" disabled={isLoading || isSaving}>{isSaving ? "Saving…" : "Save changes"}</button></footer>
