@@ -50,7 +50,7 @@ const AdminLayout = () => {
 
   return (
     <div className="min-h-screen bg-[#f4f7f4] md:flex">
-      <aside className="z-10 flex w-full flex-col bg-[#263d50] p-4 text-white md:fixed md:inset-y-0 md:left-0 md:w-[260px] md:p-6">
+      <aside className="z-10 flex w-full flex-col bg-[#263d50] p-4 text-white md:fixed md:inset-y-0 md:left-0 md:w-65 md:p-6">
         <div className="flex items-center gap-3 border-b border-white/15 pb-5">
           <div className="grid size-11 place-items-center rounded-xl bg-white text-[#263d50]">
             <ShieldCheck size={25} />
@@ -94,7 +94,7 @@ const AdminLayout = () => {
         </button>
       </aside>
 
-      <main className="min-h-screen w-full p-5 md:ml-[260px] md:w-[calc(100%-260px)] md:p-9">
+      <main className="min-h-screen w-full p-5 md:ml-65 md:w-[calc(100%-260px)] md:p-9">
         <Outlet />
       </main>
     </div>
