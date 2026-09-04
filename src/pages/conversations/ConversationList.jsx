@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   MessageCircle,
@@ -8,6 +8,29 @@ import {
 import api from "../../services/api";
 import useAuthStore from "../../stores/authStore.js";
 import { useLocation } from "react-router";
+
+const sortMessagesOldestFirst = (messageList) =>
+  [...messageList].sort((firstMessage, secondMessage) => {
+    const firstTime = new Date(firstMessage.createdAt || 0).getTime();
+    const secondTime = new Date(secondMessage.createdAt || 0).getTime();
+
+    if (firstTime !== secondTime) return firstTime - secondTime;
+    return (firstMessage.id || 0) - (secondMessage.id || 0);
+  });
+
+const getCreatedMessage = (response) => {
+  const data = response.data?.data;
+
+  if (data?.message && typeof data.message === "object") {
+    return data.message;
+  }
+
+  if (data && typeof data === "object") return data;
+
+  return typeof response.data?.message === "object"
+    ? response.data.message
+    : null;
+};
 
 const ConversationList = () => {
   const isOwnerView = useLocation().pathname.startsWith("/owner");
@@ -20,6 +43,7 @@ const ConversationList = () => {
   const [messageLoading, setMessageLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const messagesContainerRef = useRef(null);
 
   const currentUser = useAuthStore((state) => state.user);
 
@@ -55,6 +79,20 @@ const ConversationList = () => {
     fetchConversations();
   }, []);
 
+  useEffect(() => {
+    if (messageLoading || messages.length === 0) return;
+
+    const frameId = requestAnimationFrame(() => {
+      const container = messagesContainerRef.current;
+      container?.scrollTo({
+        top: container.scrollHeight,
+        behavior: "smooth",
+      });
+    });
+
+    return () => cancelAnimationFrame(frameId);
+  }, [messageLoading, messages]);
+
   const openConversation = async (conversation) => {
     const conversationId =
       conversation.id || conversation.conversationId;
@@ -76,7 +114,9 @@ const ConversationList = () => {
         [];
 
       setMessages(
-        Array.isArray(messageData) ? messageData : []
+        Array.isArray(messageData)
+          ? sortMessagesOldestFirst(messageData)
+          : []
       );
 
       await api.patch(
@@ -123,10 +163,7 @@ const ConversationList = () => {
         { message: content }
       );
 
-      const createdMessage =
-        response.data.data?.message ||
-        response.data.data ||
-        response.data.message;
+      const createdMessage = getCreatedMessage(response);
 
       if (createdMessage) {
         setMessages((currentMessages) => [
@@ -334,7 +371,10 @@ const ConversationList = () => {
                 </div>
               </header>
 
-              <div className="conversation-messages">
+              <div
+                ref={messagesContainerRef}
+                className="conversation-messages"
+              >
                 {messageLoading ? (
                   <div className="conversation-loading">
                     Loading messages...
