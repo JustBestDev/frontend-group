@@ -4,12 +4,11 @@ import {
   MessageCircle,
   RefreshCw,
   Send,
+  Check,
+  CheckCheck,
 } from "lucide-react";
 import api from "../../services/api";
-import {
-  createSocketClient,
-  SOCKET_EVENTS,
-} from "../../services/socket.js";
+import { createSocketClient, SOCKET_EVENTS } from "../../services/socket.js";
 import useAuthStore from "../../stores/authStore.js";
 import { useLocation } from "react-router";
 
@@ -58,8 +57,7 @@ const getSocketMessage = (payload) => {
 const ConversationList = () => {
   const isOwnerView = useLocation().pathname.startsWith("/owner");
   const [conversations, setConversations] = useState([]);
-  const [selectedConversation, setSelectedConversation] =
-    useState(null);
+  const [selectedConversation, setSelectedConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
@@ -86,15 +84,11 @@ const ConversationList = () => {
         response.data.conversations ||
         [];
 
-      setConversations(
-        Array.isArray(conversationData)
-          ? conversationData
-          : []
-      );
+      setConversations(Array.isArray(conversationData) ? conversationData : []);
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
-          "Unable to retrieve conversations"
+          "Unable to retrieve conversations",
       );
     } finally {
       setLoading(false);
@@ -116,11 +110,31 @@ const ConversationList = () => {
     socketRef.current = socket;
 
     const handleConnect = () => {
-      const conversationId = getConversationId(
-        selectedConversationRef.current,
-      );
+      const conversationId = getConversationId(selectedConversationRef.current);
       if (conversationId) {
         socket.emit(SOCKET_EVENTS.JOIN_CONVERSATION, { conversationId });
+
+        api
+          .get(`/conversations/${conversationId}/messages`)
+          .then((response) => {
+            if (
+              String(getConversationId(selectedConversationRef.current)) !==
+              String(conversationId)
+            ) {
+              return;
+            }
+
+            const messageData =
+              response.data.data?.messages ||
+              response.data.data ||
+              response.data.messages ||
+              [];
+
+            if (Array.isArray(messageData)) {
+              setMessages(sortMessagesOldestFirst(messageData));
+            }
+          })
+          .catch(() => {});
       }
     };
 
@@ -157,9 +171,7 @@ const ConversationList = () => {
           ...conversation,
           lastMessage: message,
           messages: [message],
-          unreadCount: isSelected
-            ? 0
-            : (conversation.unreadCount || 0) + 1,
+          unreadCount: isSelected ? 0 : (conversation.unreadCount || 0) + 1,
         };
 
         return [
@@ -169,13 +181,29 @@ const ConversationList = () => {
       });
     };
 
+    const handleMessagesRead = ({ conversationId, readerId }) => {
+      const selectedId = getConversationId(selectedConversationRef.current);
+      if (String(selectedId) !== String(conversationId)) return;
+
+      setMessages((currentMessages) =>
+        currentMessages.map((message) => {
+          const senderId = message.senderId || message.sender?.id;
+          return String(senderId) !== String(readerId)
+            ? { ...message, isRead: true }
+            : message;
+        }),
+      );
+    };
+
     socket.on("connect", handleConnect);
     socket.on(SOCKET_EVENTS.NEW_MESSAGE, handleNewMessage);
+    socket.on(SOCKET_EVENTS.MESSAGES_READ, handleMessagesRead);
     socket.connect();
 
     return () => {
       socket.off("connect", handleConnect);
       socket.off(SOCKET_EVENTS.NEW_MESSAGE, handleNewMessage);
+      socket.off(SOCKET_EVENTS.MESSAGES_READ, handleMessagesRead);
       socket.disconnect();
       socketRef.current = null;
     };
@@ -208,8 +236,7 @@ const ConversationList = () => {
   }, [messageLoading, messages]);
 
   const openConversation = async (conversation) => {
-    const conversationId =
-      conversation.id || conversation.conversationId;
+    const conversationId = conversation.id || conversation.conversationId;
 
     setSelectedConversation(conversation);
     setMessageLoading(true);
@@ -218,7 +245,7 @@ const ConversationList = () => {
 
     try {
       const response = await api.get(
-        `/conversations/${conversationId}/messages`
+        `/conversations/${conversationId}/messages`,
       );
 
       const messageData =
@@ -228,29 +255,21 @@ const ConversationList = () => {
         [];
 
       setMessages(
-        Array.isArray(messageData)
-          ? sortMessagesOldestFirst(messageData)
-          : []
+        Array.isArray(messageData) ? sortMessagesOldestFirst(messageData) : [],
       );
 
-      await api.patch(
-        `/conversations/${conversationId}/read`
-      );
+      await api.patch(`/conversations/${conversationId}/read`);
 
       setConversations((currentConversations) =>
         currentConversations.map((item) => {
-          const itemId =
-            item.id || item.conversationId;
+          const itemId = item.id || item.conversationId;
 
-          return itemId === conversationId
-            ? { ...item, unreadCount: 0 }
-            : item;
-        })
+          return itemId === conversationId ? { ...item, unreadCount: 0 } : item;
+        }),
       );
     } catch (requestError) {
       setError(
-        requestError.response?.data?.message ||
-          "Unable to retrieve messages"
+        requestError.response?.data?.message || "Unable to retrieve messages",
       );
     } finally {
       setMessageLoading(false);
@@ -265,8 +284,7 @@ const ConversationList = () => {
     if (!content || !selectedConversation) return;
 
     const conversationId =
-      selectedConversation.id ||
-      selectedConversation.conversationId;
+      selectedConversation.id || selectedConversation.conversationId;
 
     setSending(true);
     setError("");
@@ -274,7 +292,7 @@ const ConversationList = () => {
     try {
       const response = await api.post(
         `/conversations/${conversationId}/messages`,
-        { message: content }
+        { message: content },
       );
 
       const createdMessage = getCreatedMessage(response);
@@ -290,10 +308,7 @@ const ConversationList = () => {
 
           return alreadyExists
             ? currentMessages
-            : sortMessagesOldestFirst([
-                ...currentMessages,
-                createdMessage,
-              ]);
+            : sortMessagesOldestFirst([...currentMessages, createdMessage]);
         });
 
         setConversations((currentConversations) => {
@@ -321,8 +336,7 @@ const ConversationList = () => {
       setNewMessage("");
     } catch (requestError) {
       setError(
-        requestError.response?.data?.message ||
-          "Unable to send the message"
+        requestError.response?.data?.message || "Unable to send the message",
       );
     } finally {
       setSending(false);
@@ -331,7 +345,10 @@ const ConversationList = () => {
 
   const getConversationUser = (conversation) => {
     return (
-      conversation.members?.find((member) => member.user?.id !== (currentUser?.id || currentUser?.userId))?.user ||
+      conversation.members?.find(
+        (member) =>
+          member.user?.id !== (currentUser?.id || currentUser?.userId),
+      )?.user ||
       conversation.otherUser ||
       conversation.participant ||
       conversation.user ||
@@ -354,37 +371,39 @@ const ConversationList = () => {
   };
 
   const isMyMessage = (message) => {
-    const senderId =
-      message.senderId || message.sender?.id;
+    const senderId = message.senderId || message.sender?.id;
 
-    const currentUserId =
-      currentUser?.id || currentUser?.userId;
+    const currentUserId = currentUser?.id || currentUser?.userId;
 
-    return Boolean(
-      currentUserId && senderId === currentUserId
-    );
+    return Boolean(currentUserId && senderId === currentUserId);
   };
 
   if (loading) {
     return (
-      <div className={isOwnerView ? "owner-loading" : "admin-page-message"}>
+      <div className="grid min-h-64 place-items-center text-muted-copy">
         Loading conversations...
       </div>
     );
   }
 
   return (
-    <section className={isOwnerView ? "owner-resource-page owner-messages-page" : "admin-content"}>
-      <div className={isOwnerView ? "owner-resource-header" : "admin-page-header"}>
+    <section className="mx-auto flex h-[calc(100dvh-40px)] min-h-0 w-full max-w-[1320px] flex-col overflow-hidden md:h-[calc(100dvh-72px)]">
+      <div className="mb-6 flex shrink-0 items-end justify-between gap-6 max-sm:flex-col max-sm:items-stretch">
         <div>
-          <p className={isOwnerView ? "owner-eyebrow" : "admin-eyebrow"}>{isOwnerView ? "Inbox" : "Messages"}</p>
-          <h1>{isOwnerView ? "Messages" : "Conversations"}</h1>
-          <p>View and respond to your conversations.</p>
+          <p className="mb-1 text-xs font-extrabold uppercase tracking-[0.18em] text-terracotta">
+            {isOwnerView ? "Inbox" : "Messages"}
+          </p>
+          <h1 className="m-0 font-serif text-3xl leading-tight text-ink md:text-4xl">
+            {isOwnerView ? "Messages" : "Conversations"}
+          </h1>
+          <p className="mt-2 text-muted-copy">
+            View and respond to your conversations.
+          </p>
         </div>
 
         <button
           type="button"
-          className={isOwnerView ? "owner-secondary-button" : "refresh-button"}
+          className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-line bg-white px-4 py-3 text-sm font-bold text-ink transition hover:border-sage hover:bg-sage-light/40"
           onClick={fetchConversations}
         >
           <RefreshCw size={17} />
@@ -393,76 +412,69 @@ const ConversationList = () => {
       </div>
 
       {error && (
-        <p className={isOwnerView ? "owner-alert" : "admin-error"} role="alert">
+        <p
+          className="mb-4 shrink-0 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-danger"
+          role="alert"
+        >
           {error}
         </p>
       )}
 
-      <div className="conversation-container">
+      <div className="grid min-h-0 flex-1 grid-cols-[330px_minmax(0,1fr)] overflow-hidden rounded-2xl border border-line bg-white shadow-[0_10px_30px_rgba(76,91,75,0.07)] max-[850px]:block">
         <aside
-          className={`conversation-list-panel ${
-            selectedConversation ? "mobile-hidden" : ""
-          }`}
+          className={`h-full min-h-0 overflow-y-auto border-r border-line bg-[#fbfcf9] overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-[850px]:w-full max-[850px]:border-r-0 ${selectedConversation ? "max-[850px]:hidden" : ""}`}
         >
-          <div className="conversation-list-title">
-            <h2>Messages</h2>
-            <span>{conversations.length}</span>
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-[#fbfcf9] p-5">
+            <h2 className="m-0 text-lg font-bold text-ink">Messages</h2>
+            <span className="min-w-7 rounded-full bg-sage-light px-2 py-1 text-center text-xs font-extrabold text-sage-dark">
+              {conversations.length}
+            </span>
           </div>
 
           {conversations.length === 0 ? (
-            <div className="conversation-empty">
+            <div className="grid h-full place-content-center justify-items-center p-8 text-center text-muted-copy">
               <MessageCircle size={38} />
-              <h3>No conversations</h3>
-              <p>Your conversations will appear here.</p>
+              <h3 className="mb-1 mt-3 font-bold text-ink">No conversations</h3>
+              <p className="m-0">Your conversations will appear here.</p>
             </div>
           ) : (
-            <div className="conversation-items">
+            <div className="flex flex-col">
               {conversations.map((conversation) => {
                 const conversationId =
-                  conversation.id ||
-                  conversation.conversationId;
+                  conversation.id || conversation.conversationId;
 
                 const selectedId =
                   selectedConversation?.id ||
                   selectedConversation?.conversationId;
 
                 const lastMessage =
-                  conversation.lastMessage ||
-                  conversation.messages?.[0];
+                  conversation.lastMessage || conversation.messages?.[0];
 
                 return (
                   <button
                     type="button"
                     key={conversationId}
-                    className={`conversation-item ${
-                      selectedId === conversationId
-                        ? "active"
-                        : ""
-                    }`}
-                    onClick={() =>
-                      openConversation(conversation)
-                    }
+                    className={`flex w-full cursor-pointer items-center gap-3 border-0 border-b border-line px-4.5 py-4 text-left transition hover:bg-sage-light/60 ${selectedId === conversationId ? "bg-sage-light" : "bg-transparent"}`}
+                    onClick={() => openConversation(conversation)}
                   >
-                    <div className="conversation-avatar">
-                      {getUserName(conversation)
-                        .charAt(0)
-                        .toUpperCase()}
+                    <div className="grid size-11 shrink-0 place-items-center rounded-full bg-sage-dark text-base font-extrabold text-white">
+                      {getUserName(conversation).charAt(0).toUpperCase()}
                     </div>
 
-                    <div className="conversation-summary">
-                      <div>
-                        <strong>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <strong className="overflow-hidden text-ellipsis whitespace-nowrap text-sm text-ink">
                           {getUserName(conversation)}
                         </strong>
 
                         {conversation.unreadCount > 0 && (
-                          <span className="unread-badge">
+                          <span className="min-w-5 rounded-full bg-terracotta px-1.5 py-0.5 text-center text-[10px] text-white">
                             {conversation.unreadCount}
                           </span>
                         )}
                       </div>
 
-                      <p>
+                      <p className="mt-1 overflow-hidden text-ellipsis whitespace-nowrap text-[13px] text-muted-copy">
                         {lastMessage?.content ||
                           lastMessage?.message ||
                           "No messages yet"}
@@ -476,90 +488,92 @@ const ConversationList = () => {
         </aside>
 
         <div
-          className={`conversation-chat-panel ${
-            !selectedConversation ? "mobile-hidden" : ""
-          }`}
+          className={`h-full min-h-0 min-w-0 flex-col overflow-hidden bg-cream ${selectedConversation ? "flex" : "flex max-[850px]:hidden"}`}
         >
           {!selectedConversation ? (
-            <div className="select-conversation">
+            <div className="grid h-full place-content-center justify-items-center p-8 text-center text-muted-copy">
               <MessageCircle size={48} />
-              <h2>Select a conversation</h2>
-              <p>
-                Choose a conversation to view its messages.
-              </p>
+              <h2 className="mb-1 mt-3 text-xl font-bold text-ink">
+                Select a conversation
+              </h2>
+              <p className="m-0">Choose a conversation to view its messages.</p>
             </div>
           ) : (
             <>
-              <header className="conversation-chat-header">
+              <header className="flex shrink-0 items-center gap-3 border-b border-line bg-white px-5 py-4">
                 <button
                   type="button"
-                  className="conversation-back-button"
-                  onClick={() =>
-                    setSelectedConversation(null)
-                  }
+                  className="hidden cursor-pointer place-items-center rounded-lg border-0 bg-transparent p-2 text-sage-dark max-[850px]:grid"
+                  onClick={() => setSelectedConversation(null)}
+                  aria-label="Back to conversations"
                 >
                   <ArrowLeft size={20} />
                 </button>
 
-                <div className="conversation-avatar">
-                  {getUserName(selectedConversation)
-                    .charAt(0)
-                    .toUpperCase()}
+                <div className="grid size-11 shrink-0 place-items-center rounded-full bg-sage-dark text-base font-extrabold text-white">
+                  {getUserName(selectedConversation).charAt(0).toUpperCase()}
                 </div>
 
                 <div>
-                  <h2>
+                  <h2 className="m-0 text-base font-bold text-ink">
                     {getUserName(selectedConversation)}
                   </h2>
-                  <span>Conversation</span>
+                  <span className="text-xs text-muted-copy">Conversation</span>
                 </div>
               </header>
 
               <div
                 ref={messagesContainerRef}
-                className="conversation-messages"
+                className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:p-6"
               >
                 {messageLoading ? (
-                  <div className="conversation-loading">
+                  <div className="grid h-full place-content-center text-muted-copy">
                     Loading messages...
                   </div>
                 ) : messages.length === 0 ? (
-                  <div className="conversation-empty">
-                    <p>No messages in this conversation.</p>
+                  <div className="grid h-full place-content-center text-center text-muted-copy">
+                    <p className="m-0">No messages in this conversation.</p>
                   </div>
                 ) : (
                   messages.map((message) => {
-                    const messageId =
-                      message.id || message.messageId;
+                    const messageId = message.id || message.messageId;
+                    const myMessage = isMyMessage(message);
 
                     return (
                       <div
                         key={messageId}
-                        className={`message-row ${
-                          isMyMessage(message)
-                            ? "my-message"
-                            : "other-message"
-                        }`}
+                        className={`mb-3 flex ${myMessage ? "justify-end" : "justify-start"}`}
                       >
-                        <div className="message-bubble">
-                          <p>
-                            {message.content ||
-                              message.message}
+                        <div
+                          className={`max-w-[min(78%,520px)] px-3.5 pb-2 pt-3 shadow-[0_3px_10px_rgba(60,72,59,0.05)] ${myMessage ? "rounded-2xl rounded-br-sm bg-sage-dark text-white" : "rounded-2xl rounded-bl-sm border border-line bg-white text-ink"}`}
+                        >
+                          <p className="m-0 [overflow-wrap:anywhere] text-sm leading-6">
+                            {message.content || message.message}
                           </p>
 
-                          <span>
+                          <div
+                            className={`mt-1 flex items-center justify-end gap-1 text-[10px] ${myMessage ? "text-white/70" : "text-muted-copy"}`}
+                          >
                             {message.createdAt
-                              ? new Date(
-                                  message.createdAt
-                                ).toLocaleTimeString(
+                              ? new Date(message.createdAt).toLocaleTimeString(
                                   [],
                                   {
                                     hour: "2-digit",
                                     minute: "2-digit",
-                                  }
+                                  },
                                 )
                               : ""}
-                          </span>
+                            {myMessage && (
+                              <>
+                                <span aria-hidden="true">·</span>
+                                {message.isRead ? (
+                                  <CheckCheck size={15} aria-label="Read" />
+                                ) : (
+                                  <Check size={15} aria-label="Sent" />
+                                )}
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
                     );
@@ -568,24 +582,22 @@ const ConversationList = () => {
               </div>
 
               <form
-                className="conversation-form"
+                className="flex shrink-0 gap-2.5 border-t border-line bg-white p-4"
                 onSubmit={handleSendMessage}
               >
                 <input
                   type="text"
                   value={newMessage}
                   placeholder="Write a message..."
-                  onChange={(event) =>
-                    setNewMessage(event.target.value)
-                  }
+                  onChange={(event) => setNewMessage(event.target.value)}
                   disabled={sending}
+                  className="min-w-0 flex-1 rounded-xl border border-line bg-[#fafbf8] px-4 py-3 text-ink outline-none transition focus:border-sage-dark focus:ring-3 focus:ring-sage-dark/10 disabled:opacity-60"
                 />
 
                 <button
                   type="submit"
-                  disabled={
-                    sending || !newMessage.trim()
-                  }
+                  disabled={sending || !newMessage.trim()}
+                  className={`grid size-12 shrink-0 cursor-pointer place-items-center rounded-xl border-0 bg-terracotta px-4 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50 ${isOwnerView ? "sm:w-auto sm:inline-flex sm:gap-2" : ""}`}
                 >
                   <Send size={19} />
                   {isOwnerView && <span>Send</span>}

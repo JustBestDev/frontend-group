@@ -4,6 +4,7 @@ export const SOCKET_EVENTS = {
   JOIN_CONVERSATION: "conversation:join",
   LEAVE_CONVERSATION: "conversation:leave",
   NEW_MESSAGE: "message:new",
+  MESSAGES_READ: "message:read",
 };
 
 const getSocketUrl = () => {
