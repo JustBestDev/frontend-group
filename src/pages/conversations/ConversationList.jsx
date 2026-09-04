@@ -88,7 +88,7 @@ const ConversationList = () => {
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
-          "Unable to retrieve conversations",
+        "Unable to retrieve conversations",
       );
     } finally {
       setLoading(false);
@@ -134,7 +134,7 @@ const ConversationList = () => {
               setMessages(sortMessagesOldestFirst(messageData));
             }
           })
-          .catch(() => {});
+          .catch(() => { });
       }
     };
 
@@ -157,7 +157,7 @@ const ConversationList = () => {
             : sortMessagesOldestFirst([...currentMessages, message]);
         });
 
-        api.patch(`/conversations/${conversationId}/read`).catch(() => {});
+        api.patch(`/conversations/${conversationId}/read`).catch(() => { });
       }
 
       setConversations((currentConversations) => {
@@ -387,7 +387,7 @@ const ConversationList = () => {
   }
 
   return (
-    <section className="mx-auto flex h-[calc(100dvh-40px)] min-h-0 w-full max-w-[1320px] flex-col overflow-hidden md:h-[calc(100dvh-72px)]">
+    <section className="mx-auto flex h-[calc(100dvh-40px)] min-h-0 w-full max-w-330 flex-col overflow-hidden md:h-[calc(100dvh-72px)]">
       <div className="mb-6 flex shrink-0 items-end justify-between gap-6 max-sm:flex-col max-sm:items-stretch">
         <div>
           <p className="mb-1 text-xs font-extrabold uppercase tracking-[0.18em] text-terracotta">
@@ -422,7 +422,7 @@ const ConversationList = () => {
 
       <div className="grid min-h-0 flex-1 grid-cols-[330px_minmax(0,1fr)] overflow-hidden rounded-2xl border border-line bg-white shadow-[0_10px_30px_rgba(76,91,75,0.07)] max-[850px]:block">
         <aside
-          className={`h-full min-h-0 overflow-y-auto border-r border-line bg-[#fbfcf9] overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-[850px]:w-full max-[850px]:border-r-0 ${selectedConversation ? "max-[850px]:hidden" : ""}`}
+          className={`h-full min-h-0 overflow-y-auto border-r border-line bg-[#fbfcf9] overscroll-contain scrollbar-none [&::-webkit-scrollbar]:hidden max-[850px]:w-full max-[850px]:border-r-0 ${selectedConversation ? "max-[850px]:hidden" : ""}`}
         >
           <div className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-[#fbfcf9] p-5">
             <h2 className="m-0 text-lg font-bold text-ink">Messages</h2>
@@ -524,7 +524,7 @@ const ConversationList = () => {
 
               <div
                 ref={messagesContainerRef}
-                className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:p-6"
+                className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 scrollbar-none [&::-webkit-scrollbar]:hidden md:p-6"
               >
                 {messageLoading ? (
                   <div className="grid h-full place-content-center text-muted-copy">
@@ -547,7 +547,7 @@ const ConversationList = () => {
                         <div
                           className={`max-w-[min(78%,520px)] px-3.5 pb-2 pt-3 shadow-[0_3px_10px_rgba(60,72,59,0.05)] ${myMessage ? "rounded-2xl rounded-br-sm bg-sage-dark text-white" : "rounded-2xl rounded-bl-sm border border-line bg-white text-ink"}`}
                         >
-                          <p className="m-0 [overflow-wrap:anywhere] text-sm leading-6">
+                          <p className="m-0 wrap-anywhere text-sm leading-6">
                             {message.content || message.message}
                           </p>
 
@@ -556,12 +556,12 @@ const ConversationList = () => {
                           >
                             {message.createdAt
                               ? new Date(message.createdAt).toLocaleTimeString(
-                                  [],
-                                  {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  },
-                                )
+                                [],
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                },
+                              )
                               : ""}
                             {myMessage && (
                               <>
