@@ -1,12 +1,19 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, ChevronUp, LayoutDashboard, LogOut, UserRound } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  LayoutDashboard,
+  LogOut,
+  UserRound,
+} from "lucide-react";
 import { Link } from "react-router";
 
-const UserAvatar = ({ user, onLogout }) => {
+const UserAvatar = ({ user, onLogout, onEditProfile }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [failedImageUrl, setFailedImageUrl] = useState("");
   const containerRef = useRef(null);
-  const profileImageUrl = user?.profile?.profileImageUrl || user?.profileImageUrl;
+  const profileImageUrl =
+    user?.profile?.profileImageUrl || user?.profileImageUrl;
   const showImage = profileImageUrl && failedImageUrl !== profileImageUrl;
   const fallbackInitial = user?.email?.trim().charAt(0).toUpperCase() || "?";
   const hasOwnerRoutes = user?.role === "OWNER";
@@ -39,18 +46,20 @@ const UserAvatar = ({ user, onLogout }) => {
         aria-expanded={isOpen}
         onClick={() => setIsOpen((current) => !current)}
       >
-        {showImage ? (
-          <img
-            src={profileImageUrl}
-            alt=""
-            className="user-avatar-image"
-            onError={() => setFailedImageUrl(profileImageUrl)}
-          />
-        ) : (
-          <span className="user-avatar-fallback" aria-hidden="true">
-            {fallbackInitial}
-          </span>
-        )}
+        <span className="user-avatar-visual">
+          {showImage ? (
+            <img
+              src={profileImageUrl}
+              alt=""
+              className="user-avatar-image"
+              onError={() => setFailedImageUrl(profileImageUrl)}
+            />
+          ) : (
+            <span className="user-avatar-fallback" aria-hidden="true">
+              {fallbackInitial}
+            </span>
+          )}
+        </span>
         <span className="user-avatar-indicator" aria-hidden="true">
           {isOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
         </span>
@@ -58,13 +67,24 @@ const UserAvatar = ({ user, onLogout }) => {
 
       {isOpen && (
         <div className="user-avatar-dropdown" role="menu">
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setIsOpen(false);
+              onEditProfile();
+            }}
+          >
+            <UserRound size={17} aria-hidden="true" />
+            Edit profile
+          </button>
           {hasOwnerRoutes && (
             <>
-              <Link to="/owner/profile" role="menuitem" onClick={() => setIsOpen(false)}>
-                <UserRound size={17} aria-hidden="true" />
-                Profile
-              </Link>
-              <Link to="/owner" role="menuitem" onClick={() => setIsOpen(false)}>
+              <Link
+                to="/owner"
+                role="menuitem"
+                onClick={() => setIsOpen(false)}
+              >
                 <LayoutDashboard size={17} aria-hidden="true" />
                 Owner Portal
               </Link>
