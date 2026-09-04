@@ -6,6 +6,10 @@ import {
   Send,
 } from "lucide-react";
 import api from "../../services/api";
+import {
+  createSocketClient,
+  SOCKET_EVENTS,
+} from "../../services/socket.js";
 import useAuthStore from "../../stores/authStore.js";
 import { useLocation } from "react-router";
 
@@ -32,6 +36,25 @@ const getCreatedMessage = (response) => {
     : null;
 };
 
+const getConversationId = (conversation) =>
+  conversation?.id || conversation?.conversationId;
+
+const getSocketMessage = (payload) => {
+  const nestedData = payload?.data;
+  const message =
+    (typeof nestedData?.message === "object" && nestedData.message) ||
+    (typeof nestedData === "object" && nestedData) ||
+    (typeof payload?.message === "object" && payload.message) ||
+    payload;
+
+  if (!message || typeof message !== "object") return null;
+
+  return {
+    conversationId: payload?.conversationId || message.conversationId,
+    message,
+  };
+};
+
 const ConversationList = () => {
   const isOwnerView = useLocation().pathname.startsWith("/owner");
   const [conversations, setConversations] = useState([]);
@@ -44,8 +67,11 @@ const ConversationList = () => {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const messagesContainerRef = useRef(null);
+  const socketRef = useRef(null);
+  const selectedConversationRef = useRef(null);
 
   const currentUser = useAuthStore((state) => state.user);
+  const token = useAuthStore((state) => state.token);
 
   const fetchConversations = async () => {
     setLoading(true);
@@ -78,6 +104,94 @@ const ConversationList = () => {
   useEffect(() => {
     fetchConversations();
   }, []);
+
+  useEffect(() => {
+    selectedConversationRef.current = selectedConversation;
+  }, [selectedConversation]);
+
+  useEffect(() => {
+    if (!token) return undefined;
+
+    const socket = createSocketClient(token);
+    socketRef.current = socket;
+
+    const handleConnect = () => {
+      const conversationId = getConversationId(
+        selectedConversationRef.current,
+      );
+      if (conversationId) {
+        socket.emit(SOCKET_EVENTS.JOIN_CONVERSATION, { conversationId });
+      }
+    };
+
+    const handleNewMessage = (payload) => {
+      const socketMessage = getSocketMessage(payload);
+      if (!socketMessage?.conversationId) return;
+
+      const { conversationId, message } = socketMessage;
+      const selectedId = getConversationId(selectedConversationRef.current);
+      const isSelected = String(selectedId) === String(conversationId);
+
+      if (isSelected) {
+        setMessages((currentMessages) => {
+          const alreadyExists = currentMessages.some(
+            (item) =>
+              item.id && message.id && String(item.id) === String(message.id),
+          );
+          return alreadyExists
+            ? currentMessages
+            : sortMessagesOldestFirst([...currentMessages, message]);
+        });
+
+        api.patch(`/conversations/${conversationId}/read`).catch(() => {});
+      }
+
+      setConversations((currentConversations) => {
+        const itemIndex = currentConversations.findIndex(
+          (item) => String(getConversationId(item)) === String(conversationId),
+        );
+        if (itemIndex < 0) return currentConversations;
+
+        const conversation = currentConversations[itemIndex];
+        const updatedConversation = {
+          ...conversation,
+          lastMessage: message,
+          messages: [message],
+          unreadCount: isSelected
+            ? 0
+            : (conversation.unreadCount || 0) + 1,
+        };
+
+        return [
+          updatedConversation,
+          ...currentConversations.filter((_, index) => index !== itemIndex),
+        ];
+      });
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on(SOCKET_EVENTS.NEW_MESSAGE, handleNewMessage);
+    socket.connect();
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off(SOCKET_EVENTS.NEW_MESSAGE, handleNewMessage);
+      socket.disconnect();
+      socketRef.current = null;
+    };
+  }, [token]);
+
+  useEffect(() => {
+    const conversationId = getConversationId(selectedConversation);
+    const socket = socketRef.current;
+    if (!conversationId || !socket) return undefined;
+
+    socket.emit(SOCKET_EVENTS.JOIN_CONVERSATION, { conversationId });
+
+    return () => {
+      socket.emit(SOCKET_EVENTS.LEAVE_CONVERSATION, { conversationId });
+    };
+  }, [selectedConversation]);
 
   useEffect(() => {
     if (messageLoading || messages.length === 0) return;
@@ -166,10 +280,40 @@ const ConversationList = () => {
       const createdMessage = getCreatedMessage(response);
 
       if (createdMessage) {
-        setMessages((currentMessages) => [
-          ...currentMessages,
-          createdMessage,
-        ]);
+        setMessages((currentMessages) => {
+          const alreadyExists = currentMessages.some(
+            (message) =>
+              message.id &&
+              createdMessage.id &&
+              String(message.id) === String(createdMessage.id),
+          );
+
+          return alreadyExists
+            ? currentMessages
+            : sortMessagesOldestFirst([
+                ...currentMessages,
+                createdMessage,
+              ]);
+        });
+
+        setConversations((currentConversations) => {
+          const itemIndex = currentConversations.findIndex(
+            (item) =>
+              String(getConversationId(item)) === String(conversationId),
+          );
+          if (itemIndex < 0) return currentConversations;
+
+          const updatedConversation = {
+            ...currentConversations[itemIndex],
+            lastMessage: createdMessage,
+            messages: [createdMessage],
+          };
+
+          return [
+            updatedConversation,
+            ...currentConversations.filter((_, index) => index !== itemIndex),
+          ];
+        });
       } else {
         await openConversation(selectedConversation);
       }
