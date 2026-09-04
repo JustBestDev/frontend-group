@@ -489,48 +489,6 @@
     font-weight: 700;
 }
 
-.owner-messages-page .conversation-container {
-    height: calc(100vh - 170px);
-    min-height: 560px;
-    grid-template-columns: 330px minmax(0, 1fr);
-    border-radius: 12px;
-    box-shadow: 0 5px 16px rgba(50, 66, 54, 0.05);
-}
-
-.owner-messages-page .conversation-list-panel {
-    background: var(--surface);
-}
-
-.owner-messages-page .conversation-list-title {
-    background: var(--surface);
-}
-
-.owner-messages-page .conversation-item.active {
-    position: relative;
-    background: var(--sage-light);
-}
-
-.owner-messages-page .conversation-item.active::before {
-    position: absolute;
-    inset: 0 auto 0 0;
-    width: 3px;
-    background: var(--terracotta);
-    content: "";
-}
-
-.owner-messages-page .conversation-chat-panel {
-    background: var(--cream);
-}
-
-.owner-messages-page .conversation-form button {
-    width: auto;
-    display: inline-flex;
-    gap: 7px;
-    padding: 0 18px;
-    background: var(--terracotta);
-    font-weight: 700;
-}
-
 @media (max-width: 760px) {
 
     .owner-resource-header,

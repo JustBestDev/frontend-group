@@ -305,7 +305,7 @@ const OwnerCreatePropertyPage = () => {
                     <label className={fieldClass}>
                       Latitude
                       <input
-                        // readOnly
+                        readOnly
                         className={inputClass}
                         {...register("latitude")}
                       />
@@ -313,7 +313,7 @@ const OwnerCreatePropertyPage = () => {
                     <label className={fieldClass}>
                       Longitude
                       <input
-                        // readOnly
+                        readOnly
                         className={inputClass}
                         {...register("longitude")}
                       />
