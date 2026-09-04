@@ -7,8 +7,10 @@ import {
 } from "lucide-react";
 import api from "../../services/api";
 import useAuthStore from "../../stores/authStore.js";
+import { useLocation } from "react-router";
 
 const ConversationList = () => {
+  const isOwnerView = useLocation().pathname.startsWith("/owner");
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] =
     useState(null);
@@ -118,7 +120,7 @@ const ConversationList = () => {
     try {
       const response = await api.post(
         `/conversations/${conversationId}/messages`,
-        { content }
+        { message: content }
       );
 
       const createdMessage =
@@ -148,6 +150,7 @@ const ConversationList = () => {
 
   const getConversationUser = (conversation) => {
     return (
+      conversation.members?.find((member) => member.user?.id !== (currentUser?.id || currentUser?.userId))?.user ||
       conversation.otherUser ||
       conversation.participant ||
       conversation.user ||
@@ -183,24 +186,24 @@ const ConversationList = () => {
 
   if (loading) {
     return (
-      <div className="admin-page-message">
+      <div className={isOwnerView ? "owner-loading" : "admin-page-message"}>
         Loading conversations...
       </div>
     );
   }
 
   return (
-    <section className="admin-content">
-      <div className="admin-page-header">
+    <section className={isOwnerView ? "owner-resource-page owner-messages-page" : "admin-content"}>
+      <div className={isOwnerView ? "owner-resource-header" : "admin-page-header"}>
         <div>
-          <p className="admin-eyebrow">Messages</p>
-          <h1>Conversations</h1>
+          <p className={isOwnerView ? "owner-eyebrow" : "admin-eyebrow"}>{isOwnerView ? "Inbox" : "Messages"}</p>
+          <h1>{isOwnerView ? "Messages" : "Conversations"}</h1>
           <p>View and respond to your conversations.</p>
         </div>
 
         <button
           type="button"
-          className="refresh-button"
+          className={isOwnerView ? "owner-secondary-button" : "refresh-button"}
           onClick={fetchConversations}
         >
           <RefreshCw size={17} />
@@ -209,7 +212,7 @@ const ConversationList = () => {
       </div>
 
       {error && (
-        <p className="admin-error" role="alert">
+        <p className={isOwnerView ? "owner-alert" : "admin-error"} role="alert">
           {error}
         </p>
       )}
@@ -401,6 +404,7 @@ const ConversationList = () => {
                   }
                 >
                   <Send size={19} />
+                  {isOwnerView && <span>Send</span>}
                 </button>
               </form>
             </>

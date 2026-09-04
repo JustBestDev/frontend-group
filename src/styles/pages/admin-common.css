@@ -1,4 +1,4 @@
-.property-approval-grid {
+﻿.property-approval-grid {
   display: grid;
   grid-template-columns: repeat(
     auto-fit,
@@ -321,3 +321,4 @@
         flex-direction: column;
     }
 }
+
