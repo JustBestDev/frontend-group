@@ -23,6 +23,7 @@ import RoomDetail from "../pages/properties/RoomDetail.jsx";
 import useAuthStore from "../stores/authStore.js";
 import CreateRoomDetail from "../pages/properties/CreateRoomDetail.jsx";
 import CommunityPage from "../pages/CommunityPage.jsx";
+import MemberRequestPage from "../pages/MemberRequestPage.jsx";
 
 const guestRouter = createBrowserRouter([
   {
@@ -92,6 +93,10 @@ const userRouter = createBrowserRouter([
         Component: CommunityPage,
       },
       {
+        path: "community/:postId/join-requests",
+        Component: MemberRequestPage
+      },
+      {
         path: "Message",
         Component: ConversationList,
       },
@@ -107,6 +112,7 @@ const userRouter = createBrowserRouter([
         path: "properties/:propertyId/roomId",
         Component: CreateRoomDetail,
       },
+      
     ],
   },
   { path: "*", element: <Navigate to="/properties" replace /> },
