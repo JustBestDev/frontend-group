@@ -15,6 +15,9 @@ import {
 import useAuthStore from "../stores/authStore.js";
 import api from "../services/api.js";
 
+const fallbackImage =
+  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80";
+
 const INITIAL_POSTS = [
   {
     id: 1,
@@ -238,8 +241,7 @@ function CommunityPage() {
                       alt="User Avatar"
                       className="w-full h-full object-cover"
                       src={
-                        user?.profile.profileImageUrl ||
-                        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80"
+                        user?.profile?.profileImageUrl || fallbackImage
                       }
                     />
                   </div>
@@ -360,12 +362,15 @@ function CommunityPage() {
                         <img
                           alt="User Avatar"
                           className="w-full h-full object-cover"
-                          src={post.creator.profile.profileImageUrl}
+                          src={
+                            post.creator.profile?.profileImageUrl || fallbackImage
+                          }
                         />
                       </div>
                       <div>
                         <div className="text-[15px] font-bold text-[#475547]">
-                          {post.creator.profile.firstName}
+                          {post.creator.profile?.firstName ||
+                            post.creator.username}
                         </div>
                         <div className="text-[12px] text-[#889188] flex flex-wrap items-center gap-1.5 mt-0.5 font-medium">
                           <span>{post.createdAt}</span>
