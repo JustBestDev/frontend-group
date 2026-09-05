@@ -5,6 +5,11 @@ export const getMyProfile = async () => {
   return response.data.profile;
 };
 
+export const getUserProfile = async (userId) => {
+  const response = await api.get(`/profiles/${userId}`);
+  return response.data.profile;
+};
+
 export const updateMyProfile = async (profileData) => {
   const response = await api.patch("/profiles/me", profileData);
   return response.data.profile;
