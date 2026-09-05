@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Building2,
   Maximize2,
@@ -10,8 +10,10 @@ import {
   Send,
   Users,
   RefreshCw,
+  BedSingle,
 } from "lucide-react";
 import useAuthStore from "../stores/authStore.js";
+import api from "../services/api.js";
 
 const INITIAL_POSTS = [
   {
@@ -143,7 +145,21 @@ function CommunityPage() {
   const [newPostRentType, setNewPostRentType] = useState("INDIVIDUAL_ROOM");
   const [newPostPropertyType, setNewPostPropertyType] = useState("CONDO");
   const [postText, setPostText] = useState("");
-  const [posts, setPosts] = useState(INITIAL_POSTS);
+  const [posts, setPosts] = useState(null);
+
+  useEffect(() => {
+    fetchCommunity();
+  }, []);
+
+  const fetchCommunity = async () => {
+    try {
+
+      const response = await api.get("/community-posts");
+      setPosts(response.data);
+    } catch (error) {
+      console.log('error', error)
+    }
+  };
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -162,13 +178,16 @@ function CommunityPage() {
       author: {
         name: user?.name || "You (RoomMate Member)",
         avatar:
-          user?.avatar ||
+          user?.avatar||
           "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
         role: "Member",
       },
       rentType: newPostRentType,
       propertyType: newPostPropertyType,
-      category: newPostRentType === "INDIVIDUAL_ROOM" ? "Roommate Search" : "Owner Listing",
+      category:
+        newPostRentType === "INDIVIDUAL_ROOM"
+          ? "Roommate Search"
+          : "Owner Listing",
       createdAt: "Just now",
       content: postText,
     };
@@ -181,8 +200,12 @@ function CommunityPage() {
     activeFilter === "ALL"
       ? posts
       : posts.filter(
-          (p) => p.rentType === activeFilter || p.propertyType === activeFilter
+          (p) => p.rentType === activeFilter || p.propertyType === activeFilter,
         );
+
+        if(posts == null) {
+          return <div className="">Loading ...</div>;
+        }
 
   return (
     <main className="property-list-page min-h-screen bg-[#f7f5ee] text-[#465346] pt-6 sm:pt-8 pb-16">
@@ -197,7 +220,8 @@ function CommunityPage() {
               Community
             </h1>
             <p className="mt-2 text-muted-copy">
-              Connect with roommates, explore listings, and share your living experience.
+              Connect with roommates, explore listings, and share your living
+              experience.
             </p>
           </div>
         </div>
@@ -214,7 +238,7 @@ function CommunityPage() {
                       alt="User Avatar"
                       className="w-full h-full object-cover"
                       src={
-                        user?.avatar ||
+                        user?.profile.profileImageUrl ||
                         "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80"
                       }
                     />
@@ -256,7 +280,9 @@ function CommunityPage() {
                           onChange={(e) => setNewPostRentType(e.target.value)}
                           className="appearance-none bg-white hover:bg-[#fafbf8] border border-[#cfd7cd] text-xs font-bold text-[#556555] rounded-full pl-3.5 pr-8 py-1.5 cursor-pointer focus:outline-none focus:border-[#748a75] transition-all"
                         >
-                          <option value="INDIVIDUAL_ROOM">INDIVIDUAL_ROOM</option>
+                          <option value="INDIVIDUAL_ROOM">
+                            INDIVIDUAL_ROOM
+                          </option>
                           <option value="WHOLE_UNIT">WHOLE_UNIT</option>
                         </select>
                         <ChevronDown className="w-3.5 h-3.5 text-[#889188] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -275,7 +301,9 @@ function CommunityPage() {
                         <select
                           id="post-property-type"
                           value={newPostPropertyType}
-                          onChange={(e) => setNewPostPropertyType(e.target.value)}
+                          onChange={(e) =>
+                            setNewPostPropertyType(e.target.value)
+                          }
                           className="appearance-none bg-white hover:bg-[#fafbf8] border border-[#cfd7cd] text-xs font-bold text-[#556555] rounded-full pl-3.5 pr-8 py-1.5 cursor-pointer focus:outline-none focus:border-[#748a75] transition-all"
                         >
                           {PROPERTY_TYPES.map((pt) => (
@@ -332,28 +360,28 @@ function CommunityPage() {
                         <img
                           alt="User Avatar"
                           className="w-full h-full object-cover"
-                          src={post.author.avatar}
+                          src={post.creator.profile.profileImageUrl}
                         />
                       </div>
                       <div>
                         <div className="text-[15px] font-bold text-[#475547]">
-                          {post.author.name}
+                          {post.creator.profile.firstName}
                         </div>
                         <div className="text-[12px] text-[#889188] flex flex-wrap items-center gap-1.5 mt-0.5 font-medium">
                           <span>{post.createdAt}</span>
                           <span>·</span>
                           <span
                             className={`flex items-center gap-0.5 text-[11px] px-2.5 py-0.5 rounded-full font-bold ${
-                              post.rentType === "INDIVIDUAL_ROOM"
+                              post.property.rentType === "INDIVIDUAL_ROOM"
                                 ? "bg-[#eef3eb] text-[#546b55] border border-[#cfd7cd]"
                                 : "bg-[#f8ede6] text-[#b9683f] border border-[#edd7cb]"
                             }`}
                           >
-                            {post.rentType}
+                            {post.property.rentType}
                           </span>
-                          {post.propertyType && (
+                          {post.property.propertyType && (
                             <span className="flex items-center gap-0.5 text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-[#fafbf8] text-[#5e6d5e] border border-[#cfd7cd]">
-                              {post.propertyType}
+                              {post.property.propertyType}
                             </span>
                           )}
                           <span>·</span>
@@ -373,7 +401,7 @@ function CommunityPage() {
                         <img
                           alt="Property"
                           className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                          src={post.property.image}
+                          src={post.property.images[0]?.imageUrl}
                         />
                       </div>
 
@@ -383,22 +411,18 @@ function CommunityPage() {
                             {post.property.title}
                           </h3>
                           <div className="text-[13px] text-[#889188] mt-1">
-                            {post.property.location}
+                            {post.property.address?.province}
                           </div>
                         </div>
 
                         <div className="text-[18px] font-bold text-[#607861]">
-                          {post.property.price}
+                          ฿ {Number(post.property.monthlyRent).toLocaleString()}
                         </div>
 
                         <div className="flex flex-wrap items-center gap-4 text-[13px] text-[#607060] pt-1">
                           <div className="flex items-center gap-1.5">
-                            <Building2 className="w-4 h-4 text-[#889188]" />
-                            <span>{post.property.floors}</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <Maximize2 className="w-4 h-4 text-[#889188]" />
-                            <span>{post.property.area}</span>
+                            <BedSingle className="w-4 h-4 text-[#889188]" />
+                            <span> {post.property.totalBedrooms} /rooms</span>
                           </div>
                         </div>
                       </div>
@@ -407,7 +431,7 @@ function CommunityPage() {
 
                   {/* Post Content Description */}
                   <p className="text-[15px] text-[#465346] leading-relaxed">
-                    {post.content}
+                    {post.description}
                   </p>
 
                   {/* Action Area */}
@@ -430,19 +454,28 @@ function CommunityPage() {
             <div className="bg-white border border-[#e1e5dd] rounded-[18px] p-6 shadow-[0_8px_25px_rgba(67,81,67,0.07)]">
               <div className="flex items-center gap-2.5 mb-3 text-[#748a75]">
                 <Users className="w-5 h-5" />
-                <h3 className="font-bold text-[18px] text-[#465546] font-serif">About Community</h3>
+                <h3 className="font-bold text-[18px] text-[#465546] font-serif">
+                  About Community
+                </h3>
               </div>
               <p className="text-[14px] text-[#607060] leading-relaxed mb-4">
-                A verified safe space for finding roommates, sharing accommodations, and exchanging genuine living experiences.
+                A verified safe space for finding roommates, sharing
+                accommodations, and exchanging genuine living experiences.
               </p>
               <div className="grid grid-cols-2 gap-3 p-3 bg-[#fafbf8] rounded-xl border border-[#e1e5dd] text-center">
                 <div>
-                  <div className="font-bold text-[18px] text-[#607861]">1.2k+</div>
+                  <div className="font-bold text-[18px] text-[#607861]">
+                    1.2k+
+                  </div>
                   <div className="text-[12px] text-[#8c958b]">Members</div>
                 </div>
                 <div>
-                  <div className="font-bold text-[18px] text-[#b9683f]">850+</div>
-                  <div className="text-[12px] text-[#8c958b]">Rooms Matched</div>
+                  <div className="font-bold text-[18px] text-[#b9683f]">
+                    850+
+                  </div>
+                  <div className="text-[12px] text-[#8c958b]">
+                    Rooms Matched
+                  </div>
                 </div>
               </div>
             </div>
@@ -451,7 +484,9 @@ function CommunityPage() {
             <div className="bg-white border border-[#e1e5dd] rounded-[18px] p-6 shadow-[0_8px_25px_rgba(67,81,67,0.07)]">
               <div className="flex items-center gap-2.5 mb-4 text-[#b9683f]">
                 <Sparkles className="w-5 h-5" />
-                <h3 className="font-bold text-[18px] text-[#465546] font-serif">Tips for Finding Roommates</h3>
+                <h3 className="font-bold text-[18px] text-[#465546] font-serif">
+                  Tips for Finding Roommates
+                </h3>
               </div>
               <div className="flex flex-col gap-3.5">
                 <div className="flex items-start gap-3">
@@ -459,8 +494,12 @@ function CommunityPage() {
                     1
                   </div>
                   <div>
-                    <div className="text-[14px] font-bold text-[#475547]">Be Clear About Your Lifestyle</div>
-                    <div className="text-[13px] text-[#889188]">Wake-up schedule, pets, and smoking habits.</div>
+                    <div className="text-[14px] font-bold text-[#475547]">
+                      Be Clear About Your Lifestyle
+                    </div>
+                    <div className="text-[13px] text-[#889188]">
+                      Wake-up schedule, pets, and smoking habits.
+                    </div>
                   </div>
                 </div>
 
@@ -469,8 +508,12 @@ function CommunityPage() {
                     2
                   </div>
                   <div>
-                    <div className="text-[14px] font-bold text-[#475547]">Discuss Agreement Details</div>
-                    <div className="text-[13px] text-[#889188]">Agree on rent split, utilities, and security deposit.</div>
+                    <div className="text-[14px] font-bold text-[#475547]">
+                      Discuss Agreement Details
+                    </div>
+                    <div className="text-[13px] text-[#889188]">
+                      Agree on rent split, utilities, and security deposit.
+                    </div>
                   </div>
                 </div>
 
@@ -479,8 +522,12 @@ function CommunityPage() {
                     3
                   </div>
                   <div>
-                    <div className="text-[14px] font-bold text-[#475547]">Meet in Safe Locations</div>
-                    <div className="text-[13px] text-[#889188]">Meet in person to talk and tour the property together.</div>
+                    <div className="text-[14px] font-bold text-[#475547]">
+                      Meet in Safe Locations
+                    </div>
+                    <div className="text-[13px] text-[#889188]">
+                      Meet in person to talk and tour the property together.
+                    </div>
                   </div>
                 </div>
               </div>
@@ -488,11 +535,15 @@ function CommunityPage() {
 
             {/* Community Rules */}
             <div className="bg-white border border-[#e1e5dd] rounded-[18px] p-6 shadow-[0_8px_25px_rgba(67,81,67,0.07)]">
-              <h3 className="font-bold text-[18px] text-[#465546] mb-3 font-serif">Community Rules</h3>
+              <h3 className="font-bold text-[18px] text-[#465546] mb-3 font-serif">
+                Community Rules
+              </h3>
               <ul className="flex flex-col gap-2.5 text-[13px] text-[#607060]">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-[#607861] shrink-0 mt-0.5" />
-                  <span>No false information or fraudulent security deposits.</span>
+                  <span>
+                    No false information or fraudulent security deposits.
+                  </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-[#607861] shrink-0 mt-0.5" />
@@ -500,7 +551,9 @@ function CommunityPage() {
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-[#607861] shrink-0 mt-0.5" />
-                  <span>Report inappropriate posts to administrators immediately.</span>
+                  <span>
+                    Report inappropriate posts to administrators immediately.
+                  </span>
                 </li>
               </ul>
             </div>
