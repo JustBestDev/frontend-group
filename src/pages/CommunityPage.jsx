@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 import {
   Building2,
   Maximize2,
@@ -146,6 +147,7 @@ const FILTER_TABS = [
 ];
 
 function CommunityPage() {
+  const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const userId = user?.id;
   const [activeFilter, setActiveFilter] = useState("ALL");
@@ -559,9 +561,17 @@ function CommunityPage() {
 
                   {/* Action Area */}
                   <div className="flex items-center justify-end border-t border-[#edf0ea] pt-3.5 mt-1 gap-3">
-                    <button className="px-4 py-2 rounded-xl border border-[#cfd7cd] text-[13px] text-[#5e6d5e] hover:bg-[#eef3eb] transition-colors font-bold text-center cursor-pointer">
-                      View Details
-                    </button>
+                    {isCreator && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          navigate(`/community/${post.id}/join-requests`)
+                        }
+                        className="px-4 py-2 rounded-xl border border-[#cfd7cd] text-[13px] text-[#5e6d5e] hover:bg-[#eef3eb] transition-colors font-bold text-center cursor-pointer"
+                      >
+                        View Details
+                      </button>
+                    )}
                     {isCreator ? (
                       existingGroupRequest ? (
                         <span className="rounded-full bg-[#eef3eb] px-4 py-2 text-[13px] font-bold text-[#546b55]">
