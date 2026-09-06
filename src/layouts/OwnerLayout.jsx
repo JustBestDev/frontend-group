@@ -1,6 +1,7 @@
 import {
   BedDouble,
   Building2,
+  ClipboardList,
   LayoutDashboard,
   LogOut,
   MessageCircle,
@@ -19,6 +20,7 @@ const OwnerLayout = () => {
     { name: "My Properties", path: "/owner/properties", icon: Building2 },
     { name: "Rooms", path: "/owner/rooms", icon: BedDouble },
     { name: "Rentals", path: "/owner/rentals", icon: ReceiptText },
+    { name: "Rental Requests", path: "/owner/rental-requests", icon: ClipboardList },
     { name: "Messages", path: "/owner/messages", icon: MessageCircle },
     { name: "Profile", path: "/owner/profile", icon: UserRound },
   ];

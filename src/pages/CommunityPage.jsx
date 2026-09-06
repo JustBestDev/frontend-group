@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Building2,
   Maximize2,
@@ -14,7 +14,9 @@ import {
   AlertCircle,
 } from "lucide-react";
 import useAuthStore from "../stores/authStore.js";
-import api from "../services/api.js";
+import RentalRequestModal from "../components/rentalRequest/RentalRequestModal.jsx";
+import api, { getApiErrorMessage } from "../services/api.js";
+import { getCommunityReadiness } from "../utils/communityRental.js";
 
 const fallbackImage =
   "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80";
@@ -145,6 +147,7 @@ const FILTER_TABS = [
 
 function CommunityPage() {
   const user = useAuthStore((state) => state.user);
+  const userId = user?.id;
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [newPostRentType, setNewPostRentType] = useState("INDIVIDUAL_ROOM");
   const [newPostPropertyType, setNewPostPropertyType] = useState("CONDO");
@@ -152,20 +155,78 @@ function CommunityPage() {
   const [posts, setPosts] = useState(null);
   const [requestingPostId, setRequestingPostId] = useState(null);
   const [joinFeedback, setJoinFeedback] = useState(null);
+  const [membersByPost, setMembersByPost] = useState({});
+  const [rentalRequests, setRentalRequests] = useState([]);
+  const [groupDataLoading, setGroupDataLoading] = useState(true);
+  const [selectedGroupPost, setSelectedGroupPost] = useState(null);
+
+  const fetchCommunity = useCallback(async () => {
+    try {
+      const response = await api.get("/community-posts");
+      const nextPosts = Array.isArray(response.data) ? response.data : [];
+      setPosts(nextPosts);
+
+      const creatorPosts = userId
+        ? nextPosts.filter(
+            (post) =>
+              Number(post.creatorId ?? post.creator?.id) === Number(userId) &&
+              Boolean(post.propertyId) &&
+              post.property?.rentType === "WHOLE_UNIT",
+          )
+        : [];
+
+      if (creatorPosts.length === 0) {
+        setGroupDataLoading(false);
+        return;
+      }
+
+      try {
+        const [memberEntries, requestResponse] = await Promise.all([
+          Promise.all(
+            creatorPosts.map(async (post) => {
+              const membersResponse = await api.get(
+                `/community-posts/${post.id}/members`,
+              );
+              return [
+                post.id,
+                Array.isArray(membersResponse.data) ? membersResponse.data : [],
+              ];
+            }),
+          ),
+          api.get("/rental-requests/me"),
+        ]);
+        setMembersByPost(Object.fromEntries(memberEntries));
+        setRentalRequests(
+          Array.isArray(requestResponse.data.data)
+            ? requestResponse.data.data
+            : [],
+        );
+      } catch (error) {
+        setJoinFeedback({
+          message: getApiErrorMessage(
+            error,
+            "Unable to check group rental readiness",
+          ),
+          isError: true,
+        });
+      } finally {
+        setGroupDataLoading(false);
+      }
+    } catch (error) {
+      setPosts([]);
+      setGroupDataLoading(false);
+      setJoinFeedback({
+        message: getApiErrorMessage(error, "Unable to load community posts"),
+        isError: true,
+      });
+    }
+  }, [userId]);
 
   useEffect(() => {
+    // Loading server state is the purpose of this effect.
+    // oxlint-disable-next-line react/set-state-in-effect
     fetchCommunity();
-  }, []);
-
-  const fetchCommunity = async () => {
-    try {
-
-      const response = await api.get("/community-posts");
-      setPosts(response.data);
-    } catch (error) {
-      console.log('error', error)
-    }
-  };
+  }, [fetchCommunity]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -392,11 +453,26 @@ function CommunityPage() {
 
             {/* Community Feed Posts */}
             <div className="flex flex-col gap-6">
-              {filteredPosts.map((post) => (
-                <article
-                  key={post.id}
-                  className="bg-white border border-[#e1e5dd] rounded-[18px] p-6 flex flex-col gap-4 shadow-[0_8px_25px_rgba(67,81,67,0.07)] hover:-translate-y-1 hover:shadow-[0_14px_35px_rgba(67,81,67,0.13)] transition-all"
-                >
+              {filteredPosts.map((post) => {
+                const creatorId = post.creatorId ?? post.creator?.id;
+                const isCreator = Number(creatorId) === Number(userId);
+                const readiness = getCommunityReadiness(
+                  post,
+                  membersByPost[post.id],
+                );
+                const existingGroupRequest = rentalRequests.find(
+                  (request) =>
+                    Number(request.communityPostId) === Number(post.id),
+                );
+                const supportsGroupRental =
+                  Boolean(post.propertyId) &&
+                  post.property?.rentType === "WHOLE_UNIT";
+
+                return (
+                  <article
+                    key={post.id}
+                    className="bg-white border border-[#e1e5dd] rounded-[18px] p-6 flex flex-col gap-4 shadow-[0_8px_25px_rgba(67,81,67,0.07)] hover:-translate-y-1 hover:shadow-[0_14px_35px_rgba(67,81,67,0.13)] transition-all"
+                  >
                   {/* Post Header */}
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
@@ -486,19 +562,62 @@ function CommunityPage() {
                     <button className="px-4 py-2 rounded-xl border border-[#cfd7cd] text-[13px] text-[#5e6d5e] hover:bg-[#eef3eb] transition-colors font-bold text-center cursor-pointer">
                       View Details
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => handleRequestToJoin(post.id)}
-                      disabled={requestingPostId !== null}
-                      className="px-5 py-2 rounded-xl bg-[#748a75] hover:bg-[#627863] disabled:opacity-60 disabled:cursor-not-allowed text-white text-[13px] transition-all font-bold shadow-xs text-center cursor-pointer"
-                    >
-                      {requestingPostId === post.id
-                        ? "Submitting..."
-                        : "Request to Join"}
-                    </button>
+                    {isCreator ? (
+                      existingGroupRequest ? (
+                        <span className="rounded-full bg-[#eef3eb] px-4 py-2 text-[13px] font-bold text-[#546b55]">
+                          Group rental: {existingGroupRequest.status}
+                        </span>
+                      ) : !supportsGroupRental ? (
+                        <div className="text-right text-[12px] text-[#889188]">
+                          <strong className="block text-[#5e6d5e]">
+                            Group rental unavailable
+                          </strong>
+                          {post.property
+                            ? "Individual-room groups need a room target."
+                            : "A linked property is required."}
+                        </div>
+                      ) : groupDataLoading ? (
+                        <button
+                          type="button"
+                          disabled
+                          className="px-5 py-2 rounded-xl bg-[#748a75] text-white text-[13px] font-bold opacity-60 cursor-not-allowed"
+                        >
+                          Checking group...
+                        </button>
+                      ) : !readiness.isReady ? (
+                        <button
+                          type="button"
+                          disabled
+                          className="px-5 py-2 rounded-xl bg-[#748a75] text-white text-[13px] font-bold opacity-60 cursor-not-allowed"
+                        >
+                          Need {readiness.remainingMembers} more member
+                          {readiness.remainingMembers === 1 ? "" : "s"}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedGroupPost(post)}
+                          className="px-5 py-2 rounded-xl bg-[#748a75] hover:bg-[#627863] text-white text-[13px] transition-all font-bold shadow-xs text-center cursor-pointer"
+                        >
+                          Request Rental as Group
+                        </button>
+                      )
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleRequestToJoin(post.id)}
+                        disabled={requestingPostId !== null}
+                        className="px-5 py-2 rounded-xl bg-[#748a75] hover:bg-[#627863] disabled:opacity-60 disabled:cursor-not-allowed text-white text-[13px] transition-all font-bold shadow-xs text-center cursor-pointer"
+                      >
+                        {requestingPostId === post.id
+                          ? "Submitting..."
+                          : "Request to Join"}
+                      </button>
+                    )}
                   </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           </div>
 
@@ -614,6 +733,25 @@ function CommunityPage() {
           </aside>
         </div>
       </section>
+      {selectedGroupPost && (
+        <RentalRequestModal
+          propertyId={selectedGroupPost.propertyId}
+          communityPostId={selectedGroupPost.id}
+          targetName={
+            selectedGroupPost.title || selectedGroupPost.property?.title
+          }
+          onClose={() => setSelectedGroupPost(null)}
+          onSubmitted={() =>
+            setRentalRequests((current) => [
+              {
+                communityPostId: selectedGroupPost.id,
+                status: "PENDING",
+              },
+              ...current,
+            ])
+          }
+        />
+      )}
     </main>
   );
 }
