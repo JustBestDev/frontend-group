@@ -11,6 +11,7 @@ import {
   Users,
   RefreshCw,
   BedSingle,
+  AlertCircle,
 } from "lucide-react";
 import useAuthStore from "../stores/authStore.js";
 import api from "../services/api.js";
@@ -149,6 +150,8 @@ function CommunityPage() {
   const [newPostPropertyType, setNewPostPropertyType] = useState("CONDO");
   const [postText, setPostText] = useState("");
   const [posts, setPosts] = useState(null);
+  const [requestingPostId, setRequestingPostId] = useState(null);
+  const [joinFeedback, setJoinFeedback] = useState(null);
 
   useEffect(() => {
     fetchCommunity();
@@ -199,6 +202,30 @@ function CommunityPage() {
     setPostText("");
   };
 
+  const handleRequestToJoin = async (communityPostId) => {
+    setRequestingPostId(communityPostId);
+    setJoinFeedback(null);
+
+    try {
+      await api.post(`/community-posts/${communityPostId}/join-requests`, {
+        message: "",
+      });
+      setJoinFeedback({
+        message: "Join request submitted successfully!",
+        isError: false,
+      });
+    } catch (error) {
+      setJoinFeedback({
+        message:
+          error.response?.data?.message ||
+          "Unable to submit your join request. Please try again.",
+        isError: true,
+      });
+    } finally {
+      setRequestingPostId(null);
+    }
+  };
+
   const filteredPosts =
     activeFilter === "ALL"
       ? posts
@@ -212,6 +239,21 @@ function CommunityPage() {
 
   return (
     <main className="property-list-page min-h-screen bg-[#f7f5ee] text-[#465346] pt-6 sm:pt-8 pb-16">
+      {joinFeedback && (
+        <div
+          role={joinFeedback.isError ? "alert" : "status"}
+          className={`fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl text-sm font-bold text-white ${
+            joinFeedback.isError ? "bg-[#ba1a1a]" : "bg-[#1c1c16]"
+          }`}
+        >
+          {joinFeedback.isError ? (
+            <AlertCircle className="w-5 h-5 text-red-200" />
+          ) : (
+            <CheckCircle2 className="w-5 h-5 text-[#d4e8ce]" />
+          )}
+          <span>{joinFeedback.message}</span>
+        </div>
+      )}
       <section className="w-full max-w-320 mx-auto px-4 sm:px-6">
         {/* Page Header (Consistent with ConversationList) */}
         <div className="mb-6 flex shrink-0 items-end justify-between gap-6 max-sm:flex-col max-sm:items-stretch">
@@ -444,8 +486,15 @@ function CommunityPage() {
                     <button className="px-4 py-2 rounded-xl border border-[#cfd7cd] text-[13px] text-[#5e6d5e] hover:bg-[#eef3eb] transition-colors font-bold text-center cursor-pointer">
                       View Details
                     </button>
-                    <button className="px-5 py-2 rounded-xl bg-[#748a75] hover:bg-[#627863] text-white text-[13px] transition-all font-bold shadow-xs text-center cursor-pointer">
-                      Request to Join
+                    <button
+                      type="button"
+                      onClick={() => handleRequestToJoin(post.id)}
+                      disabled={requestingPostId !== null}
+                      className="px-5 py-2 rounded-xl bg-[#748a75] hover:bg-[#627863] disabled:opacity-60 disabled:cursor-not-allowed text-white text-[13px] transition-all font-bold shadow-xs text-center cursor-pointer"
+                    >
+                      {requestingPostId === post.id
+                        ? "Submitting..."
+                        : "Request to Join"}
                     </button>
                   </div>
                 </article>
