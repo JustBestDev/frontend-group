@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import api from "../services/api";
 import useAuthStore from "../stores/authStore";
+import RentalRequestModal from "../components/rentalRequest/RentalRequestModal.jsx";
 
 const FALLBACK_GALLERY = [
   "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80",
@@ -37,7 +38,7 @@ const FALLBACK_GALLERY = [
 const PropertyDetailPage = () => {
   const { propertyId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { token, user } = useAuthStore();
 
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -47,6 +48,7 @@ const PropertyDetailPage = () => {
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isRentalRequestOpen, setIsRentalRequestOpen] = useState(false);
   const [isSharingToCommunity, setIsSharingToCommunity] = useState(false);
   const [postTitle, setPostTitle] = useState("");
   const [postDescription, setPostDescription] = useState("");
@@ -208,6 +210,14 @@ const PropertyDetailPage = () => {
     navigate("/Message");
   };
 
+  const handleRequestToRent = () => {
+    if (!token || !user) {
+      navigate("/login");
+      return;
+    }
+    setIsRentalRequestOpen(true);
+  };
+
   if (loading) {
     return (
       <main className="min-h-screen bg-[#f7f5ee] flex items-center justify-center p-6">
@@ -258,6 +268,7 @@ const PropertyDetailPage = () => {
 
   // Extracted and computed property data
   const rooms = property.rooms || [];
+  const isWholeUnit = property.rentType === "WHOLE_UNIT";
   const availableRooms = rooms.filter(
     (room) =>
       (room.status || room.roomStatus || "").toUpperCase() === "AVAILABLE",
@@ -292,7 +303,9 @@ const PropertyDetailPage = () => {
     rooms.find((r) => String(r.id || r.roomId) === String(selectedRoomId)) ||
     rooms[0];
 
-  const displayPrice = selectedRoom?.monthlyRent || property.monthlyRent || 0;
+  const displayPrice = isWholeUnit
+    ? property.monthlyRent || 0
+    : selectedRoom?.monthlyRent || property.monthlyRent || 0;
 
   return (
     <div className="min-h-screen bg-[#f7f5ee] text-[#1c1c16] antialiased">
@@ -550,8 +563,10 @@ const PropertyDetailPage = () => {
               </div>
             </div>
 
-            {/* Room Availability Status Banner */}
-            <div className="bg-white p-6 rounded-2xl border border-[#e1e5dd] shadow-xs">
+            {!isWholeUnit && (
+              <>
+              {/* Room Availability Status Banner */}
+              <div className="bg-white p-6 rounded-2xl border border-[#e1e5dd] shadow-xs">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                 <div>
                   <h2 className="font-serif text-xl font-bold text-[#1c1c16]">
@@ -575,10 +590,10 @@ const PropertyDetailPage = () => {
                   )}
                 </div>
               </div>
-            </div>
+              </div>
 
-            {/* Bedroom Selection Cards (Stitch Style) */}
-            <div className="bg-white p-6 sm:p-8 rounded-2xl border border-[#e1e5dd] shadow-xs space-y-4">
+              {/* Bedroom Selection Cards (Stitch Style) */}
+              <div className="bg-white p-6 sm:p-8 rounded-2xl border border-[#e1e5dd] shadow-xs space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#1c1c16]">
@@ -715,7 +730,9 @@ const PropertyDetailPage = () => {
                   })}
                 </div>
               )}
-            </div>
+              </div>
+              </>
+            )}
 
             {/* Property Description & House Rules */}
             <div className="bg-white p-6 sm:p-8 rounded-2xl border border-[#e1e5dd] shadow-xs space-y-6">
@@ -773,7 +790,7 @@ const PropertyDetailPage = () => {
                 </h3>
                 <div className="flex items-baseline gap-1.5 mt-2">
                   <span className="text-xs text-[#6f7a73]">
-                    Selected room rate:
+                    {isWholeUnit ? "Property rate:" : "Selected room rate:"}
                   </span>
                   <span className="font-serif text-2xl font-bold text-[#4f614d]">
                     ฿{Number(displayPrice).toLocaleString()}
@@ -783,7 +800,7 @@ const PropertyDetailPage = () => {
               </div>
 
               {/* Room Selection Dropdown */}
-              {rooms.length > 0 && (
+              {!isWholeUnit && rooms.length > 0 && (
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-[#1c1c16] uppercase tracking-wider">
                     Select Bedroom
@@ -837,7 +854,15 @@ const PropertyDetailPage = () => {
 
               {/* Actions */}
               <div className="space-y-2.5 pt-1">
-                {selectedRoom && (
+                {isWholeUnit ? (
+                  <button
+                    type="button"
+                    onClick={handleRequestToRent}
+                    className="w-full py-3 px-4 rounded-xl bg-[#4f614d] text-white text-sm font-bold hover:bg-[#41513f] transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer active:scale-98"
+                  >
+                    Request to Rent
+                  </button>
+                ) : selectedRoom && (
                   <Link
                     to={`/properties/${propertyId}/${selectedRoom.id || selectedRoom.roomId || selectedRoomId}`}
                     className="w-full py-3 px-4 rounded-xl bg-[#4f614d] text-white text-sm font-bold hover:bg-[#41513f] transition-all flex items-center justify-center gap-2 shadow-xs active:scale-98"
@@ -845,6 +870,17 @@ const PropertyDetailPage = () => {
                     <span>View Room Details</span>
                     <ChevronRight className="w-4 h-4" />
                   </Link>
+                )}
+
+                {isWholeUnit && (
+                  <button
+                    type="button"
+                    onClick={handleShare}
+                    className="w-full py-3 px-4 rounded-xl border border-[#4f614d] text-[#4f614d] bg-white hover:bg-[#e6ede3]/40 text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Users className="w-4 h-4" />
+                    Find Roommates / Share
+                  </button>
                 )}
 
                 <button
@@ -905,6 +941,14 @@ const PropertyDetailPage = () => {
           </div>
         </div>
       </main>
+
+      {isRentalRequestOpen && (
+        <RentalRequestModal
+          propertyId={property.id || propertyId}
+          targetName={property.title || `Property #${propertyId}`}
+          onClose={() => setIsRentalRequestOpen(false)}
+        />
+      )}
 
       {/* Fullscreen Photo Lightbox Modal */}
       {isPhotoModalOpen && (
