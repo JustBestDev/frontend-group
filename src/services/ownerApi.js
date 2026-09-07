@@ -30,6 +30,11 @@ export const updatePropertyAddressApi = async (propertyId, addressData) => {
     return res.data;
 };
 
+export const deletePropertyApi = async (propertyId) => {
+    const res = await api.delete(`/properties/${propertyId}`);
+    return res.data;
+};
+
 export const getMyRentalsApi = async (params = {}) => {
     const res = await api.get("/rentals/me", { params });
     return res.data;
@@ -54,5 +59,39 @@ export const uploadPropertyImagesApi = async (propertyId, images) => {
 
 export const createPropertyRoomApi = async (propertyId, roomData) => {
     const res = await api.post(`/properties/${propertyId}/rooms`, roomData);
+    return res.data;
+};
+
+export const uploadRoomImagesApi = async (roomId, image) => {
+    const formData = new FormData();
+    formData.append("image", image);
+    const res = await api.post(`/rooms/${roomId}/images`, formData);
+    return res.data;
+};
+
+export const getRoomApi = async (roomId) => {
+    const res = await api.get(`/rooms/${roomId}`);
+    return res.data;
+};
+
+export const updateRoomApi = async (roomId, roomData) => {
+    const res = await api.patch(`/rooms/${roomId}`, roomData);
+    return res.data;
+};
+
+export const deleteRoomImageApi = async (roomId, imageId) => {
+    const res = await api.delete(`/rooms/${roomId}/images/${imageId}`);
+    return res.data;
+};
+
+export const replaceRoomImageApi = async (roomId, image) => {
+    const formData = new FormData();
+    formData.append("image", image);
+    const res = await api.put(`/rooms/${roomId}/image`, formData);
+    return res.data;
+};
+
+export const deleteRoomApi = async (roomId) => {
+    const res = await api.delete(`/rooms/${roomId}`);
     return res.data;
 };

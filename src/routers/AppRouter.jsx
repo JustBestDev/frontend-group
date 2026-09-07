@@ -23,6 +23,7 @@ import OwnerPropertyDetailPage from "../pages/owner/OwnerPropertyDetailPage.jsx"
 import RoomDetail from "../pages/properties/RoomDetail.jsx";
 import useAuthStore from "../stores/authStore.js";
 import CreateRoomDetail from "../pages/properties/CreateRoomDetail.jsx";
+import OwnerEditRoomPage from "../pages/owner/OwnerEditRoomPage.jsx";
 import CommunityPage from "../pages/CommunityPage.jsx";
 import MemberRequestPage from "../pages/MemberRequestPage.jsx";
 import RentalRequestsPage from "../pages/RentalRequestsPage.jsx";
@@ -115,11 +116,6 @@ const userRouter = createBrowserRouter([
         path: "properties/:propertyId/:roomId",
         Component: RoomDetail,
       },
-      {
-        path: "properties/:propertyId/roomId",
-        Component: CreateRoomDetail,
-      },
-
     ],
   },
   { path: "*", element: <Navigate to="/properties" replace /> },
@@ -133,11 +129,14 @@ const ownerRouter = createBrowserRouter([
       { index: true, element: <Navigate to="/properties" replace /> },
       { path: "properties", Component: HomePage },
       { path: "properties/:propertyId", Component: PropertyDetailPage },
+      { path: "properties/:propertyId/:roomId", Component: RoomDetail, },
+
       { path: "community", Component: CommunityPage },
       { path: "community/:postId/join-requests", Component: MemberRequestPage },
       { path: "message", Component: ConversationList },
     ]
   },
+
   {
     path: "/owner",
     Component: OwnerLayout,
@@ -147,6 +146,8 @@ const ownerRouter = createBrowserRouter([
       { path: "properties/new", Component: OwnerCreatePropertyPage },
       { path: "properties/:propertyId", Component: OwnerPropertyDetailPage },
       { path: "properties/:propertyId/edit", Component: OwnerPropertyDetailPage },
+      { path: "properties/:propertyId/rooms/new", Component: CreateRoomDetail },
+      { path: "properties/:propertyId/rooms/:roomId/edit", Component: OwnerEditRoomPage },
       { path: "rooms", Component: OwnerRoomsPage },
       { path: "rentals", Component: OwnerRentalsPage },
       { path: "rental-requests", Component: OwnerRentalRequestsPage },
