@@ -1,12 +1,10 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import {
   BadgeDollarSign,
   Building2,
   Check,
-  CheckCircle2,
   ChevronRight,
-  Heart,
   Home,
   Info,
   Share2,
@@ -17,28 +15,37 @@ import {
   UserRound,
 } from "lucide-react";
 import api from "../../services/api";
+import RentalRequestModal from "../../components/rentalRequest/RentalRequestModal.jsx";
+import useAuthStore from "../../stores/authStore.js";
 
 export default function RoomDetail() {
   const { propertyId, roomId } = useParams();
   const navigate = useNavigate();
-  const [isSaved, setIsSaved] = useState(false);
+  const { token, user } = useAuthStore();
   const [toastMessage, setToastMessage] = useState("");
-  const [isJoinRequested, setIsJoinRequested] = useState(false);
+  const [isRentalRequestOpen, setIsRentalRequestOpen] = useState(false);
   const [room, setRoom] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    fetchRoom();
-  }, []);
-
-  const fetchRoom = async () => {
+  const fetchRoom = useCallback(async () => {
     try {
       const response = await api.get(`/rooms/${roomId}`);
       setRoom(response.data);
-      console.log("response.data", response.data);
+    } catch (requestError) {
+      setError(requestError.response?.data?.message ||
+        "Unable to load room details"
+      );
+    } finally {
       setIsLoading(false);
-    } catch (error) { }
-  };
+    }
+  }, [roomId]);
+
+  useEffect(() => {
+    // Loading server state is the purpose of this effect.
+    // oxlint-disable-next-line react/set-state-in-effect
+    fetchRoom();
+  }, [fetchRoom]);
 
   const showToast = (message) => {
     setToastMessage(message);
@@ -56,21 +63,26 @@ export default function RoomDetail() {
     }
   };
 
-  const handleToggleSave = () => {
-    setIsSaved((prev) => {
-      const next = !prev;
-      showToast(next ? "Saved to your favorites" : "Removed from favorites");
-      return next;
-    });
-  };
-
-  const handleJoinRequest = () => {
-    setIsJoinRequested(true);
-    showToast("Join request submitted successfully!");
+  const handleRentalRequest = () => {
+    if (!token || !user) {
+      navigate("/login");
+      return;
+    }
+    setIsRentalRequestOpen(true);
   };
 
   if (isLoading) {
     return <div className="">Loading ...</div>;
+  }
+
+  if (error || !room) {
+    return (
+      <main className="grid min-h-screen place-content-center bg-[#f7f5ee] p-6 text-center">
+        <p className="rounded-xl bg-[#fde8e6] px-5 py-4 text-danger" role="alert">
+          {error || "Room not found"}
+        </p>
+      </main>
+    );
   }
 
   return (
@@ -277,21 +289,16 @@ export default function RoomDetail() {
               <div className="space-y-3 pt-1">
                 <button
                   type="button"
-                  onClick={handleJoinRequest}
-                  disabled={isJoinRequested}
-                  className={`w-full py-3.5 px-4 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer active:scale-98 ${isJoinRequested
-                    ? "bg-sage-light text-[#294c25] border border-[#b8deb0] cursor-default"
-                    : "bg-[#4f614d] text-white hover:bg-[#41513f]"
+                  onClick={handleRentalRequest}
+                  disabled={room.status !== "AVAILABLE"}
+                  className={`w-full py-3.5 px-4 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer active:scale-98 ${room.status !== "AVAILABLE"
+                      ? "bg-[#e6ede3] text-[#294c25] border border-[#b8deb0] cursor-default"
+                      : "bg-[#4f614d] text-white hover:bg-[#41513f]"
                     }`}
                 >
-                  {isJoinRequested ? (
-                    <>
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>Request Sent</span>
-                    </>
-                  ) : (
-                    <span>Join Request</span>
-                  )}
+                  {room.status === "AVAILABLE"
+                    ? "Request to Rent This Room"
+                    : "Room Unavailable"}
                 </button>
 
                 {propertyId && (
@@ -315,6 +322,15 @@ export default function RoomDetail() {
           </div>
         </div>
       </div>
+
+      {isRentalRequestOpen && (
+        <RentalRequestModal
+          propertyId={propertyId}
+          roomId={room.id || roomId}
+          targetName={room.roomName || `Room #${roomId}`}
+          onClose={() => setIsRentalRequestOpen(false)}
+        />
+      )}
     </main>
   );
 }

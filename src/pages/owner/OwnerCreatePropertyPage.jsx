@@ -172,7 +172,7 @@ const OwnerCreatePropertyPage = () => {
           {pageError}
         </p>
       )}
-      <form onSubmit={p => p.preventDefault()}>
+      <form onSubmit={(event) => event.preventDefault()}>
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
           <div className="rounded-2xl border border-line bg-surface p-5 shadow-sm md:p-7">
             {step === 1 && (

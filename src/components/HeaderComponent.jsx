@@ -96,6 +96,15 @@ const HeaderComponent = () => {
             Community
           </Link>
 
+          {currentUser?.role === "USER" && (
+            <Link
+              className="font-semibold text-ink transition hover:text-terracotta"
+              to="/rental-requests"
+            >
+              Rental Requests
+            </Link>
+          )}
+
           <Link
             className="font-semibold text-ink transition hover:text-terracotta"
             to="/message"

@@ -26,6 +26,8 @@ import CreateRoomDetail from "../pages/properties/CreateRoomDetail.jsx";
 import OwnerEditRoomPage from "../pages/owner/OwnerEditRoomPage.jsx";
 import CommunityPage from "../pages/CommunityPage.jsx";
 import MemberRequestPage from "../pages/MemberRequestPage.jsx";
+import RentalRequestsPage from "../pages/RentalRequestsPage.jsx";
+import OwnerRentalRequestsPage from "../pages/owner/OwnerRentalRequestsPage.jsx";
 
 const guestRouter = createBrowserRouter([
   {
@@ -103,6 +105,10 @@ const userRouter = createBrowserRouter([
         Component: ConversationList,
       },
       {
+        path: "rental-requests",
+        Component: RentalRequestsPage,
+      },
+      {
         path: "properties/:propertyId",
         Component: PropertyDetailPage,
       },
@@ -150,6 +156,7 @@ const ownerRouter = createBrowserRouter([
       { path: "properties/:propertyId/rooms/:roomId/edit", Component: OwnerEditRoomPage },
       { path: "rooms", Component: OwnerRoomsPage },
       { path: "rentals", Component: OwnerRentalsPage },
+      { path: "rental-requests", Component: OwnerRentalRequestsPage },
       { path: "messages", Component: ConversationList },
       { path: "profile", Component: OwnerProfilePage },
     ],
