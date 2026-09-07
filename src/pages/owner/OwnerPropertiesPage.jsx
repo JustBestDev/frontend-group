@@ -1,4 +1,5 @@
 ﻿import { Building2, MapPin, Plus, Search } from "lucide-react";
+import { Eye, Pencil } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import useOwnerStore from "../../stores/ownerStore.js";
@@ -82,6 +83,14 @@ const OwnerPropertiesPage = () => {
               <div className="owner-property-meta flex flex-wrap gap-x-4.5 gap-y-2 text-[13px] capitalize text-[#566158]">
                 <span>{property.propertyType?.toLowerCase()}</span><span>{property.rooms?.length || 0} rooms</span>
                 <span>{Number(property.monthlyRent || 0).toLocaleString()}/month</span>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Link to={`/owner/properties/${property.id}`} className="inline-flex items-center gap-1.5 rounded-lg border border-line px-3 py-2 text-sm font-bold text-ink hover:bg-sage-light/50">
+                  <Eye size={15} /> Details
+                </Link>
+                <Link to={`/owner/properties/${property.id}/edit`} className="inline-flex items-center gap-1.5 rounded-lg bg-sage-dark px-3 py-2 text-sm font-bold text-white hover:brightness-95">
+                  <Pencil size={15} /> Edit
+                </Link>
               </div>
             </div>
           </article>;
