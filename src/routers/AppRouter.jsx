@@ -28,6 +28,7 @@ import CommunityPage from "../pages/CommunityPage.jsx";
 import MemberRequestPage from "../pages/MemberRequestPage.jsx";
 import RentalRequestsPage from "../pages/RentalRequestsPage.jsx";
 import OwnerRentalRequestsPage from "../pages/owner/OwnerRentalRequestsPage.jsx";
+import UserDetail from "../pages/admin/UserDetail.jsx";
 
 const guestRouter = createBrowserRouter([
   {
@@ -69,6 +70,7 @@ const adminRouter = createBrowserRouter([
     children: [
       { index: true, Component: AdminDashboard, },
       { path: "users", Component: UserManagement },
+      { path: "users/:userId", Component: UserDetail },
       { path: "owner-applications", Component: OwnerApplications },
       { path: "owner-applications/:applicationId", Component: OwnerApplicationDetail },
       { path: "properties", Component: PropertyApprovals },

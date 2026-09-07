@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
+  Eye,
   RefreshCw,
   Search,
   ShieldAlert,
@@ -8,8 +9,12 @@ import {
   UserX,
 } from "lucide-react";
 import api from "../../services/api";
+import { useNavigate } from "react-router";
 
 const UserManagement = () => {
+
+  const navigate = useNavigate();
+
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
@@ -36,7 +41,7 @@ const UserManagement = () => {
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
-          "Unable to retrieve users"
+        "Unable to retrieve users"
       );
     } finally {
       setLoading(false);
@@ -73,7 +78,7 @@ const UserManagement = () => {
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
-          "Unable to update user status"
+        "Unable to update user status"
       );
     } finally {
       setUpdatingId(null);
@@ -406,71 +411,76 @@ const UserManagement = () => {
                       <td className="px-4 py-4 text-sm text-[#69766E]">
                         {user.createdAt
                           ? new Date(
-                              user.createdAt
-                            ).toLocaleDateString()
+                            user.createdAt
+                          ).toLocaleDateString()
                           : "—"}
                       </td>
 
                       {/* Actions */}
                       <td className="px-5 py-4">
-                        {role === "ADMIN" ? (
-                          <p className="text-right text-xs font-medium text-[#9AA39D]">
-                            Administrator
-                          </p>
-                        ) : (
-                          <div className="flex justify-end gap-2">
-                            {status !== "ACTIVE" && (
-                              <button
-                                type="button"
-                                disabled={updatingId === userId}
-                                onClick={() =>
-                                  updateUserStatus(
-                                    userId,
-                                    "ACTIVE"
-                                  )
-                                }
-                                className="inline-flex size-9 items-center justify-center rounded-lg bg-[#17382E] text-white transition hover:bg-[#214A3D] disabled:cursor-not-allowed disabled:opacity-50"
-                                title="Activate user"
-                              >
-                                <UserCheck size={15} />
-                              </button>
-                            )}
+                        <div className="flex justify-end gap-2">
+                          {/* View */}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              navigate(`/admin/users/${userId}`)
+                            }
+                            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-[#DDE4DE] bg-white px-3 text-xs font-semibold text-[#536159] transition hover:bg-[#F6F8F6] hover:text-[#17382E]"
+                          >
+                            <Eye size={14} />
+                            View
+                          </button>
 
-                            {status !== "SUSPENDED" && (
-                              <button
-                                type="button"
-                                disabled={updatingId === userId}
-                                onClick={() =>
-                                  updateUserStatus(
-                                    userId,
-                                    "SUSPENDED"
-                                  )
-                                }
-                                className="inline-flex size-9 items-center justify-center rounded-lg border border-amber-200 bg-white text-amber-700 transition hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-50"
-                                title="Suspend user"
-                              >
-                                <ShieldAlert size={15} />
-                              </button>
-                            )}
+                          {role === "ADMIN" ? (
+                            <p className="flex items-center px-2 text-xs font-medium text-[#9AA39D]">
+                              Administrator
+                            </p>
+                          ) : (
+                            <>
+                              {status !== "ACTIVE" && (
+                                <button
+                                  type="button"
+                                  disabled={updatingId === userId}
+                                  onClick={() =>
+                                    updateUserStatus(userId, "ACTIVE")
+                                  }
+                                  className="inline-flex size-9 items-center justify-center rounded-lg bg-[#17382E] text-white transition hover:bg-[#214A3D] disabled:cursor-not-allowed disabled:opacity-50"
+                                  title="Activate user"
+                                >
+                                  <UserCheck size={15} />
+                                </button>
+                              )}
 
-                            {status !== "BANNED" && (
-                              <button
-                                type="button"
-                                disabled={updatingId === userId}
-                                onClick={() =>
-                                  updateUserStatus(
-                                    userId,
-                                    "BANNED"
-                                  )
-                                }
-                                className="inline-flex size-9 items-center justify-center rounded-lg border border-red-200 bg-white text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
-                                title="Ban user"
-                              >
-                                <UserX size={15} />
-                              </button>
-                            )}
-                          </div>
-                        )}
+                              {status !== "SUSPENDED" && (
+                                <button
+                                  type="button"
+                                  disabled={updatingId === userId}
+                                  onClick={() =>
+                                    updateUserStatus(userId, "SUSPENDED")
+                                  }
+                                  className="inline-flex size-9 items-center justify-center rounded-lg border border-amber-200 bg-white text-amber-700 transition hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                  title="Suspend user"
+                                >
+                                  <ShieldAlert size={15} />
+                                </button>
+                              )}
+
+                              {status !== "BANNED" && (
+                                <button
+                                  type="button"
+                                  disabled={updatingId === userId}
+                                  onClick={() =>
+                                    updateUserStatus(userId, "BANNED")
+                                  }
+                                  className="inline-flex size-9 items-center justify-center rounded-lg border border-red-200 bg-white text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                  title="Ban user"
+                                >
+                                  <UserX size={15} />
+                                </button>
+                              )}
+                            </>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
