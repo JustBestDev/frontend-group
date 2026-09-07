@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router";
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router";
 import {
   ArrowLeft,
   FileEdit,
@@ -21,73 +21,78 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
-
-const INITIAL_REQUESTS = [
-  {
-    id: 1,
-    name: "Emily Johnson",
-    avatar:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCBdGm-zmGTv8Epv1y2t9pFEZdBoUmB7N1IKLzKT_6pEh4oX_uokhi96eQDPSKVbnFIWzQEAtRj5z60Kg0syvtFvTV4rO4uCkzmtgKbJgDAI6yU2SAUsKpL7bdrQhZVKVe7619VukTuV5RHoKLPnxgSI1UZLEgYlY1ZU3BtE0OFJ2Y-Tq2yp-c15W9clzoe6egsw7nR9gh9qNYH-JsY3EcTsSR-9milV3mz3O4VOp7JwFpCvrwxerTf",
-    status: "pending", // 'pending' | 'accepted' | 'rejected'
-  },
-  {
-    id: 2,
-    name: "Thanawat S.",
-    avatar:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCKxtozUZJ1neaVQdBoeEjkaWswTxnXM2ZoOA9jJKBb5LlKC5OxWOZaor6qY8zrKtPQUPnVuV7R7QrkvIHrF5AtuU6lel_XBbDfslqw9_E-3JIciVWh-EWYMX1osY7xtWyApCXrOel0cyjYdTd3RWZEY-Lzm-Cg1BlU1TpSGYyKACKLeJ1xkOm-sP8ACRLMlRnOlO6-vxc8uDr37e-8qws3hXhI0wWq-x9ICErL-WZbHf7K6swGIucU",
-    status: "pending",
-  },
-  {
-    id: 3,
-    name: "Kittipong M.",
-    avatar:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCYwNkWhJ-3icktWa5souxKoTZL8sM8P7ZVeTHWqkhn921H4_d_NBAzfioZguONWVmofwyNtKyeuaO0-y0OGujpWjHiWzRjaidV05RgfNwkMRlKkAt1_51S1i-9Dz3nkVo8xpvq_Y02ZWg0gsBjRlYX8Id1FtamX6xRUJVAzbbQNnRFuCSeaPBI-SayXBBqbEgz08GqL4CR8eTe194kHotqRNf3FzbnINJ8pkCqolhhlAuyv9etxe9H",
-    status: "pending",
-  },
-];
-
-const INITIAL_ACCEPTED = [
-  {
-    id: "acc-1",
-    name: "Numfon W.",
-    room: "Master Bedroom 1",
-    badge: "Deposit Paid",
-    avatar:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuD7c79_BWQvrEIwVixvgULYSL0y7tCED4kuWl1-pYFOLlMiaKBpAKnexWgR7kVGIvkBjdHLpRGyj17jKHaRD-7XPIBhUoZ0vF7ZtF95-S7YjRFt-b0IfgOJOLKyvASoaqK75aF2v-lcTsS94b2dn4L5pUsWDcfD9k0BB2_l1dLwuIjlt0crz5ZEdeET4PK23jKJ29z3Drx3ClzjLh8MGgQb0tXcKn1CVLOr4WShASQE7zoPVGCkL7QG",
-  },
-  {
-    id: "acc-2",
-    name: "Sarah Jenkins",
-    room: "Standard Bedroom 2",
-    badge: "Deposit Paid",
-    avatar:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCTEtQtPRMGM9vUp7E2QEz0a7PFvgowGAYN8c9ihV7jlzrUaEDOqGndIY41KRU496PSlgh9niVhUrADnMR4RiMFwif5OHCMyMaIj0xEHqnr_QCVHbJCGBBDNuFZ5rxsWXB-HyQNC3KUG9t3ftoeBjU4FTOoHqb6aIeHL9TerSx0vGNyXyQQalsp-dl09HiRhajQ3ln6aoV8fjioqNtAZI8yrD29aVLt0awrugWU3xTmwwDul-hkUvGm",
-  },
-  {
-    id: "acc-3",
-    name: "Alex Rivera",
-    room: "Standard Bedroom 3",
-    badge: "Verified",
-    avatar:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCWJfy6Rxw200CWhRdlwl3oL73I3-WXEm04FY6U1fcyrRUHYcXBxmfeUo8pcCRRK0IpJ0TRyXTphgFEXuwlTf7azdldrIa0nZcaX4KlYnlD2sGIpItW8bnSi49suGEFFIVWtRcenQxpAyMea11qTFeCvs28LYeUAWnnglf3xV4zhT6-qsOakB-RQUn0MLesqjrjD2U9M6JT2vyjglGkIyr2UoyeydFvIlU-TnExl9mHwK0NQCyBqTrI",
-  },
-];
+import api, { getApiErrorMessage } from "../services/api.js";
 
 export default function MemberRequestPage() {
-  const [requests, setRequests] = useState(INITIAL_REQUESTS);
-  const [acceptedMembers, setAcceptedMembers] = useState(INITIAL_ACCEPTED);
-  const [rejectedCount, setRejectedCount] = useState(1);
+  const { postId } = useParams();
+  const [post, setPost] = useState(null);
+  const [requests, setRequests] = useState([]);
+  const [acceptedMembers, setAcceptedMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [processingRequestId, setProcessingRequestId] = useState(null);
+  const [loadError, setLoadError] = useState("");
 
   // Toast
   const [toast, setToast] = useState({ show: false, message: "", isError: false });
 
-  const maxCapacity = 4;
+  const maxCapacity = post?.requiredMembers ?? 0;
   const pendingRequests = requests.filter((r) => r.status === "pending");
   const pendingCount = pendingRequests.length;
   const acceptedCount = acceptedMembers.length;
+  const rejectedCount = requests.filter((r) => r.status === "rejected").length;
   const isFull = acceptedCount >= maxCapacity;
   const spotsRemaining = Math.max(0, maxCapacity - acceptedCount);
-  const capacityPercentage = Math.min(100, Math.round((acceptedCount / maxCapacity) * 100));
+  const capacityPercentage = maxCapacity
+    ? Math.min(100, Math.round((acceptedCount / maxCapacity) * 100))
+    : 0;
+
+  const getMemberName = (member) =>
+    member?.user?.profile?.firstName || member?.user?.username || "Unknown member";
+
+  const getMemberAvatar = (member) => member?.user?.profile?.profileImageUrl || "";
+
+  const loadPageData = async () => {
+    setLoading(true);
+    setLoadError("");
+
+    try {
+      const [postResponse, requestResponse, memberResponse] = await Promise.all([
+        api.get(`/community-posts/${postId}`),
+        api.get(`/community-posts/${postId}/join-requests`),
+        api.get(`/community-posts/${postId}/members`),
+      ]);
+
+      setPost(postResponse.data);
+      setRequests(
+        (Array.isArray(requestResponse.data) ? requestResponse.data : []).map(
+          (request) => ({
+            ...request,
+            status: request.status.toLowerCase(),
+            name: getMemberName(request),
+            avatar: getMemberAvatar(request),
+          }),
+        ),
+      );
+      setAcceptedMembers(
+        (Array.isArray(memberResponse.data) ? memberResponse.data : []).map(
+          (member) => ({
+            ...member,
+            name: getMemberName(member),
+            avatar: getMemberAvatar(member),
+            badge: member.memberRole || "MEMBER",
+          }),
+        ),
+      );
+    } catch (error) {
+      setLoadError(getApiErrorMessage(error, "Unable to load community requests"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadPageData();
+  }, [postId]);
 
   const triggerToast = (message, isError = false) => {
     setToast({ show: true, message, isError });
@@ -96,37 +101,26 @@ export default function MemberRequestPage() {
     }, 3200);
   };
 
-  const handleAccept = (applicant) => {
+  const handleRequestAction = async (applicant, action) => {
     if (isFull) {
-      triggerToast("Cannot accept: Listing is already at maximum 4/4 capacity", true);
+      triggerToast(`Cannot ${action.toLowerCase()}: group is full`, true);
       return;
     }
 
-    const newMember = {
-      id: `acc-${Date.now()}`,
-      name: applicant.name,
-      room: "Bedroom 4",
-      badge: "Accepted",
-      avatar: applicant.avatar,
-    };
-
-    setAcceptedMembers([...acceptedMembers, newMember]);
-    setRequests((prev) =>
-      prev.map((r) =>
-        r.id === applicant.id ? { ...r, status: "accepted" } : r
-      )
-    );
-    triggerToast(`${applicant.name} has been approved into the group!`);
-  };
-
-  const handleReject = (applicant) => {
-    setRequests((prev) =>
-      prev.map((r) =>
-        r.id === applicant.id ? { ...r, status: "rejected" } : r
-      )
-    );
-    setRejectedCount((prev) => prev + 1);
-    triggerToast(`Request from ${applicant.name} was declined.`);
+    setProcessingRequestId(applicant.id);
+    try {
+      await api.patch(`/join-requests/${applicant.id}`, { action });
+      await loadPageData();
+      triggerToast(
+        action === "ACCEPT"
+          ? `${applicant.name} has been approved into the group!`
+          : `Request from ${applicant.name} was declined.`,
+      );
+    } catch (error) {
+      triggerToast(getApiErrorMessage(error, "Unable to update join request"), true);
+    } finally {
+      setProcessingRequestId(null);
+    }
   };
 
   return (
