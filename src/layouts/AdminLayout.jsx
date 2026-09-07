@@ -1,11 +1,14 @@
 import { NavLink, Outlet, useNavigate } from "react-router";
 import {
+  Bell,
   Building2,
+  ChevronDown,
   FileCheck2,
   LayoutDashboard,
   LogOut,
+  Menu,
   MessageCircle,
-  ShieldCheck,
+  Search,
   UsersRound,
 } from "lucide-react";
 import useAuthStore from "../stores/authStore.js";
@@ -15,7 +18,9 @@ import roomHubAppIcon from "../assets/roomhub-app-icon.svg";
 
 const AdminLayout = () => {
   const navigate = useNavigate();
+
   const logout = useAuthStore((state) => state.logout);
+  const user = useAuthStore((state) => state.user);
 
   const handleLogout = () => {
     logout();
@@ -52,29 +57,40 @@ const AdminLayout = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f4f7f4] md:flex">
-      <aside className="z-10 flex w-full flex-col bg-[#263d50] p-4 text-white md:fixed md:inset-y-0 md:left-0 md:w-65 md:p-6">
-        <div className="flex items-center gap-2 border-b border-white/20 px-2 pb-4 md:pb-7">
-                  <span className="grid size-11 place-items-center">
-                    <img
-                      src={roomHubAppIcon}
-                      alt="roomHubAppIcon"
-                      className="h-10 w-auto"
-                    />
-                  </span>
-                  <div>
-                    <img
-                      src={roomHubWordmark}
-                      alt="roomHubWordmark"
-                      className="block h-5 w-auto"
-                    />
-                    <span className="mt-0.5 block text-[10px] uppercase tracking-[.15em] text-white/65">
-                      Admin portal
-                    </span>
-                  </div>
-                </div>
+    <div className="min-h-screen bg-[#F5F6F4]">
+      {/* Sidebar */}
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-[#E4E9E4] bg-white lg:flex">
+        {/* Brand */}
+        <div className="flex h-20 items-center border-b border-[#E8ECE8] px-6">
+          <div className="flex items-center gap-3">
+            <div className="grid size-10 place-items-center rounded-xl bg-[#17382E]">
+              <img
+                src={roomHubAppIcon}
+                alt="RoomHub"
+                className="h-7 w-auto"
+              />
+            </div>
 
-        <nav className="grid flex-1 gap-2 pt-6">
+            <div>
+              <img
+                src={roomHubWordmark}
+                alt="RoomHub"
+                className="h-5 w-auto"
+              />
+
+              <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#829087]">
+                Admin Portal
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 space-y-1.5 overflow-y-auto px-4 py-6">
+          <p className="mb-3 px-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#9AA39D]">
+            Management
+          </p>
+
           {menuItems.map((item) => {
             const Icon = item.icon;
 
@@ -84,31 +100,127 @@ const AdminLayout = () => {
                 to={item.path}
                 end={item.end}
                 className={({ isActive }) =>
-                  isActive
-                    ? "flex items-center gap-3 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-[#263d50]"
-                    : "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"
+                  [
+                    "group flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-medium transition-all duration-200",
+                    isActive
+                      ? "bg-[#EAF0EC] text-[#17382E]"
+                      : "text-[#6B756F] hover:bg-[#F5F7F5] hover:text-[#17382E]",
+                  ].join(" ")
                 }
               >
-                <Icon size={20} />
-                <span>{item.name}</span>
+                {({ isActive }) => (
+                  <>
+                    <span
+                      className={[
+                        "grid size-9 place-items-center rounded-lg transition",
+                        isActive
+                          ? "bg-[#17382E] text-white"
+                          : "text-[#76827B] group-hover:bg-white group-hover:text-[#17382E]",
+                      ].join(" ")}
+                    >
+                      <Icon size={18} strokeWidth={1.9} />
+                    </span>
+
+                    <span>{item.name}</span>
+                  </>
+                )}
               </NavLink>
             );
           })}
         </nav>
 
-        <button
-          type="button"
-          className="mt-4 flex items-center gap-3 rounded-xl bg-transparent px-4 py-3 text-sm font-semibold text-white/70 hover:bg-white/10 hover:text-white"
-          onClick={handleLogout}
-        >
-          <LogOut size={20} />
-          <span>Log out</span>
-        </button>
+        {/* Logout */}
+        <div className="border-t border-[#E8ECE8] p-4">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-medium text-[#7D8680] transition hover:bg-red-50 hover:text-red-600"
+          >
+            <span className="grid size-9 place-items-center">
+              <LogOut size={18} />
+            </span>
+
+            Log out
+          </button>
+        </div>
       </aside>
 
-      <main className="min-h-screen w-full p-5 md:ml-65 md:w-[calc(100%-260px)] md:p-9">
-        <Outlet />
-      </main>
+      {/* Main */}
+      <div className="min-h-screen lg:pl-64">
+        {/* Top Navbar */}
+        <header className="sticky top-0 z-20 flex h-20 items-center border-b border-[#E4E9E4] bg-white/95 px-4 backdrop-blur-md sm:px-6 lg:px-8">
+          <div className="flex w-full items-center justify-between gap-4">
+            {/* Left */}
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              {/* Mobile menu visual placeholder */}
+              <button
+                type="button"
+                className="grid size-10 shrink-0 place-items-center rounded-xl border border-[#E5EAE6] text-[#536159] transition hover:bg-[#F5F7F5] lg:hidden"
+              >
+                <Menu size={20} />
+              </button>
+
+              {/* Search */}
+              <div className="relative hidden w-full max-w-md sm:block">
+                <Search
+                  size={17}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9AA39D]"
+                />
+
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  className="h-11 w-full rounded-xl border border-[#E5EAE6] bg-[#F8FAF8] pl-11 pr-4 text-sm text-[#26352D] outline-none transition placeholder:text-[#A0AAA4] focus:border-[#A9BBA3] focus:bg-white focus:ring-4 focus:ring-[#A9BBA3]/15"
+                />
+              </div>
+            </div>
+
+            {/* Right */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="relative grid size-10 place-items-center rounded-xl text-[#657169] transition hover:bg-[#F4F7F4] hover:text-[#17382E]"
+              >
+                <Bell size={19} />
+
+                <span className="absolute right-2.5 top-2.5 size-2 rounded-full bg-[#D97757] ring-2 ring-white" />
+              </button>
+
+              <div className="mx-1 hidden h-8 w-px bg-[#E5EAE6] sm:block" />
+
+              {/* Admin profile */}
+              <button
+                type="button"
+                className="flex items-center gap-3 rounded-xl p-1.5 transition hover:bg-[#F4F7F4]"
+              >
+                <div className="grid size-9 shrink-0 place-items-center rounded-full bg-[#17382E] text-sm font-semibold text-white">
+                  {user?.username?.charAt(0)?.toUpperCase() || "A"}
+                </div>
+
+                <div className="hidden text-left md:block">
+                  <p className="max-w-36 truncate text-sm font-semibold text-[#24342C]">
+                    {user?.username || "Administrator"}
+                  </p>
+
+                  <p className="text-[11px] font-medium text-[#8B968F]">
+                    Administrator
+                  </p>
+                </div>
+
+                <ChevronDown
+                  size={16}
+                  className="hidden text-[#8B968F] md:block"
+                />
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Page */}
+        <main className="min-h-[calc(100vh-80px)] p-4 sm:p-6 lg:p-8">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 };
