@@ -116,11 +116,6 @@ const userRouter = createBrowserRouter([
         path: "properties/:propertyId/:roomId",
         Component: RoomDetail,
       },
-      {
-        path: "properties/:propertyId/roomId",
-        Component: CreateRoomDetail,
-      },
-
     ],
   },
   { path: "*", element: <Navigate to="/properties" replace /> },
