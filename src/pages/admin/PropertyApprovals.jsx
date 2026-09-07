@@ -2,16 +2,21 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Building2,
   Check,
+  Eye,
   MapPin,
   RefreshCw,
   Search,
   X,
 } from "lucide-react";
+import { useNavigate } from "react-router";
 import api from "../../services/api";
 import RejectReasonModal from "../../components/admin/RejectReasonModal";
 import roomHubIcon from "../../assets/roomhub-icon.svg";
 
 const PropertyApprovals = () => {
+
+  const navigate = useNavigate();
+
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
@@ -430,44 +435,49 @@ const PropertyApprovals = () => {
 
                       {/* Actions */}
                       <td className="px-5 py-4">
-                        {publishStatus === "PENDING" ? (
-                          <div className="flex justify-end gap-2">
-                            <button
-                              type="button"
-                              disabled={updatingId === propertyId}
-                              onClick={() =>
-                                updatePublishStatus(
-                                  propertyId,
-                                  "APPROVED"
-                                )
-                              }
-                              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-[#17382E] px-3 text-xs font-semibold text-white transition hover:bg-[#214A3D] disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                              <Check size={15} />
+                        <div className="flex justify-end gap-2">
+                          {/* View */}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              navigate(`/admin/properties/${propertyId}`)
+                            }
+                            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-[#DDE4DE] bg-white px-3 text-xs font-semibold text-[#536159] transition hover:bg-[#F6F8F6] hover:text-[#17382E]"
+                          >
+                            <Eye size={14} />
+                            View
+                          </button>
 
-                              {updatingId === propertyId
-                                ? "Updating"
-                                : "Approve"}
-                            </button>
+                          {/* Approve / Reject เฉพาะ PENDING */}
+                          {publishStatus === "PENDING" && (
+                            <>
+                              <button
+                                type="button"
+                                disabled={updatingId === propertyId}
+                                onClick={() =>
+                                  updatePublishStatus(propertyId, "APPROVED")
+                                }
+                                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-[#17382E] px-3 text-xs font-semibold text-white transition hover:bg-[#214A3D] disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                <Check size={14} />
+                                Approve
+                              </button>
 
-                            <button
-                              type="button"
-                              disabled={updatingId === propertyId}
-                              onClick={() => {
-                                setError("");
-                                setRejectingId(propertyId);
-                              }}
-                              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                              <X size={15} />
-                              Reject
-                            </button>
-                          </div>
-                        ) : (
-                          <p className="text-right text-xs font-medium text-[#9AA39D]">
-                            Reviewed
-                          </p>
-                        )}
+                              <button
+                                type="button"
+                                disabled={updatingId === propertyId}
+                                onClick={() => {
+                                  setError("");
+                                  setRejectingId(propertyId);
+                                }}
+                                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                <X size={14} />
+                                Reject
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
