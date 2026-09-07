@@ -1,13 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Building2,
   Check,
   MapPin,
   RefreshCw,
+  Search,
   X,
 } from "lucide-react";
 import api from "../../services/api";
 import RejectReasonModal from "../../components/admin/RejectReasonModal";
+import roomHubIcon from "../../assets/roomhub-icon.svg";
 
 const PropertyApprovals = () => {
   const [properties, setProperties] = useState([]);
@@ -16,18 +18,20 @@ const PropertyApprovals = () => {
   const [error, setError] = useState("");
   const [rejectingId, setRejectingId] = useState(null);
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+
   const fetchProperties = async () => {
     setLoading(true);
     setError("");
 
     try {
       const response = await api.get("/admin/properties");
-
       setProperties(response.data.data ?? []);
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
-          "Unable to retrieve properties"
+        "Unable to retrieve properties"
       );
     } finally {
       setLoading(false);
@@ -69,201 +73,408 @@ const PropertyApprovals = () => {
         currentProperties.map((property) =>
           (property.id || property.propertyId) === propertyId
             ? {
-                ...property,
-                publishStatus,
-                ...(rejectReason ? { rejectReason } : {}),
-              }
+              ...property,
+              publishStatus,
+              ...(rejectReason ? { rejectReason } : {}),
+            }
             : property
         )
       );
+
       if (publishStatus === "REJECTED") {
         setRejectingId(null);
       }
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
-          "Unable to update property status"
+        "Unable to update property status"
       );
     } finally {
       setUpdatingId(null);
     }
   };
 
+  const filteredProperties = useMemo(() => {
+    const keyword = searchTerm.trim().toLowerCase();
+
+    return properties.filter((property) => {
+      const owner = property.owner || property.user || {};
+
+      const address =
+        property.address?.fullAddress ||
+        property.address?.district ||
+        property.location ||
+        property.city ||
+        "";
+
+      const propertyName =
+        property.title || property.name || "";
+
+      const ownerName =
+        owner.username ||
+        owner.email ||
+        property.ownerName ||
+        "";
+
+      const publishStatus =
+        property.publishStatus || "PENDING";
+
+      const matchesSearch =
+        !keyword ||
+        propertyName.toLowerCase().includes(keyword) ||
+        ownerName.toLowerCase().includes(keyword) ||
+        address.toLowerCase().includes(keyword);
+
+      const matchesStatus =
+        statusFilter === "ALL" ||
+        publishStatus === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [properties, searchTerm, statusFilter]);
+
+  const pendingCount = properties.filter(
+    (property) =>
+      (property.publishStatus || "PENDING") === "PENDING"
+  ).length;
+
+  const approvedCount = properties.filter(
+    (property) => property.publishStatus === "APPROVED"
+  ).length;
+
+  const rejectedCount = properties.filter(
+    (property) => property.publishStatus === "REJECTED"
+  ).length;
+
+  const getStatusClass = (status) => {
+    if (status === "APPROVED") {
+      return "bg-emerald-50 text-emerald-700";
+    }
+
+    if (status === "REJECTED") {
+      return "bg-red-50 text-red-700";
+    }
+
+    return "bg-amber-50 text-amber-700";
+  };
+
   if (loading) {
     return (
-      <div className="admin-page-message">
-        Loading properties...
+      <div className="flex min-h-[420px] items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto size-10 animate-spin rounded-full border-4 border-[#DCE5DF] border-t-[#17382E]" />
+
+          <p className="mt-4 text-sm font-medium text-[#7D8981]">
+            Loading properties...
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <section className="admin-content">
-      <div className="admin-page-header">
+    <section className="space-y-5">
+      {/* Header */}
+      <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
         <div>
-          <p className="admin-eyebrow">Administration</p>
-          <h1>Property Approvals</h1>
-          <p>
-            Review property listings before publishing them.
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#829087]">
+            Administration
+          </p>
+
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-[#1E2F27]">
+            Property approvals
+          </h1>
+
+          <p className="mt-1.5 text-sm text-[#7B8780]">
+            Review property listings before publishing them on RoomHub.
           </p>
         </div>
 
         <button
           type="button"
-          className="refresh-button"
           onClick={fetchProperties}
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[#DDE4DE] bg-white px-4 text-sm font-semibold text-[#45554C] shadow-sm transition hover:bg-[#F6F8F6]"
         >
-          <RefreshCw size={17} />
+          <RefreshCw size={16} />
           Refresh
         </button>
       </div>
 
+      {/* Compact summary */}
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="rounded-xl border border-[#E4E9E4] bg-white px-4 py-3 shadow-sm">
+          <p className="text-xs font-medium text-[#879189]">
+            Pending review
+          </p>
+          <p className="mt-1 text-xl font-bold text-[#22352B]">
+            {pendingCount}
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-[#E4E9E4] bg-white px-4 py-3 shadow-sm">
+          <p className="text-xs font-medium text-[#879189]">
+            Approved
+          </p>
+          <p className="mt-1 text-xl font-bold text-emerald-700">
+            {approvedCount}
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-[#E4E9E4] bg-white px-4 py-3 shadow-sm">
+          <p className="text-xs font-medium text-[#879189]">
+            Rejected
+          </p>
+          <p className="mt-1 text-xl font-bold text-red-700">
+            {rejectedCount}
+          </p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-col gap-3 rounded-xl border border-[#E4E9E4] bg-white p-3 shadow-sm md:flex-row">
+        <div className="relative flex-1">
+          <Search
+            size={16}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9AA39D]"
+          />
+
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder="Search by property, owner or location..."
+            className="h-10 w-full rounded-lg border border-[#E2E8E3] bg-[#F8FAF8] pl-10 pr-4 text-sm text-[#26352D] outline-none transition placeholder:text-[#A0AAA4] focus:border-[#A9BBA3] focus:bg-white focus:ring-4 focus:ring-[#A9BBA3]/15"
+          />
+        </div>
+
+        <select
+          value={statusFilter}
+          onChange={(event) =>
+            setStatusFilter(event.target.value)
+          }
+          className="h-10 rounded-lg border border-[#E2E8E3] bg-[#F8FAF8] px-3 text-sm font-medium text-[#536159] outline-none transition focus:border-[#A9BBA3] focus:bg-white focus:ring-4 focus:ring-[#A9BBA3]/15"
+        >
+          <option value="ALL">All statuses</option>
+          <option value="PENDING">Pending</option>
+          <option value="APPROVED">Approved</option>
+          <option value="REJECTED">Rejected</option>
+        </select>
+      </div>
+
       {error && (
-        <p className="admin-error" role="alert">
+        <div
+          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+          role="alert"
+        >
           {error}
-        </p>
+        </div>
       )}
 
-      {properties.length === 0 ? (
-        <div className="admin-table-card empty-state">
-          <Building2 size={38} />
-          <h2>No properties found</h2>
-          <p>There are no property listings to review.</p>
+      {/* Table */}
+      {filteredProperties.length === 0 ? (
+        <div className="rounded-2xl border border-[#E4E9E4] bg-white px-6 py-14 text-center shadow-sm">
+          <div className="mx-auto grid size-12 place-items-center rounded-xl bg-[#EEF3EF] text-[#17382E]">
+            <Building2 size={22} />
+          </div>
+
+          <h2 className="mt-4 text-base font-semibold text-[#26372E]">
+            No properties found
+          </h2>
+
+          <p className="mt-1 text-sm text-[#879189]">
+            No property listings match the current filters.
+          </p>
         </div>
       ) : (
-        <div className="property-approval-grid">
-          {properties.map((property) => {
-            const propertyId =
-              property.id || property.propertyId;
+        <div className="overflow-hidden rounded-2xl border border-[#E4E9E4] bg-white shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[900px]">
+              <thead className="bg-[#F7F9F7]">
+                <tr className="border-b border-[#E9EDE9]">
+                  <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#8B968F]">
+                    Property
+                  </th>
 
-            const owner = property.owner || property.user || {};
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#8B968F]">
+                    Owner
+                  </th>
 
-            const address =
-              property.address?.fullAddress ||
-              property.address?.district ||
-              property.location ||
-              property.city ||
-              "Address not provided";
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#8B968F]">
+                    Rent type
+                  </th>
 
-            const image =
-              property.images?.[0]?.imageUrl ||
-              property.images?.[0]?.url ||
-              property.imageUrl;
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#8B968F]">
+                    Price
+                  </th>
 
-            const publishStatus =
-              property.publishStatus || "PENDING";
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#8B968F]">
+                    Status
+                  </th>
 
-            return (
-              <article
-                className="property-approval-card"
-                key={propertyId}
-              >
-                <div className="property-image">
-                  {image ? (
-                    <img
-                      src={image}
-                      alt={property.title || "Property"}
-                    />
-                  ) : (
-                    <Building2 size={42} />
-                  )}
+                  <th className="px-5 py-3 text-right text-[11px] font-semibold uppercase tracking-wide text-[#8B968F]">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
 
-                  <span
-                    className={`status-badge status-${publishStatus.toLowerCase()}`}
-                  >
-                    {publishStatus}
-                  </span>
-                </div>
+              <tbody className="divide-y divide-[#EEF1EE]">
+                {filteredProperties.map((property) => {
+                  const propertyId =
+                    property.id || property.propertyId;
 
-                <div className="property-card-content">
-                  <div>
-                    <p className="property-type">
-                      {property.propertyType ||
-                        property.type ||
-                        "Property"}
-                    </p>
+                  const owner =
+                    property.owner || property.user || {};
 
-                    <h2>
-                      {property.title ||
-                        property.name ||
-                        "Untitled property"}
-                    </h2>
-                  </div>
+                  const address =
+                    property.address?.fullAddress ||
+                    property.address?.district ||
+                    property.location ||
+                    property.city ||
+                    "Address not provided";
 
-                  <p className="property-location">
-                    <MapPin size={16} />
-                    {address}
-                  </p>
+                  const image =
+                    property.images?.[0]?.imageUrl ||
+                    property.images?.[0]?.url ||
+                    property.imageUrl;
 
-                  <div className="property-information">
-                    <div>
-                      <span>Owner</span>
-                      <strong>
-                        {owner.username ||
-                          owner.email ||
-                          property.ownerName ||
-                          "Unknown"}
-                      </strong>
-                    </div>
+                  const publishStatus =
+                    property.publishStatus || "PENDING";
 
-                    <div>
-                      <span>Rent type</span>
-                      <strong>
+                  const propertyName =
+                    property.title ||
+                    property.name ||
+                    "Untitled property";
+
+                  return (
+                    <tr
+                      key={propertyId}
+                      className="transition hover:bg-[#FBFCFB]"
+                    >
+                      {/* Property */}
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="size-16 shrink-0 overflow-hidden rounded-xl bg-[#EEF2EE]">
+                            {image ? (
+                              <img
+                                src={image}
+                                alt={propertyName}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <div className="grid h-full place-items-center bg-[#EEF3EF]">
+                                <img
+                                  src={roomHubIcon}
+                                  alt="RoomHub"
+                                  className="h-8 w-auto opacity-60"
+                                />
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="min-w-0">
+                            <p className="max-w-[260px] truncate text-sm font-semibold text-[#26382F]">
+                              {propertyName}
+                            </p>
+
+                            <div className="mt-1 flex items-center gap-1.5 text-xs text-[#8A968E]">
+                              <MapPin size={13} className="shrink-0" />
+
+                              <span className="max-w-[250px] truncate">
+                                {address}
+                              </span>
+                            </div>
+
+                            <p className="mt-1 text-[11px] font-medium uppercase tracking-wide text-[#A0AAA4]">
+                              {property.propertyType ||
+                                property.type ||
+                                "Property"}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Owner */}
+                      <td className="px-4 py-4">
+                        <p className="max-w-[170px] truncate text-sm font-medium text-[#394B42]">
+                          {owner.username ||
+                            owner.email ||
+                            property.ownerName ||
+                            "Unknown"}
+                        </p>
+                      </td>
+
+                      {/* Rent type */}
+                      <td className="px-4 py-4 text-sm font-medium text-[#536159]">
                         {property.rentType || "—"}
-                      </strong>
-                    </div>
+                      </td>
 
-                    <div>
-                      <span>Price</span>
-                      <strong>
+                      {/* Price */}
+                      <td className="px-4 py-4 text-sm font-semibold text-[#33463C]">
                         {property.price
                           ? `฿${Number(
-                              property.price
-                            ).toLocaleString()}`
+                            property.price
+                          ).toLocaleString()}`
                           : "—"}
-                      </strong>
-                    </div>
-                  </div>
+                      </td>
 
-                  {publishStatus === "PENDING" ? (
-                    <div className="property-actions">
-                      <button
-                        type="button"
-                        className="property-action approve-property"
-                        disabled={updatingId === propertyId}
-                        onClick={() =>
-                          updatePublishStatus(
-                            propertyId,
-                            "APPROVED"
-                          )
-                        }
-                      >
-                        <Check size={18} />
-                        Approve
-                      </button>
+                      {/* Status */}
+                      <td className="px-4 py-4">
+                        <span
+                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusClass(
+                            publishStatus
+                          )}`}
+                        >
+                          {publishStatus}
+                        </span>
+                      </td>
 
-                      <button
-                        type="button"
-                        className="property-action reject-property"
-                        disabled={updatingId === propertyId}
-                        onClick={() => {
-                          setError("");
-                          setRejectingId(propertyId);
-                        }}
-                      >
-                        <X size={18} />
-                        Reject
-                      </button>
-                    </div>
-                  ) : (
-                    <p className="property-reviewed">
-                      This property has been reviewed.
-                    </p>
-                  )}
-                </div>
-              </article>
-            );
-          })}
+                      {/* Actions */}
+                      <td className="px-5 py-4">
+                        {publishStatus === "PENDING" ? (
+                          <div className="flex justify-end gap-2">
+                            <button
+                              type="button"
+                              disabled={updatingId === propertyId}
+                              onClick={() =>
+                                updatePublishStatus(
+                                  propertyId,
+                                  "APPROVED"
+                                )
+                              }
+                              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-[#17382E] px-3 text-xs font-semibold text-white transition hover:bg-[#214A3D] disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              <Check size={15} />
+
+                              {updatingId === propertyId
+                                ? "Updating"
+                                : "Approve"}
+                            </button>
+
+                            <button
+                              type="button"
+                              disabled={updatingId === propertyId}
+                              onClick={() => {
+                                setError("");
+                                setRejectingId(propertyId);
+                              }}
+                              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              <X size={15} />
+                              Reject
+                            </button>
+                          </div>
+                        ) : (
+                          <p className="text-right text-xs font-medium text-[#9AA39D]">
+                            Reviewed
+                          </p>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
