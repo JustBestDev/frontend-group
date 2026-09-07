@@ -90,6 +90,7 @@ const OwnerCreatePropertyPage = () => {
   };
 
   const onSubmit = async (data) => {
+
     setSubmitting(true);
     setPageError("");
     try {
