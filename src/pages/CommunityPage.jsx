@@ -247,7 +247,7 @@ function CommunityPage() {
       author: {
         name: user?.name || "You (RoomMate Member)",
         avatar:
-          user?.avatar||
+          user?.avatar ||
           "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
         role: "Member",
       },
@@ -293,12 +293,12 @@ function CommunityPage() {
     activeFilter === "ALL"
       ? posts
       : posts.filter(
-          (p) => p.rentType === activeFilter || p.propertyType === activeFilter,
-        );
+        (p) => p.rentType === activeFilter || p.propertyType === activeFilter,
+      );
 
-        if(posts == null) {
-          return <div className="">Loading ...</div>;
-        }
+  if (posts == null) {
+    return <div className="">Loading ...</div>;
+  }
 
   return (
     <main className="property-list-page min-h-screen bg-[#f7f5ee] text-[#465346] pt-6 sm:pt-8 pb-16">
@@ -317,7 +317,7 @@ function CommunityPage() {
           <span>{joinFeedback.message}</span>
         </div>
       )}
-      <section className="w-full max-w-320 mx-auto px-4 sm:px-6">
+      <section className="w-full max-w-7xl mx-auto px-4 sm:px-6">
         {/* Page Header (Consistent with ConversationList) */}
         <div className="mb-6 flex shrink-0 items-end justify-between gap-6 max-sm:flex-col max-sm:items-stretch">
           <div>
@@ -336,7 +336,7 @@ function CommunityPage() {
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left Column (Main Feed - 68%) */}
-          <div className="w-full lg:w-[100%] flex flex-col gap-6">
+          <div className="w-full lg:w-full flex flex-col gap-6">
             {/* Post Composer Card */}
             <div className="bg-white border border-[#e1e5dd] rounded-[18px] p-6 shadow-[0_15px_45px_rgba(68,83,68,0.12)]">
               <form onSubmit={handleCreatePost} className="flex flex-col gap-4">
@@ -441,11 +441,10 @@ function CommunityPage() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveFilter(tab.id)}
-                    className={`px-4 py-1.5 rounded-full text-[13px] font-bold whitespace-nowrap transition-all cursor-pointer ${
-                      activeFilter === tab.id
+                    className={`px-4 py-1.5 rounded-full text-[13px] font-bold whitespace-nowrap transition-all cursor-pointer ${activeFilter === tab.id
                         ? "bg-[#748a75] text-white shadow-[0_4px_12px_rgba(116,138,117,0.25)]"
                         : "bg-white text-[#5e6d5e] hover:bg-[#eef3eb] border border-[#cfd7cd]"
-                    }`}
+                      }`}
                   >
                     {tab.label}
                   </button>
@@ -496,11 +495,10 @@ function CommunityPage() {
                           <span>{post.createdAt}</span>
                           <span>·</span>
                           <span
-                            className={`flex items-center gap-0.5 text-[11px] px-2.5 py-0.5 rounded-full font-bold ${
-                              post.property.rentType === "INDIVIDUAL_ROOM"
+                            className={`flex items-center gap-0.5 text-[11px] px-2.5 py-0.5 rounded-full font-bold ${post.property.rentType === "INDIVIDUAL_ROOM"
                                 ? "bg-[#eef3eb] text-[#546b55] border border-[#cfd7cd]"
-                                : "bg-[#f8ede6] text-[#b9683f] border border-[#edd7cb]"
-                            }`}
+                                : "bg-[#f8ede6] text-terracotta border border-[#edd7cb]"
+                              }`}
                           >
                             {post.property.rentType}
                           </span>
@@ -522,7 +520,7 @@ function CommunityPage() {
                   {/* Property Preview (If Available) */}
                   {post.property && (
                     <div className="flex flex-col md:flex-row gap-5 p-3.5 rounded-xl bg-[#fafbf8] border border-[#e1e5dd]">
-                      <div className="relative w-full md:w-[280px] h-[190px] rounded-lg overflow-hidden shrink-0 bg-[#e8ede5]">
+                      <div className="relative w-full md:w-70 h-47.5 rounded-lg overflow-hidden shrink-0 bg-[#e8ede5]">
                         <img
                           alt="Property"
                           className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
@@ -653,7 +651,7 @@ function CommunityPage() {
                   <div className="text-[12px] text-[#8c958b]">Members</div>
                 </div>
                 <div>
-                  <div className="font-bold text-[18px] text-[#b9683f]">
+                  <div className="font-bold text-[18px] text-terracotta">
                     850+
                   </div>
                   <div className="text-[12px] text-[#8c958b]">
@@ -665,7 +663,7 @@ function CommunityPage() {
 
             {/* How to Join / Guidelines Card */}
             <div className="bg-white border border-[#e1e5dd] rounded-[18px] p-6 shadow-[0_8px_25px_rgba(67,81,67,0.07)]">
-              <div className="flex items-center gap-2.5 mb-4 text-[#b9683f]">
+              <div className="flex items-center gap-2.5 mb-4 text-terracotta">
                 <Sparkles className="w-5 h-5" />
                 <h3 className="font-bold text-[18px] text-[#465546] font-serif">
                   Tips for Finding Roommates

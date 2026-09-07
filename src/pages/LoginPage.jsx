@@ -44,7 +44,7 @@ const LoginPage = () => {
         authentication.user.role === "ADMIN"
           ? "/admin"
           : authentication.user.role === "OWNER"
-            ? "/owner"
+            ? "/"
             : "/properties"
       );
     } catch (requestError) {

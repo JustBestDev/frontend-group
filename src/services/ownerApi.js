@@ -15,6 +15,21 @@ export const getMyPropertiesApi = async () => {
     return res.data;
 };
 
+export const getOwnerPropertyApi = async (propertyId) => {
+    const res = await api.get(`/properties/${propertyId}`);
+    return res.data;
+};
+
+export const updatePropertyApi = async (propertyId, propertyData) => {
+    const res = await api.patch(`/properties/${propertyId}`, propertyData);
+    return res.data;
+};
+
+export const updatePropertyAddressApi = async (propertyId, addressData) => {
+    const res = await api.patch(`/properties/${propertyId}/address`, addressData);
+    return res.data;
+};
+
 export const getMyRentalsApi = async (params = {}) => {
     const res = await api.get("/rentals/me", { params });
     return res.data;

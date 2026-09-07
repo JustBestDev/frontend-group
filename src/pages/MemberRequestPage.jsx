@@ -137,7 +137,7 @@ export default function MemberRequestPage() {
           <div className="flex flex-col gap-1.5">
             <Link
               to="/community"
-              className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-[0.16em] text-[#b9683f] hover:underline transition-all w-fit"
+              className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-[0.16em] text-terracotta hover:underline transition-all w-fit"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               Back to Community
@@ -145,7 +145,7 @@ export default function MemberRequestPage() {
             <h1 className="font-serif text-3xl md:text-4xl text-[#1c1c16] font-bold tracking-tight">
               Community Post Management
             </h1>
-            <p className="text-sm md:text-base text-[#6f7a73]">
+            <p className="text-sm md:text-base text-muted-copy">
               Review applicant profiles, approve join requests, and balance your room allocation.
             </p>
           </div>
@@ -154,9 +154,9 @@ export default function MemberRequestPage() {
             <button
               type="button"
               onClick={() => triggerToast("Post editing details opened.")}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#e4e4d9] bg-white text-sm font-bold text-[#29342d] hover:border-[#a9bba3] hover:bg-[#e6ede3]/40 transition-all shadow-xs cursor-pointer active:scale-98"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-line bg-white text-sm font-bold text-ink hover:border-sage hover:bg-sage-light/40 transition-all shadow-xs cursor-pointer active:scale-98"
             >
-              <FileEdit className="w-4 h-4 text-[#687b67]" />
+              <FileEdit className="w-4 h-4 text-sage-dark" />
               Edit Post
             </button>
           </div>
@@ -166,9 +166,9 @@ export default function MemberRequestPage() {
         <div className="relative overflow-hidden rounded-2xl bg-white border border-[#e1e5dd] shadow-sm mb-8">
           <div className="flex flex-col lg:flex-row items-stretch">
             {/* Thumbnail & Visual */}
-            <div className="lg:w-2/5 min-h-[240px] relative overflow-hidden bg-[#ebe8de]">
+            <div className="lg:w-2/5 min-h-60 relative overflow-hidden bg-[#ebe8de]">
               <img
-                className="w-full h-full object-cover min-h-[240px]"
+                className="w-full h-full object-cover min-h-60"
                 alt="XELF Sukhumvit Master Bedroom"
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuCr2lbdMb7OhjXChx3wJbpvN-fJCAKrZY2WL3PQJ5-R9VhQCK5OZ1HwBHWHql6W43Umoky-jQPgHuf41HviGxEcR7yv74B0MVXLuPX-5FgbZUvhjy3IMVbdDnjsy3r_avlFUDNmfxO7ZPRpY5uOX7iRslzqy8QflUdoPOpYq1GQ9M9J5q95fQu_qRKP14KZek3-ukWUSmz0GnTCgq2neGLCk6Fl2fFODHoSwX35jCJVO04PqA5kvy5v"
               />
@@ -193,17 +193,17 @@ export default function MemberRequestPage() {
                     Condo · Sukhumvit, Bangkok
                   </span>
                   <span className="px-3 py-1 rounded-full bg-[#ebe8de] text-[#414753] text-xs font-semibold flex items-center gap-1">
-                    <Users className="w-3.5 h-3.5 text-[#b9683f]" />
+                    <Users className="w-3.5 h-3.5 text-terracotta" />
                     Sukhumvit Roommates Club
                   </span>
-                  <span className="text-[#6f7a73] text-xs font-medium ml-auto">
+                  <span className="text-muted-copy text-xs font-medium ml-auto">
                     Shared Oct 14, 2026
                   </span>
                 </div>
                 <h2 className="font-serif text-2xl md:text-3xl text-[#1c1c16] font-bold tracking-tight mb-2">
                   Modern Condo near BTS - XELF Sukhumvit
                 </h2>
-                <p className="text-sm md:text-[15px] text-[#6f7a73] line-clamp-2 leading-relaxed mb-4">
+                <p className="text-sm md:text-[15px] text-muted-copy line-clamp-2 leading-relaxed mb-4">
                   Spacious 4-bedroom corner unit with panoramic city vista, smart amenities, high-speed fiber, and serene co-working lounge. 250m walking distance to BTS Thong Lor.
                 </p>
               </div>
@@ -211,16 +211,16 @@ export default function MemberRequestPage() {
               <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-[#f1eee4] mt-auto">
                 <div className="flex items-baseline gap-1.5">
                   <span className="font-serif text-2xl font-bold text-[#4f614d]">฿12,000</span>
-                  <span className="text-[#6f7a73] text-xs sm:text-sm font-medium">/ person / month</span>
+                  <span className="text-muted-copy text-xs sm:text-sm font-medium">/ person / month</span>
                   <span className="text-[#889188] text-xs">(฿48,000 total)</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 bg-[#f7f4ea] px-3.5 py-1.5 rounded-lg border border-[#e4e4d9]">
+                  <div className="flex items-center gap-2 bg-[#f7f4ea] px-3.5 py-1.5 rounded-lg border border-line">
                     <Bed className="w-4 h-4 text-[#4f614d]" />
                     <span className="text-xs font-bold text-[#1c1c16]">
                       {isFull ? "Group Full" : `${spotsRemaining} Room Left`}
                     </span>
-                    <span className="text-xs text-[#6f7a73]">
+                    <span className="text-xs text-muted-copy">
                       ({acceptedCount}/{maxCapacity} Occupied)
                     </span>
                   </div>
@@ -243,7 +243,7 @@ export default function MemberRequestPage() {
           {/* Pending */}
           <div className="p-5 rounded-2xl bg-white border border-[#e1e5dd] shadow-xs flex flex-col justify-between">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-[#6f7a73] uppercase tracking-wider">
+              <span className="text-xs font-bold text-muted-copy uppercase tracking-wider">
                 Pending Requests
               </span>
               <span className="p-2 rounded-xl bg-[#ffdcc4] text-[#835024]">
@@ -261,7 +261,7 @@ export default function MemberRequestPage() {
           {/* Accepted */}
           <div className="p-5 rounded-2xl bg-white border border-[#e1e5dd] shadow-xs flex flex-col justify-between">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-[#6f7a73] uppercase tracking-wider">
+              <span className="text-xs font-bold text-muted-copy uppercase tracking-wider">
                 Accepted Members
               </span>
               <span className="p-2 rounded-xl bg-[#d4e8ce] text-[#3a4b38]">
@@ -279,7 +279,7 @@ export default function MemberRequestPage() {
           {/* Rejected */}
           <div className="p-5 rounded-2xl bg-white border border-[#e1e5dd] shadow-xs flex flex-col justify-between">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-[#6f7a73] uppercase tracking-wider">
+              <span className="text-xs font-bold text-muted-copy uppercase tracking-wider">
                 Rejected / Declined
               </span>
               <span className="p-2 rounded-xl bg-[#ebe8de] text-[#695c56]">
@@ -288,14 +288,14 @@ export default function MemberRequestPage() {
             </div>
             <div className="mt-4 flex items-baseline justify-between">
               <span className="font-serif text-3xl font-bold text-[#1c1c16]">{rejectedCount}</span>
-              <span className="text-[#6f7a73] text-xs font-medium">Archived</span>
+              <span className="text-muted-copy text-xs font-medium">Archived</span>
             </div>
           </div>
 
           {/* Group Capacity */}
           <div className="p-5 rounded-2xl bg-white border border-[#e1e5dd] shadow-xs flex flex-col justify-between">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-[#6f7a73] uppercase tracking-wider">
+              <span className="text-xs font-bold text-muted-copy uppercase tracking-wider">
                 Group Capacity
               </span>
               <span className="p-2 rounded-xl bg-[#eedcd4] text-[#835024]">
@@ -308,9 +308,8 @@ export default function MemberRequestPage() {
                   {acceptedCount} / {maxCapacity} Members
                 </span>
                 <span
-                  className={`text-xs font-bold ${
-                    isFull ? "text-[#4f614d]" : "text-[#b9683f]"
-                  }`}
+                  className={`text-xs font-bold ${isFull ? "text-[#4f614d]" : "text-terracotta"
+                    }`}
                 >
                   {isFull ? "Group Full!" : `${spotsRemaining} spot left!`}
                 </span>
@@ -345,21 +344,20 @@ export default function MemberRequestPage() {
               {/* Applicant Cards Feed */}
               <div className="flex flex-col gap-4 mt-5">
                 {requests.length === 0 ? (
-                  <div className="py-12 text-center text-[#6f7a73]">
-                    <Clock className="w-10 h-10 mx-auto mb-2 text-[#a9bba3]" />
+                  <div className="py-12 text-center text-muted-copy">
+                    <Clock className="w-10 h-10 mx-auto mb-2 text-sage" />
                     <p className="font-medium">No pending requests at the moment.</p>
                   </div>
                 ) : (
                   requests.map((applicant) => (
                     <div
                       key={applicant.id}
-                      className={`p-4 sm:p-5 rounded-2xl border transition-all duration-300 ${
-                        applicant.status === "rejected"
+                      className={`p-4 sm:p-5 rounded-2xl border transition-all duration-300 ${applicant.status === "rejected"
                           ? "bg-[#faf9f5] border-[#e1e5dd] opacity-60"
                           : applicant.status === "accepted"
-                            ? "bg-[#f4f7f2] border-[#a9bba3]"
+                            ? "bg-[#f4f7f2] border-sage"
                             : "bg-[#f7f4ea] border-[#e1e5dd] hover:shadow-md"
-                      }`}
+                        }`}
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         {/* Photo & Name */}
@@ -391,7 +389,7 @@ export default function MemberRequestPage() {
                               <button
                                 type="button"
                                 onClick={() => handleReject(applicant)}
-                                className="px-4 py-2 rounded-xl bg-white hover:bg-red-50 hover:text-red-700 hover:border-red-200 border border-[#cfd7cd] text-xs font-bold text-[#6f7a73] transition-all cursor-pointer"
+                                className="px-4 py-2 rounded-xl bg-white hover:bg-red-50 hover:text-red-700 hover:border-red-200 border border-[#cfd7cd] text-xs font-bold text-muted-copy transition-all cursor-pointer"
                               >
                                 Reject
                               </button>
@@ -399,11 +397,10 @@ export default function MemberRequestPage() {
                                 type="button"
                                 onClick={() => handleAccept(applicant)}
                                 disabled={isFull}
-                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1 shadow-xs cursor-pointer ${
-                                  isFull
+                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1 shadow-xs cursor-pointer ${isFull
                                     ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                                     : "bg-[#4f614d] hover:bg-[#687964] text-white"
-                                }`}
+                                  }`}
                               >
                                 <Check className="w-4 h-4" />
                                 Accept
@@ -420,16 +417,15 @@ export default function MemberRequestPage() {
 
             {/* Capacity Lock Notice */}
             <div
-              className={`p-4 rounded-2xl border flex items-start gap-3 transition-all ${
-                isFull
-                  ? "bg-[#d4e8ce]/50 border-[#a9bba3]"
-                  : "bg-[#eedcd4]/50 border-[#f2e2d5]"
-              }`}
+              className={`p-4 rounded-2xl border flex items-start gap-3 transition-all ${isFull
+                  ? "bg-[#d4e8ce]/50 border-sage"
+                  : "bg-[#eedcd4]/50 border-terracotta-light"
+                }`}
             >
               {isFull ? (
                 <Lock className="w-5 h-5 text-[#4f614d] shrink-0 mt-0.5" />
               ) : (
-                <Info className="w-5 h-5 text-[#b9683f] shrink-0 mt-0.5" />
+                <Info className="w-5 h-5 text-terracotta shrink-0 mt-0.5" />
               )}
               <div>
                 <h5 className="text-sm font-bold text-[#1c1c16]">
@@ -438,9 +434,8 @@ export default function MemberRequestPage() {
                 <p className="text-xs md:text-sm text-[#695c56] mt-0.5 leading-relaxed">
                   {isFull
                     ? "All 4 member spots for XELF Sukhumvit are confirmed. New applicants cannot apply unless a spot opens up."
-                    : `When you accept ${spotsRemaining} more roommate${
-                        spotsRemaining > 1 ? "s" : ""
-                      }, the group capacity reaches ${maxCapacity}/${maxCapacity}. All other pending requests will automatically receive a gentle status update, and your listing will change to 'Group Full'.`}
+                    : `When you accept ${spotsRemaining} more roommate${spotsRemaining > 1 ? "s" : ""
+                    }, the group capacity reaches ${maxCapacity}/${maxCapacity}. All other pending requests will automatically receive a gentle status update, and your listing will change to 'Group Full'.`}
                 </p>
               </div>
             </div>
@@ -456,7 +451,7 @@ export default function MemberRequestPage() {
                     {acceptedCount} of {maxCapacity} filled
                   </span>
                 </div>
-                <span className="text-xs text-[#6f7a73] flex items-center gap-1 font-medium">
+                <span className="text-xs text-muted-copy flex items-center gap-1 font-medium">
                   <ShieldCheck className="w-4 h-4 text-[#4f614d]" />
                   Lease agreements in progress
                 </span>
@@ -466,7 +461,7 @@ export default function MemberRequestPage() {
                 {acceptedMembers.map((member) => (
                   <div
                     key={member.id}
-                    className="p-4 rounded-xl bg-[#f7f4ea] border border-[#e4e4d9] flex flex-col justify-between gap-3"
+                    className="p-4 rounded-xl bg-[#f7f4ea] border border-line flex flex-col justify-between gap-3"
                   >
                     <div className="flex items-center gap-3">
                       <img
@@ -484,7 +479,7 @@ export default function MemberRequestPage() {
                       </div>
                     </div>
 
-                    <div className="pt-2 border-t border-[#e8e7dc] flex justify-between items-center text-xs text-[#6f7a73]">
+                    <div className="pt-2 border-t border-[#e8e7dc] flex justify-between items-center text-xs text-muted-copy">
                       <span>Room:</span>
                       <span className="text-[#1c1c16] font-semibold">{member.room}</span>
                     </div>
@@ -504,7 +499,7 @@ export default function MemberRequestPage() {
               </h4>
 
               {/* Occupancy Status */}
-              <div className="p-4 rounded-xl bg-[#f7f4ea] border border-[#e4e4d9] mb-4">
+              <div className="p-4 rounded-xl bg-[#f7f4ea] border border-line mb-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-bold text-[#1c1c16]">
                     Occupancy Status
@@ -519,9 +514,9 @@ export default function MemberRequestPage() {
                     style={{ width: `${capacityPercentage}%` }}
                   ></div>
                 </div>
-                <div className="flex items-center justify-between text-xs text-[#6f7a73]">
+                <div className="flex items-center justify-between text-xs text-muted-copy">
                   <span>{acceptedCount} Confirmed Members</span>
-                  <span className="text-[#b9683f] font-bold">
+                  <span className="text-terracotta font-bold">
                     {isFull ? "0 Rooms Left (Locked)" : `${spotsRemaining} Room Left`}
                   </span>
                 </div>
@@ -543,10 +538,10 @@ export default function MemberRequestPage() {
             {/* Quick Screening Guidelines */}
             <div className="bg-white p-6 rounded-2xl border border-[#e1e5dd] shadow-sm">
               <h4 className="font-serif text-base font-bold text-[#1c1c16] mb-3 flex items-center gap-2">
-                <Lightbulb className="w-4 h-4 text-[#b9683f]" />
+                <Lightbulb className="w-4 h-4 text-terracotta" />
                 Screening Best Practices
               </h4>
-              <ul className="flex flex-col gap-2.5 text-xs text-[#6f7a73] leading-relaxed">
+              <ul className="flex flex-col gap-2.5 text-xs text-muted-copy leading-relaxed">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-[#4f614d] shrink-0 mt-0.5" />
                   <span>Check alignment on working hours and morning schedule.</span>
@@ -567,9 +562,8 @@ export default function MemberRequestPage() {
         {/* Toast Notification */}
         {toast.show && (
           <div
-            className={`fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl text-xs font-bold text-white transition-all transform animate-in slide-in-from-bottom duration-300 ${
-              toast.isError ? "bg-[#ba1a1a]" : "bg-[#1c1c16]"
-            }`}
+            className={`fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl text-xs font-bold text-white transition-all transform animate-in slide-in-from-bottom duration-300 ${toast.isError ? "bg-[#ba1a1a]" : "bg-[#1c1c16]"
+              }`}
           >
             {toast.isError ? (
               <AlertCircle className="w-5 h-5 text-red-200" />

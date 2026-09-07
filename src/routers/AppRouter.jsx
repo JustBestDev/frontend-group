@@ -19,6 +19,7 @@ import OwnerRoomsPage from "../pages/owner/OwnerRoomsPage.jsx";
 import OwnerRentalsPage from "../pages/owner/OwnerRentalsPage.jsx";
 import OwnerProfilePage from "../pages/owner/OwnerProfilePage.jsx";
 import OwnerCreatePropertyPage from "../pages/owner/OwnerCreatePropertyPage.jsx";
+import OwnerPropertyDetailPage from "../pages/owner/OwnerPropertyDetailPage.jsx";
 import RoomDetail from "../pages/properties/RoomDetail.jsx";
 import useAuthStore from "../stores/authStore.js";
 import CreateRoomDetail from "../pages/properties/CreateRoomDetail.jsx";
@@ -118,7 +119,7 @@ const userRouter = createBrowserRouter([
         path: "properties/:propertyId/roomId",
         Component: CreateRoomDetail,
       },
-      
+
     ],
   },
   { path: "*", element: <Navigate to="/properties" replace /> },
@@ -126,12 +127,26 @@ const userRouter = createBrowserRouter([
 
 const ownerRouter = createBrowserRouter([
   {
+    path: "/",
+    Component: HomeLayout,
+    children: [
+      { index: true, element: <Navigate to="/properties" replace /> },
+      { path: "properties", Component: HomePage },
+      { path: "properties/:propertyId", Component: PropertyDetailPage },
+      { path: "community", Component: CommunityPage },
+      { path: "community/:postId/join-requests", Component: MemberRequestPage },
+      { path: "message", Component: ConversationList },
+    ]
+  },
+  {
     path: "/owner",
     Component: OwnerLayout,
     children: [
       { index: true, Component: OwnerDashboard },
       { path: "properties", Component: OwnerPropertiesPage },
       { path: "properties/new", Component: OwnerCreatePropertyPage },
+      { path: "properties/:propertyId", Component: OwnerPropertyDetailPage },
+      { path: "properties/:propertyId/edit", Component: OwnerPropertyDetailPage },
       { path: "rooms", Component: OwnerRoomsPage },
       { path: "rentals", Component: OwnerRentalsPage },
       { path: "rental-requests", Component: OwnerRentalRequestsPage },
@@ -139,7 +154,7 @@ const ownerRouter = createBrowserRouter([
       { path: "profile", Component: OwnerProfilePage },
     ],
   },
-  { path: "*", element: <Navigate to="/owner" replace /> },
+  { path: "*", element: <Navigate to="/" replace /> },
 ]);
 
 const AppRouter = () => {

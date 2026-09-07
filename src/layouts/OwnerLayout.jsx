@@ -8,6 +8,7 @@ import {
   ReceiptText,
   ShieldCheck,
   UserRound,
+  House,
 } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router";
 import useAuthStore from "../stores/authStore.js";
@@ -16,6 +17,7 @@ const OwnerLayout = () => {
   const navigate = useNavigate();
   const logout = useAuthStore((state) => state.logout);
   const menuItems = [
+    { name: "Homepage", path: "/", icon: House, end: true },
     { name: "Overview", path: "/owner", icon: LayoutDashboard, end: true },
     { name: "My Properties", path: "/owner/properties", icon: Building2 },
     { name: "Rooms", path: "/owner/rooms", icon: BedDouble },

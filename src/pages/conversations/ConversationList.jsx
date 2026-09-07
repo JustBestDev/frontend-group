@@ -6,6 +6,7 @@ import {
   Send,
   Check,
   CheckCheck,
+  Headphones,
 } from "lucide-react";
 import api from "../../services/api";
 import { createSocketClient, SOCKET_EVENTS } from "../../services/socket.js";
@@ -64,6 +65,7 @@ const ConversationList = () => {
   const [loading, setLoading] = useState(true);
   const [messageLoading, setMessageLoading] = useState(false);
   const [sending, setSending] = useState(false);
+  const [startingSupport, setStartingSupport] = useState(false);
   const [error, setError] = useState("");
   const [profileUserId, setProfileUserId] = useState(null);
   const closeUserProfile = useCallback(() => setProfileUserId(null), []);
@@ -73,6 +75,26 @@ const ConversationList = () => {
 
   const currentUser = useAuthStore((state) => state.user);
   const token = useAuthStore((state) => state.token);
+
+  const contactAdmin = async () => {
+    setStartingSupport(true);
+    setError("");
+    try {
+      const response = await api.post("/conversations/support");
+      const conversation = response.data.conversation || response.data.data?.conversation;
+      if (conversation) {
+        setConversations((current) => {
+          const exists = current.some((item) => String(getConversationId(item)) === String(getConversationId(conversation)));
+          return exists ? current : [conversation, ...current];
+        });
+        await openConversation(conversation);
+      }
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || "Unable to contact admin");
+    } finally {
+      setStartingSupport(false);
+    }
+  };
 
   const fetchConversations = async () => {
     setLoading(true);
@@ -410,14 +432,12 @@ const ConversationList = () => {
             </p>
           </div>
 
-          <button
-            type="button"
-            className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-line bg-white px-4 py-3 text-sm font-bold text-ink transition hover:border-sage hover:bg-sage-light/40"
-            onClick={fetchConversations}
-          >
-            <RefreshCw size={17} />
-            Refresh
-          </button>
+          <div className="flex flex-wrap gap-2">
+            {isOwnerView && <button type="button" disabled={startingSupport} onClick={contactAdmin} className="inline-flex items-center justify-center gap-2 rounded-xl bg-terracotta px-4 py-3 text-sm font-bold text-white disabled:opacity-50"><Headphones size={17} />{startingSupport ? "Opening..." : "Contact admin"}</button>}
+            <button type="button" className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-line bg-white px-4 py-3 text-sm font-bold text-ink transition hover:border-sage hover:bg-sage-light/40" onClick={fetchConversations}>
+              <RefreshCw size={17} /> Refresh
+            </button>
+          </div>
         </div>
 
         {error && (
@@ -546,7 +566,7 @@ const ConversationList = () => {
                     </button>
 
                     <span className="text-xs text-muted-copy">
-                      Conversation
+                      {selectedConversation.property ? selectedConversation.property.title : "Admin support"}
                     </span>
                   </div>
                 </header>
