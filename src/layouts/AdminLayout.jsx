@@ -10,6 +10,9 @@ import {
 } from "lucide-react";
 import useAuthStore from "../stores/authStore.js";
 
+import roomHubWordmark from "../assets/roomhub-wordmark.svg";
+import roomHubAppIcon from "../assets/roomhub-app-icon.svg";
+
 const AdminLayout = () => {
   const navigate = useNavigate();
   const logout = useAuthStore((state) => state.logout);
@@ -51,16 +54,25 @@ const AdminLayout = () => {
   return (
     <div className="min-h-screen bg-[#f4f7f4] md:flex">
       <aside className="z-10 flex w-full flex-col bg-[#263d50] p-4 text-white md:fixed md:inset-y-0 md:left-0 md:w-65 md:p-6">
-        <div className="flex items-center gap-3 border-b border-white/15 pb-5">
-          <div className="grid size-11 place-items-center rounded-xl bg-white text-[#263d50]">
-            <ShieldCheck size={25} />
-          </div>
-
-          <div>
-            <h1 className="font-serif text-xl font-bold">RoomShare</h1>
-            <span className="text-[10px] uppercase tracking-[.15em] text-white/60">Admin panel</span>
-          </div>
-        </div>
+        <div className="flex items-center gap-2 border-b border-white/20 px-2 pb-4 md:pb-7">
+                  <span className="grid size-11 place-items-center">
+                    <img
+                      src={roomHubAppIcon}
+                      alt="roomHubAppIcon"
+                      className="h-10 w-auto"
+                    />
+                  </span>
+                  <div>
+                    <img
+                      src={roomHubWordmark}
+                      alt="roomHubWordmark"
+                      className="block h-5 w-auto"
+                    />
+                    <span className="mt-0.5 block text-[10px] uppercase tracking-[.15em] text-white/65">
+                      Admin portal
+                    </span>
+                  </div>
+                </div>
 
         <nav className="grid flex-1 gap-2 pt-6">
           {menuItems.map((item) => {

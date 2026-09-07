@@ -150,7 +150,7 @@ const EditProfileModal = ({ isOpen, onClose }) => {
         <header className="edit-profile-header">
           <div>
             <h2 id={titleId}>Edit profile</h2>
-            <p>Update how your profile appears across RoomShare.</p>
+            <p>Update how your profile appears across RoomHub.</p>
           </div>
           <button type="button" onClick={closeModal} disabled={isSaving} aria-label="Close edit profile"><X size={22} /></button>
         </header>
