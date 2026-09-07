@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   Check,
+  ExternalLink,
   FileCheck2,
   FileWarning,
   Mail,
@@ -25,13 +26,13 @@ const OwnerApplicationDetail = () => {
   const { applicationId } = useParams();
   const navigate = useNavigate();
 
-  const [application, setApplication] =
-    useState(null);
+  const [application, setApplication] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
-  const [moreDocumentsModalOpen, setMoreDocumentsModalOpen] = useState(false);
+  const [moreDocumentsModalOpen, setMoreDocumentsModalOpen] =
+    useState(false);
 
   const fetchApplication = async () => {
     setLoading(true);
@@ -51,7 +52,7 @@ const OwnerApplicationDetail = () => {
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
-        "Unable to retrieve owner application"
+          "Unable to retrieve owner application"
       );
     } finally {
       setLoading(false);
@@ -63,7 +64,9 @@ const OwnerApplicationDetail = () => {
   }, [applicationId]);
 
   const updateStatus = async (status, rejectReason) => {
-    const action = status === "APPROVED" ? "approve" : "update";
+    const action =
+      status === "APPROVED" ? "approve" : "update";
+
     const confirmed =
       ["REJECTED", "NEED_MORE_DOCUMENTS"].includes(status) ||
       window.confirm(
@@ -92,51 +95,90 @@ const OwnerApplicationDetail = () => {
       window.alert(
         `Application ${status.toLowerCase()} successfully`
       );
+
       if (status === "REJECTED") {
         setRejectModalOpen(false);
       }
-      if (status === "NEED_MORE_DOCUMENTS") setMoreDocumentsModalOpen(false);
+
+      if (status === "NEED_MORE_DOCUMENTS") {
+        setMoreDocumentsModalOpen(false);
+      }
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
-        "Unable to update application"
+          "Unable to update application"
       );
     } finally {
       setUpdating(false);
     }
   };
 
+  const getStatusClass = (status) => {
+    if (status === "APPROVED") {
+      return "bg-emerald-50 text-emerald-700";
+    }
+
+    if (status === "REJECTED") {
+      return "bg-red-50 text-red-700";
+    }
+
+    if (status === "NEED_MORE_DOCUMENTS") {
+      return "bg-sky-50 text-sky-700";
+    }
+
+    return "bg-amber-50 text-amber-700";
+  };
+
+  const formatStatus = (status) =>
+    status.replaceAll("_", " ");
+
   if (loading) {
     return (
-      <div className="admin-page-message">
-        Loading owner application...
+      <div className="flex min-h-[420px] items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto size-10 animate-spin rounded-full border-4 border-[#DCE5DF] border-t-[#17382E]" />
+
+          <p className="mt-4 text-sm font-medium text-[#7D8981]">
+            Loading owner application...
+          </p>
+        </div>
       </div>
     );
   }
 
   if (error && !application) {
     return (
-      <section className="admin-content">
-        <div className="admin-detail-error">
-          <FileCheck2 size={42} />
+      <div className="rounded-2xl border border-[#E4E9E4] bg-white px-6 py-14 text-center shadow-sm">
+        <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#EEF3EF] text-[#17382E]">
+          <FileCheck2 size={26} />
+        </div>
 
-          <h1>Application unavailable</h1>
+        <h1 className="mt-4 text-xl font-bold text-[#26372E]">
+          Application unavailable
+        </h1>
 
-          <p>{error}</p>
+        <p className="mx-auto mt-2 max-w-md text-sm text-[#7B8780]">
+          {error}
+        </p>
 
+        <div className="mt-5 flex flex-wrap justify-center gap-3">
           <button
             type="button"
             onClick={fetchApplication}
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#17382E] px-4 text-sm font-semibold text-white transition hover:bg-[#214A3D]"
           >
-            <RefreshCw size={17} />
+            <RefreshCw size={16} />
             Try again
           </button>
 
-          <Link to="/admin/owner-applications">
+          <Link
+            to="/admin/owner-applications"
+            className="inline-flex h-10 items-center rounded-xl border border-[#DDE4DE] bg-white px-4 text-sm font-semibold text-[#536159] transition hover:bg-[#F6F8F6]"
+          >
             Back to applications
           </Link>
         </div>
-      </section>
+      </div>
     );
   }
 
@@ -172,183 +214,220 @@ const OwnerApplicationDetail = () => {
   );
 
   return (
-    <section className="admin-content">
+    <section className="space-y-6">
+      {/* Back */}
       <button
         type="button"
-        className="admin-back-button"
         onClick={() => navigate(-1)}
+        className="inline-flex items-center gap-2 text-sm font-semibold text-[#647168] transition hover:text-[#17382E]"
       >
-        <ArrowLeft size={18} />
+        <ArrowLeft size={17} />
         Back
       </button>
 
-      <div className="admin-detail-heading">
+      {/* Header */}
+      <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
         <div>
-          <p className="admin-eyebrow">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#829087]">
             Owner application
           </p>
 
-          <h1>{fullName}</h1>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-[#1E2F27] sm:text-3xl">
+            {fullName}
+          </h1>
 
-          <p>
-            Review the applicant information before making
-            a decision.
+          <p className="mt-2 text-sm text-[#7B8780]">
+            Review applicant information and supporting documents
+            before making a decision.
           </p>
         </div>
 
         <span
-          className={`status-badge status-${status.toLowerCase().replaceAll("_", "-")}`}
+          className={`inline-flex w-fit rounded-full px-3 py-1.5 text-xs font-semibold ${getStatusClass(
+            status
+          )}`}
         >
-          {status}
+          {formatStatus(status)}
         </span>
       </div>
 
       {error && (
-        <p className="admin-error" role="alert">
+        <div
+          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+          role="alert"
+        >
           {error}
-        </p>
+        </div>
       )}
 
-      <div className="admin-detail-layout">
-        <div className="admin-detail-main">
-          <section className="admin-detail-card">
-            <div className="admin-detail-card-heading">
-              <UserRound size={21} />
-              <h2>Applicant information</h2>
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+        {/* Main */}
+        <div className="space-y-6">
+          {/* Applicant information */}
+          <section className="rounded-2xl border border-[#E4E9E4] bg-white shadow-sm">
+            <div className="flex items-center gap-3 border-b border-[#EEF1EE] px-6 py-5">
+              <div className="grid size-10 place-items-center rounded-xl bg-[#EEF3EF] text-[#17382E]">
+                <UserRound size={19} />
+              </div>
+
+              <div>
+                <h2 className="font-semibold text-[#26382F]">
+                  Applicant information
+                </h2>
+
+                <p className="mt-0.5 text-xs text-[#8A958E]">
+                  Personal and account details
+                </p>
+              </div>
             </div>
 
-            <div className="admin-information-grid">
-              <div>
-                <span>Full name</span>
-                <strong>{fullName}</strong>
-              </div>
+            <div className="grid gap-x-8 gap-y-6 p-6 sm:grid-cols-2">
+              <InfoItem
+                label="Full name"
+                value={fullName}
+              />
 
-              <div>
-                <span>Username</span>
-                <strong>
-                  {user.username ||
-                    application.username ||
-                    "—"}
-                </strong>
-              </div>
+              <InfoItem
+                label="Username"
+                value={
+                  user.username ||
+                  application.username ||
+                  "—"
+                }
+              />
 
-              <div>
-                <span>Email</span>
-                <strong>
-                  <Mail size={15} />
-                  {user.email ||
-                    application.email ||
-                    "—"}
-                </strong>
-              </div>
+              <InfoItem
+                label="Email"
+                value={
+                  user.email ||
+                  application.email ||
+                  "—"
+                }
+                icon={<Mail size={15} />}
+              />
 
-              <div>
-                <span>Phone number</span>
-                <strong>
-                  <Phone size={15} />
-                  {profile.phone ||
-                    user.mobile ||
-                    application.phone ||
-                    "—"}
-                </strong>
-              </div>
+              <InfoItem
+                label="Phone number"
+                value={
+                  profile.phone ||
+                  user.mobile ||
+                  application.phone ||
+                  "—"
+                }
+                icon={<Phone size={15} />}
+              />
 
-              <div>
-                <span>Applicant type</span>
-                <strong>
-                  {applicantType
-                    .replaceAll("_", " ")
-                    .toLowerCase()}
-                </strong>
-              </div>
+              <InfoItem
+                label="Applicant type"
+                value={applicantType
+                  .replaceAll("_", " ")
+                  .toLowerCase()}
+              />
 
-              <div>
-                <span>Submitted</span>
-                <strong>
-                  {application.createdAt
+              <InfoItem
+                label="Submitted"
+                value={
+                  application.createdAt
                     ? new Date(
-                      application.createdAt
-                    ).toLocaleString()
-                    : "—"}
-                </strong>
-              </div>
+                        application.createdAt
+                      ).toLocaleString()
+                    : "—"
+                }
+              />
             </div>
           </section>
 
-          <section className="admin-detail-card">
-            <div className="admin-detail-card-heading">
-              <FileCheck2 size={21} />
-              <h2>Application details</h2>
-            </div>
-
-            <div className="application-detail-section">
-              <div>
-                <span>Reason for applying</span>
-
-                <p>
-                  {application.reason ||
-                    application.message ||
-                    "No reason was provided."}
-                </p>
+          {/* Application details */}
+          <section className="rounded-2xl border border-[#E4E9E4] bg-white shadow-sm">
+            <div className="flex items-center gap-3 border-b border-[#EEF1EE] px-6 py-5">
+              <div className="grid size-10 place-items-center rounded-xl bg-[#EEF3EF] text-[#17382E]">
+                <FileCheck2 size={19} />
               </div>
 
+              <div>
+                <h2 className="font-semibold text-[#26382F]">
+                  Application details
+                </h2>
+
+                <p className="mt-0.5 text-xs text-[#8A958E]">
+                  Reason, admin notes and supporting documents
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-6 p-6">
+              <DetailBlock
+                label="Reason for applying"
+                value={
+                  application.reason ||
+                  application.message ||
+                  "No reason was provided."
+                }
+              />
+
               {application.rejectReason && (
-                <div>
-                  <span>Admin message</span>
-                  <p>{application.rejectReason}</p>
-                </div>
+                <DetailBlock
+                  label="Admin message"
+                  value={application.rejectReason}
+                />
               )}
 
               {applicantType === "AGENT" && (
-                <>
-                  <div>
-                    <span>Agency name</span>
-                    <p>
-                      {application.agencyName || "—"}
-                    </p>
-                  </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <InfoItem
+                    label="Agency name"
+                    value={application.agencyName || "—"}
+                  />
 
-                  <div>
-                    <span>Agent licence</span>
-                    <p>
-                      {application.licenseNumber ||
-                        application.agentLicense ||
-                        "—"}
-                    </p>
-                  </div>
-                </>
+                  <InfoItem
+                    label="Agent licence"
+                    value={
+                      application.licenseNumber ||
+                      application.agentLicense ||
+                      "—"
+                    }
+                  />
+                </div>
               )}
 
               {documents.length > 0 && (
                 <div>
-                  <span>Supporting documents</span>
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8B968F]">
+                    Supporting documents
+                  </p>
 
-                  <div className="owner-document-grid">
+                  <div className="mt-3 grid gap-4 md:grid-cols-2">
                     {documents.map((document, index) => (
-                      <div
-                        className="owner-document-item"
-                        key={document.id}
+                      <article
+                        key={document.id || index}
+                        className="overflow-hidden rounded-xl border border-[#E4E9E4] bg-[#FAFBFA]"
                       >
-                        {isPdfDocument(document.signedUrl) ? (
-                          <iframe
-                            src={document.signedUrl}
-                            title={`Supporting document ${index + 1}`}
-                          />
-                        ) : (
-                          <img
-                            src={document.signedUrl}
-                            alt={`Supporting document ${index + 1}`}
-                          />
-                        )}
+                        <div className="h-56 bg-[#EEF2EE]">
+                          {isPdfDocument(document.signedUrl) ? (
+                            <iframe
+                              src={document.signedUrl}
+                              title={`Supporting document ${index + 1}`}
+                              className="h-full w-full"
+                            />
+                          ) : (
+                            <img
+                              src={document.signedUrl}
+                              alt={`Supporting document ${index + 1}`}
+                              className="h-full w-full object-contain"
+                            />
+                          )}
+                        </div>
 
                         <a
                           href={document.signedUrl}
                           target="_blank"
                           rel="noreferrer"
+                          className="flex items-center justify-between px-4 py-3 text-sm font-semibold text-[#355244] transition hover:bg-[#F5F8F5]"
                         >
                           Open document {index + 1}
+                          <ExternalLink size={15} />
                         </a>
-                      </div>
+                      </article>
                     ))}
                   </div>
                 </div>
@@ -357,66 +436,73 @@ const OwnerApplicationDetail = () => {
           </section>
         </div>
 
-        <aside className="admin-decision-card">
-          <h2>Review decision</h2>
+        {/* Decision */}
+        <aside className="h-fit rounded-2xl border border-[#E4E9E4] bg-white p-5 shadow-sm xl:sticky xl:top-28">
+          <h2 className="font-semibold text-[#26382F]">
+            Review decision
+          </h2>
 
-          <p>
+          <p className="mt-2 text-sm leading-6 text-[#7B8780]">
             Approving this application will grant the user
-            owner access.
+            owner access on RoomHub.
           </p>
 
+          <div className="my-5 h-px bg-[#EEF1EE]" />
+
           {status === "PENDING" ? (
-            <div className="admin-decision-actions">
+            <div className="space-y-3">
               <button
                 type="button"
-                className="admin-reject-button"
                 disabled={updating}
                 onClick={() => {
                   setError("");
                   setMoreDocumentsModalOpen(true);
                 }}
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-sky-200 bg-white text-sm font-semibold text-sky-700 transition hover:bg-sky-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <FileWarning size={18} />
+                <FileWarning size={17} />
                 Request more documents
               </button>
 
               <button
                 type="button"
-                className="admin-approve-button"
                 disabled={updating}
                 onClick={() =>
                   updateStatus("APPROVED")
                 }
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#17382E] text-sm font-semibold text-white transition hover:bg-[#214A3D] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <Check size={18} />
-                Approve application
+                <Check size={17} />
+                {updating ? "Updating..." : "Approve application"}
               </button>
 
               <button
                 type="button"
-                className="admin-reject-button"
                 disabled={updating}
                 onClick={() => {
                   setError("");
                   setRejectModalOpen(true);
                 }}
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-white text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <X size={18} />
+                <X size={17} />
                 Reject application
               </button>
             </div>
           ) : (
             <div
-              className={`admin-decision-result result-${status.toLowerCase().replaceAll("_", "-")}`}
+              className={`rounded-xl px-4 py-4 text-sm font-semibold ${getStatusClass(
+                status
+              )}`}
             >
               This application has been{" "}
-              {status.toLowerCase()}.
+              {formatStatus(status).toLowerCase()}.
             </div>
           )}
 
           <Link
-            className="admin-return-link"
             to="/admin/owner-applications"
+            className="mt-4 inline-flex w-full items-center justify-center text-sm font-semibold text-[#647168] transition hover:text-[#17382E]"
           >
             Return to application list
           </Link>
@@ -457,11 +543,41 @@ const OwnerApplicationDetail = () => {
               setError("");
             }
           }}
-          onReject={(message) => updateStatus("NEED_MORE_DOCUMENTS", message)}
+          onReject={(message) =>
+            updateStatus(
+              "NEED_MORE_DOCUMENTS",
+              message
+            )
+          }
         />
       )}
     </section>
   );
 };
+
+const InfoItem = ({ label, value, icon }) => (
+  <div>
+    <p className="text-xs font-medium text-[#8A958E]">
+      {label}
+    </p>
+
+    <div className="mt-1.5 flex items-center gap-2 text-sm font-semibold text-[#33463C]">
+      {icon}
+      <span className="break-words">{value}</span>
+    </div>
+  </div>
+);
+
+const DetailBlock = ({ label, value }) => (
+  <div>
+    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8B968F]">
+      {label}
+    </p>
+
+    <p className="mt-2 rounded-xl bg-[#F7F9F7] px-4 py-3 text-sm leading-6 text-[#56635B]">
+      {value}
+    </p>
+  </div>
+);
 
 export default OwnerApplicationDetail;
