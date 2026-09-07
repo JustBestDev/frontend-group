@@ -134,12 +134,11 @@ const ownerRouter = createBrowserRouter([
       { index: true, element: <Navigate to="/properties" replace /> },
       { path: "properties", Component: HomePage },
       { path: "properties/:propertyId", Component: PropertyDetailPage },
+      { path: "properties/:propertyId/:roomId", Component: RoomDetail, },
+
       { path: "community", Component: CommunityPage },
       { path: "community/:postId/join-requests", Component: MemberRequestPage },
       { path: "message", Component: ConversationList },
-      { path: "properties/:propertyId", Component: PropertyDetailPage, },
-      { path: "properties/:propertyId/:roomId", Component: RoomDetail, },
-      { path: "properties/:propertyId/roomId", Component: CreateRoomDetail, },
     ]
   },
 
