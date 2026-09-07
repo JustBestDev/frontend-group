@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { Building2 } from "lucide-react";
 import AuthModal from "./auth/AuthModal.jsx";
 import OwnerApplicationModal from "./ownerApplication/OwnerApplicationModal.jsx";
 import useAuthStore from "../stores/authStore.js";
