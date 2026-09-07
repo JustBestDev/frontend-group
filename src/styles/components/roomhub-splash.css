@@ -1,0 +1,60 @@
+.roomhub-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: grid;
+  place-items: center;
+
+  background: #f8f3ec;
+
+  opacity: 1;
+  transition: opacity 250ms ease;
+}
+
+.roomhub-splash--leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.roomhub-splash__logo {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.roomhub-splash__logo img {
+  display: block;
+  height: 80px;
+  width: auto;
+}
+
+.roomhub-splash__left {
+  position: relative;
+  z-index: 3;
+}
+
+.roomhub-splash__right {
+  position: relative;
+  z-index: 2;
+
+  animation: roomhub-right-enter 450ms ease-out 250ms both;
+}
+
+@keyframes roomhub-right-enter {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .roomhub-splash__logo img {
+    height: 56px;
+  }
+}
