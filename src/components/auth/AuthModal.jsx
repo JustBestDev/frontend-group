@@ -16,6 +16,8 @@ import {
 } from "../../services/authService.js";
 import useAuthStore from "../../stores/authStore.js";
 
+import roomHubIcon from "../../assets/roomhub-icon.svg";
+
 const AuthModal = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
@@ -70,7 +72,7 @@ const AuthModal = ({ isOpen, onClose }) => {
         : authentication.user.role === "OWNER"
           ? "/owner"
           : "/properties",
-          { replace: true }
+      { replace: true }
     );
   };
 
@@ -148,8 +150,8 @@ const AuthModal = ({ isOpen, onClose }) => {
       } else {
         setError(
           responseMessage ||
-            requestError.message ||
-            "Unable to continue"
+          requestError.message ||
+          "Unable to continue"
         );
       }
     } finally {
@@ -173,7 +175,7 @@ const AuthModal = ({ isOpen, onClose }) => {
       >
         <header className="auth-modal-header">
           <div>
-            <h2 id="auth-modal-title">Welcome to RoomShare</h2>
+            <h2 id="auth-modal-title">Welcome to RoomHub</h2>
 
             <p>
               Find a room or start listing your property.
@@ -191,9 +193,14 @@ const AuthModal = ({ isOpen, onClose }) => {
         </header>
 
         <div className="auth-modal-content">
-          <div className="auth-modal-logo">
+          {/* <div className="auth-modal-logo">
             <ShieldCheck size={31} />
-          </div>
+          </div> */}
+          <img
+            src={roomHubIcon}
+            alt="RoomHubIcon"
+            className="grid place-items-center h-15 w-auto mx-auto mb-[21px]"
+          />
 
           <div className="auth-mode-tabs">
             <button

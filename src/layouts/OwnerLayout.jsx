@@ -13,6 +13,9 @@ import {
 import { NavLink, Outlet, useNavigate } from "react-router";
 import useAuthStore from "../stores/authStore.js";
 
+import roomHubWordmark from "../assets/roomhub-wordmark.svg";
+import roomHubAppIcon from "../assets/roomhub-app-icon.svg";
+
 const OwnerLayout = () => {
   const navigate = useNavigate();
   const logout = useAuthStore((state) => state.logout);
@@ -35,9 +38,24 @@ const OwnerLayout = () => {
   return (
     <div className="min-h-screen bg-cream md:flex">
       <aside className="z-10 flex w-full flex-col bg-linear-to-b from-[#244b3c] to-forest px-4 py-4 text-white shadow-[10px_0_30px_rgba(27,57,46,.12)] md:fixed md:inset-y-0 md:left-0 md:w-63.75 md:px-4.5 md:py-7">
-        <div className="flex items-center gap-3 border-b border-white/20 px-2 pb-4 md:pb-7">
-          <span className="grid size-11 place-items-center rounded-[14px] bg-white text-sage-dark"><ShieldCheck size={25} /></span>
-          <div><strong className="block font-serif text-[21px]">RoomShare</strong><span className="mt-0.5 block text-[10px] uppercase tracking-[.15em] text-white/65">Owner portal</span></div>
+        <div className="flex items-center gap-2 border-b border-white/20 px-2 pb-4 md:pb-7">
+          <span className="grid size-11 place-items-center">
+            <img
+              src={roomHubAppIcon}
+              alt="roomHubAppIcon"
+              className="h-10 w-auto"
+            />
+          </span>
+          <div>
+            <img
+              src={roomHubWordmark}
+              alt="roomHubWordmark"
+              className="block h-5 w-auto"
+            />
+            <span className="mt-0.5 block text-[10px] uppercase tracking-[.15em] text-white/65">
+              Owner portal
+            </span>
+          </div>
         </div>
 
         <nav className="grid flex-1 grid-cols-3 gap-2 pt-4 md:flex md:flex-col md:pt-7" aria-label="Owner navigation">
