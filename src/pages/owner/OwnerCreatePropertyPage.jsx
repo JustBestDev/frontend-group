@@ -3,22 +3,20 @@ import {
   ArrowRight,
   Check,
   ImagePlus,
-  Plus,
   Trash2,
   Upload,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
 import GoogleMapPicker from "../../components/owner/GoogleMapPicker.jsx";
 import {
   createPropertyAddressApi,
   createPropertyApi,
-  createPropertyRoomApi,
   uploadPropertyImagesApi,
 } from "../../services/ownerApi.js";
 
-const steps = ["Property details", "Address", "Photos", "Rooms & review"];
+const steps = ["Property details", "Address", "Photos"];
 const inputClass =
   "w-full rounded-xl border border-line bg-white px-4 py-3 text-ink outline-none focus:border-sage-dark focus:ring-3 focus:ring-sage-dark/10";
 const fieldClass = "grid gap-1.5 text-sm font-semibold text-ink";
@@ -32,10 +30,8 @@ const OwnerCreatePropertyPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [addressCreated, setAddressCreated] = useState(false);
   const [imagesUploaded, setImagesUploaded] = useState(false);
-  const [createdRoomCount, setCreatedRoomCount] = useState(0);
   const {
     register,
-    control,
     handleSubmit,
     setValue,
     trigger,
@@ -44,10 +40,8 @@ const OwnerCreatePropertyPage = () => {
     defaultValues: {
       propertyType: "CONDO",
       rentType: "WHOLE_UNIT",
-      rooms: [{ roomName: "", description: "", monthlyRent: "", capacity: 1 }],
     },
   });
-  const { fields, append, remove } = useFieldArray({ control, name: "rooms" });
   const previews = useMemo(
     () => images.map((file) => ({ file, url: URL.createObjectURL(file) })),
     [images],
@@ -80,13 +74,13 @@ const OwnerCreatePropertyPage = () => {
   const nextStep = async () => {
     const groups =
       step === 1
-        ? ["title", "description", "propertyType", "rentType", "monthlyRent"]
+        ? ["title", "description", "propertyType", "rentType", "monthlyRent", "totalBedrooms"]
         : ["province"];
     if (step < 3 && !(await trigger(groups))) return;
     if (step === 3 && images.length === 0)
       return setPageError("Add at least one property image");
     setPageError("");
-    setStep((current) => Math.min(4, current + 1));
+    setStep((current) => Math.min(3, current + 1));
   };
 
   const onSubmit = async (data) => {
@@ -131,20 +125,6 @@ const OwnerCreatePropertyPage = () => {
       if (!imagesUploaded) {
         await uploadPropertyImagesApi(id, images);
         setImagesUploaded(true);
-      }
-      const validRooms = data.rooms.filter((room) => room.roomName);
-      for (
-        let index = createdRoomCount;
-        index < validRooms.length;
-        index += 1
-      ) {
-        const room = validRooms[index];
-        await createPropertyRoomApi(id, {
-          ...room,
-          monthlyRent: Number(room.monthlyRent),
-          capacity: Number(room.capacity),
-        });
-        setCreatedRoomCount(index + 1);
       }
       navigate("/owner/properties");
     } catch (error) {
@@ -268,8 +248,12 @@ const OwnerCreatePropertyPage = () => {
                     type="number"
                     min="0"
                     className={inputClass}
-                    {...register("totalBedrooms")}
+                    {...register("totalBedrooms", {
+                      required: "Total bedrooms is required",
+                      min: { value: 1, message: "Add at least one bedroom" },
+                    })}
                   />
+                  {errors.totalBedrooms && <small className="text-danger">{errors.totalBedrooms.message}</small>}
                 </label>
               </div>
             )}
@@ -376,76 +360,6 @@ const OwnerCreatePropertyPage = () => {
                 </div>
               </div>
             )}
-            {step === 4 && (
-              <div>
-                <h2 className="font-serif text-2xl">Rooms & review</h2>
-                <div className="mt-5 grid gap-4">
-                  {fields.map((field, index) => (
-                    <fieldset
-                      className="grid gap-3 rounded-xl border border-line p-4 md:grid-cols-4"
-                      key={field.id}
-                    >
-                      <label className={fieldClass}>
-                        Room name
-                        <input
-                          className={inputClass}
-                          {...register(`rooms.${index}.roomName`)}
-                        />
-                      </label>
-                      <label className={fieldClass}>
-                        Monthly rent
-                        <input
-                          type="number"
-                          min="0"
-                          className={inputClass}
-                          {...register(`rooms.${index}.monthlyRent`)}
-                        />
-                      </label>
-                      <label className={fieldClass}>
-                        Capacity
-                        <input
-                          type="number"
-                          min="1"
-                          className={inputClass}
-                          {...register(`rooms.${index}.capacity`)}
-                        />
-                      </label>
-                      <label className={fieldClass}>
-                        Description
-                        <input
-                          className={inputClass}
-                          {...register(`rooms.${index}.description`)}
-                        />
-                      </label>
-                      {fields.length > 1 && (
-                        <button
-                          type="button"
-                          className="text-left text-sm font-bold text-danger"
-                          onClick={() => remove(index)}
-                        >
-                          Remove room
-                        </button>
-                      )}
-                    </fieldset>
-                  ))}
-                  <button
-                    type="button"
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-dashed border-sage p-3 font-bold text-sage-dark"
-                    onClick={() =>
-                      append({
-                        roomName: "",
-                        description: "",
-                        monthlyRent: "",
-                        capacity: 1,
-                      })
-                    }
-                  >
-                    <Plus size={17} />
-                    Add another room
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
           <aside className="h-fit rounded-2xl border border-line bg-surface p-5">
             <h2 className="font-serif text-xl">Listing checklist</h2>
@@ -464,12 +378,12 @@ const OwnerCreatePropertyPage = () => {
             <div className="mt-6 border-t border-line pt-5">
               <div className="flex justify-between text-sm">
                 <span>Your progress</span>
-                <strong>{step * 25}%</strong>
+                <strong>{Math.round((step / steps.length) * 100)}%</strong>
               </div>
               <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#eeece4]">
                 <div
                   className="h-full bg-sage-dark"
-                  style={{ width: `${step * 25}%` }}
+                  style={{ width: `${(step / steps.length) * 100}%` }}
                 />
               </div>
             </div>
@@ -488,7 +402,7 @@ const OwnerCreatePropertyPage = () => {
           ) : (
             <span />
           )}
-          {step < 4 ? (
+          {step < 3 ? (
             <button
               type="button"
               className="inline-flex items-center gap-2 rounded-xl bg-terracotta px-6 py-3 font-bold text-white"

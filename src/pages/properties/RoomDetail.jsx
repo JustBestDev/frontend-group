@@ -37,7 +37,7 @@ export default function RoomDetail() {
       setRoom(response.data);
       console.log("response.data", response.data);
       setIsLoading(false);
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const showToast = (message) => {
@@ -86,7 +86,7 @@ export default function RoomDetail() {
       <div className="max-w-7xl mx-auto">
         {/* Top Breadcrumb & Share Actions */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <nav className="flex items-center gap-2 text-xs sm:text-sm text-[#6f7a73] overflow-x-auto">
+          <nav className="flex items-center gap-2 text-xs sm:text-sm text-muted-copy overflow-x-auto">
             <Link
               to="/"
               className="hover:text-[#4f614d] flex items-center gap-1 transition-colors shrink-0"
@@ -113,7 +113,7 @@ export default function RoomDetail() {
               </>
             )}
             <ChevronRight className="w-3.5 h-3.5 text-[#a8b0a7] shrink-0" />
-            <span className="text-[#1c1c16] font-medium truncate max-w-[200px] sm:max-w-[320px]">
+            <span className="text-[#1c1c16] font-medium truncate max-w-50 sm:max-w-[320px]">
               {roomId ? `Room #${roomId}` : "Room Detail (ROOM A2)"}
             </span>
           </nav>
@@ -122,7 +122,7 @@ export default function RoomDetail() {
             <button
               type="button"
               onClick={handleShare}
-              className="p-2.5 rounded-full bg-white border border-[#e1e5dd] text-[#6f7a73] hover:text-[#4f614d] hover:bg-[#faf7f2] transition-all cursor-pointer shadow-xs flex items-center gap-1.5 text-xs font-semibold"
+              className="p-2.5 rounded-full bg-white border border-[#e1e5dd] text-muted-copy hover:text-[#4f614d] hover:bg-[#faf7f2] transition-all cursor-pointer shadow-xs flex items-center gap-1.5 text-xs font-semibold"
               title="Share Listing"
             >
               <Share2 className="w-4 h-4" />
@@ -136,7 +136,7 @@ export default function RoomDetail() {
           {/* Left Column (8 cols) */}
           <div className="lg:col-span-8 space-y-6">
             {/* Gallery Image Card */}
-            <div className="relative rounded-2xl overflow-hidden bg-[#e5e2d9] border border-[#e1e5dd] shadow-xs group h-[320px] sm:h-[400px]">
+            <div className="relative rounded-2xl overflow-hidden bg-[#e5e2d9] border border-[#e1e5dd] shadow-xs group h-80 sm:h-100">
               <img
                 src={
                   room?.images?.find((image) => image.isCover)?.imageUrl ||
@@ -159,7 +159,7 @@ export default function RoomDetail() {
             <div className="bg-white p-6 sm:p-7 rounded-2xl border border-[#e1e5dd] shadow-xs space-y-4">
               <div className="flex flex-wrap items-center gap-3">
                 <div
-                  className={`inline-flex items-center gap-2 ${room.status === "AVAILABLE" ? "bg-[#e6ede3] text-[#294c25] border-[#b8deb0]" : "bg-[#f1f0ea] border-[#e1ded5] text-[#6f7a73] opacity-60"} border  px-3.5 py-1 rounded-full text-xs font-bold`}
+                  className={`inline-flex items-center gap-2 ${room.status === "AVAILABLE" ? "bg-sage-light text-[#294c25] border-[#b8deb0]" : "bg-[#f1f0ea] border-[#e1ded5] text-muted-copy opacity-60"} border  px-3.5 py-1 rounded-full text-xs font-bold`}
                 >
                   {room.status === "AVAILABLE" ? (
                     <SquareCheck className="w-4 h-4 text-[#4f614d]" />
@@ -181,17 +181,17 @@ export default function RoomDetail() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {/* Room Rent */}
               <div className="bg-white p-5 rounded-2xl border border-[#e1e5dd] shadow-xs flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-[#e6ede3] flex items-center justify-center text-[#4f614d] shrink-0">
+                <div className="w-12 h-12 rounded-xl bg-sage-light flex items-center justify-center text-[#4f614d] shrink-0">
                   <BadgeDollarSign className="w-6 h-6" />
                 </div>
                 <div>
-                  <span className="text-xs font-bold text-[#6f7a73] uppercase tracking-wider block">
+                  <span className="text-xs font-bold text-muted-copy uppercase tracking-wider block">
                     Room Rent
                   </span>
                   <strong className="font-serif text-lg sm:text-xl font-bold text-[#1c1c16]">
                     ฿{Number(room.monthlyRent).toLocaleString()}
                   </strong>
-                  <span className="text-xs text-[#6f7a73] ml-1">/ Month</span>
+                  <span className="text-xs text-muted-copy ml-1">/ Month</span>
                 </div>
               </div>
 
@@ -201,7 +201,7 @@ export default function RoomDetail() {
                   <UserRound className="w-6 h-6" />
                 </div>
                 <div>
-                  <span className="text-xs font-bold text-[#6f7a73] uppercase tracking-wider block">
+                  <span className="text-xs font-bold text-muted-copy uppercase tracking-wider block">
                     Capacity
                   </span>
                   <strong className="font-serif text-lg sm:text-xl font-bold text-[#1c1c16]">
@@ -216,7 +216,7 @@ export default function RoomDetail() {
                   <Info className="w-6 h-6" />
                 </div>
                 <div>
-                  <span className="text-xs font-bold text-[#6f7a73] uppercase tracking-wider block">
+                  <span className="text-xs font-bold text-muted-copy uppercase tracking-wider block">
                     Room Status
                   </span>
                   <strong className="font-serif text-lg sm:text-xl font-bold text-[#294c25]">
@@ -245,28 +245,28 @@ export default function RoomDetail() {
                   Are you interested in this room?
                 </h3>
                 <div className="flex items-baseline gap-1.5 mt-2">
-                  <span className="text-xs text-[#6f7a73]">Rate:</span>
+                  <span className="text-xs text-muted-copy">Rate:</span>
                   <span className="font-serif text-3xl font-bold text-[#4f614d]">
                     ฿ {Number(room.monthlyRent).toLocaleString()}
                   </span>
-                  <span className="text-xs text-[#6f7a73]">/ Month</span>
+                  <span className="text-xs text-muted-copy">/ Month</span>
                 </div>
               </div>
 
               {/* Lease Breakdown */}
               <div className="bg-[#f7f5ee] p-4 rounded-xl space-y-2.5 text-xs text-[#414753] border border-[#ece8dc]">
                 <div className="flex justify-between items-center">
-                  <span className="text-[#6f7a73]">Security Deposit</span>
+                  <span className="text-muted-copy">Security Deposit</span>
                   <span className="font-bold text-[#1c1c16]">1 - 2 Months</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#6f7a73]">Minimum Lease</span>
+                  <span className="text-muted-copy">Minimum Lease</span>
                   <span className="font-bold text-[#1c1c16]">
                     6 - 12 Months
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#6f7a73]">Utilities</span>
+                  <span className="text-muted-copy">Utilities</span>
                   <span className="font-bold text-[#1c1c16]">
                     Billed by meter
                   </span>
@@ -279,11 +279,10 @@ export default function RoomDetail() {
                   type="button"
                   onClick={handleJoinRequest}
                   disabled={isJoinRequested}
-                  className={`w-full py-3.5 px-4 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer active:scale-98 ${
-                    isJoinRequested
-                      ? "bg-[#e6ede3] text-[#294c25] border border-[#b8deb0] cursor-default"
-                      : "bg-[#4f614d] text-white hover:bg-[#41513f]"
-                  }`}
+                  className={`w-full py-3.5 px-4 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer active:scale-98 ${isJoinRequested
+                    ? "bg-sage-light text-[#294c25] border border-[#b8deb0] cursor-default"
+                    : "bg-[#4f614d] text-white hover:bg-[#41513f]"
+                    }`}
                 >
                   {isJoinRequested ? (
                     <>
@@ -308,7 +307,7 @@ export default function RoomDetail() {
               </div>
 
               {/* Safety notice */}
-              <div className="flex items-center gap-2 text-xs text-[#6f7a73] pt-2 border-t border-[#f1eee4]">
+              <div className="flex items-center gap-2 text-xs text-muted-copy pt-2 border-t border-[#f1eee4]">
                 <ShieldCheck className="w-4 h-4 text-[#4f614d] shrink-0" />
                 <span>Verified roommate listing & protected deposit</span>
               </div>

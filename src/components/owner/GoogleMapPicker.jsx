@@ -193,7 +193,7 @@ const GoogleMapPicker = ({ onPick }) => {
 
       <div
         ref={mapElement}
-        className="h-80 overflow-hidden rounded-2xl border border-line"
+        className="h-135 overflow-hidden rounded-2xl border border-line"
       />
 
       <p className="mt-2 text-xs text-muted-copy">
