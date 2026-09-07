@@ -90,6 +90,7 @@ const OwnerCreatePropertyPage = () => {
   };
 
   const onSubmit = async (data) => {
+
     setSubmitting(true);
     setPageError("");
     try {
@@ -191,7 +192,7 @@ const OwnerCreatePropertyPage = () => {
           {pageError}
         </p>
       )}
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={p => p.preventDefault()}>
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
           <div className="rounded-2xl border border-line bg-surface p-5 shadow-sm md:p-7">
             {step === 1 && (
@@ -497,7 +498,9 @@ const OwnerCreatePropertyPage = () => {
             </button>
           ) : (
             <button
+              type="button"
               disabled={submitting}
+              onClick={handleSubmit(onSubmit)}
               className="inline-flex items-center gap-2 rounded-xl bg-terracotta px-6 py-3 font-bold text-white disabled:opacity-50"
             >
               <ImagePlus size={17} />
