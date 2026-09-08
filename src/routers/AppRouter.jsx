@@ -13,7 +13,6 @@ import ConversationList from "../pages/conversations/ConversationList.jsx";
 import AdminDashboard from "../pages/admin/AdminDashboard.jsx";
 import HomePage from "../pages/HomePage.jsx";
 import OwnerLayout from "../layouts/OwnerLayout.jsx";
-import OwnerDashboard from "../pages/owner/OwnerDashboardPage.jsx";
 import OwnerPropertiesPage from "../pages/owner/OwnerPropertiesPage.jsx";
 import OwnerRoomsPage from "../pages/owner/OwnerRoomsPage.jsx";
 import OwnerRentalsPage from "../pages/owner/OwnerRentalsPage.jsx";
@@ -143,7 +142,7 @@ const ownerRouter = createBrowserRouter([
     path: "/owner",
     Component: OwnerLayout,
     children: [
-      { index: true, Component: OwnerDashboard },
+      { index: true, element: <Navigate to="properties" replace /> },
       { path: "properties", Component: OwnerPropertiesPage },
       { path: "properties/new", Component: OwnerCreatePropertyPage },
       { path: "properties/:propertyId", Component: OwnerPropertyDetailPage },

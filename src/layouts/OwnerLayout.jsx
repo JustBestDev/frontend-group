@@ -2,11 +2,9 @@ import {
   BedDouble,
   Building2,
   ClipboardList,
-  LayoutDashboard,
   LogOut,
   MessageCircle,
   ReceiptText,
-  ShieldCheck,
   UserRound,
   House,
 } from "lucide-react";
@@ -21,7 +19,6 @@ const OwnerLayout = () => {
   const logout = useAuthStore((state) => state.logout);
   const menuItems = [
     { name: "Homepage", path: "/", icon: House, end: true },
-    { name: "Overview", path: "/owner", icon: LayoutDashboard, end: true },
     { name: "My Properties", path: "/owner/properties", icon: Building2 },
     { name: "Rooms", path: "/owner/rooms", icon: BedDouble },
     { name: "Rentals", path: "/owner/rentals", icon: ReceiptText },

@@ -292,8 +292,8 @@ export default function RoomDetail() {
                   onClick={handleRentalRequest}
                   disabled={room.status !== "AVAILABLE"}
                   className={`w-full py-3.5 px-4 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer active:scale-98 ${room.status !== "AVAILABLE"
-                      ? "bg-[#e6ede3] text-[#294c25] border border-[#b8deb0] cursor-default"
-                      : "bg-[#4f614d] text-white hover:bg-[#41513f]"
+                    ? "bg-sage-light text-[#294c25] border border-[#b8deb0] cursor-default"
+                    : "bg-[#4f614d] text-white hover:bg-[#41513f]"
                     }`}
                 >
                   {room.status === "AVAILABLE"
