@@ -45,8 +45,9 @@ function CommunityPage() {
       const nextPosts = Array.isArray(response.data) ? response.data : [];
       setPosts(nextPosts);
 
+      const postsWithMembers = nextPosts.filter((post) => Boolean(post.id));
       const creatorPosts = userId
-        ? nextPosts.filter(
+        ? postsWithMembers.filter(
             (post) =>
               Number(post.creatorId ?? post.creator?.id) === Number(userId) &&
               Boolean(post.propertyId) &&
@@ -54,7 +55,9 @@ function CommunityPage() {
           )
         : [];
 
-      if (creatorPosts.length === 0) {
+      if (postsWithMembers.length === 0) {
+        setMembersByPost({});
+        setRentalRequests([]);
         setGroupDataLoading(false);
         return;
       }
@@ -62,7 +65,7 @@ function CommunityPage() {
       try {
         const [memberEntries, requestResponse] = await Promise.all([
           Promise.all(
-            creatorPosts.map(async (post) => {
+            postsWithMembers.map(async (post) => {
               const membersResponse = await api.get(
                 `/community-posts/${post.id}/members`,
               );
@@ -72,7 +75,9 @@ function CommunityPage() {
               ];
             }),
           ),
-          api.get("/rental-requests/me"),
+          creatorPosts.length > 0
+            ? api.get("/rental-requests/me")
+            : Promise.resolve({ data: [] }),
         ]);
         setMembersByPost(Object.fromEntries(memberEntries));
         setRentalRequests(
@@ -356,9 +361,19 @@ function CommunityPage() {
               {filteredPosts.map((post) => {
                 const creatorId = post.creatorId ?? post.creator?.id;
                 const isCreator = Number(creatorId) === Number(userId);
+                const communityMembers = membersByPost[post.id] || [];
+                const memberIds = new Set(
+                  communityMembers
+                    .map((member) => member.userId ?? member.user?.id)
+                    .filter((memberId) => memberId != null)
+                    .map(Number),
+                );
+                if (creatorId != null) memberIds.add(Number(creatorId));
+                const currentMemberCount = memberIds.size;
+                const requiredMemberCount = Number(post.requiredMembers) || 0;
                 const readiness = getCommunityReadiness(
                   post,
-                  membersByPost[post.id],
+                  communityMembers,
                 );
                 const existingGroupRequest = rentalRequests.find(
                   (request) =>
@@ -444,6 +459,12 @@ function CommunityPage() {
                           <div className="flex items-center gap-1.5">
                             <BedSingle className="w-4 h-4 text-[#889188]" />
                             <span> {post.property.totalBedrooms} /rooms</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Users className="w-4 h-4 text-[#889188]" />
+                            <span>
+                              {currentMemberCount} / {requiredMemberCount} members
+                            </span>
                           </div>
                         </div>
                       </div>
