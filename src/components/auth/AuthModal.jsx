@@ -70,7 +70,7 @@ const AuthModal = ({ isOpen, onClose }) => {
       authentication.user.role === "ADMIN"
         ? "/admin"
         : authentication.user.role === "OWNER"
-          ? "/owner"
+          ? "/"
           : "/properties",
       { replace: true }
     );
@@ -199,7 +199,7 @@ const AuthModal = ({ isOpen, onClose }) => {
           <img
             src={roomHubIcon}
             alt="RoomHubIcon"
-            className="grid place-items-center h-15 w-auto mx-auto mb-[21px]"
+            className="grid place-items-center h-15 w-auto mx-auto mb-5.25"
           />
 
           <div className="auth-mode-tabs">
