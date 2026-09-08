@@ -47,6 +47,7 @@ const LoginPage = () => {
             ? "/"
             : "/properties"
       );
+      console.log("authentication", authentication.user.role);
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||

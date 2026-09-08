@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { Building2 } from "lucide-react";
 import AuthModal from "./auth/AuthModal.jsx";
 import OwnerApplicationModal from "./ownerApplication/OwnerApplicationModal.jsx";
 import useAuthStore from "../stores/authStore.js";
 import { getMyOwnerApplication } from "../services/ownerApplicationService.js";
 import UserAvatar from "./UserAvatar.jsx";
 import EditProfileModal from "./profile/EditProfileModal.jsx";
+
+import roomHubLogo from "../assets/roomhub-logo.svg";
 
 const HeaderComponent = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -67,15 +68,12 @@ const HeaderComponent = () => {
   return (
     <>
       <header className="sticky top-0 z-20 grid min-h-18 grid-cols-[1fr_auto_1fr] items-center border-b border-line bg-surface/95 px-5 backdrop-blur md:px-12">
-        <Link
-          className="flex items-center gap-3 justify-self-start font-serif text-xl font-bold text-ink"
-          to="/properties"
-        >
-          <div className="grid size-10 place-items-center rounded-xl bg-sage-dark text-white">
-            <Building2 size={24} aria-hidden="true" />
-          </div>
-
-          <span>RoomShare</span>
+        <Link to="/properties">
+          <img
+            src={roomHubLogo}
+            alt="RoomHub"
+            className="h-10 w-auto"
+          />
         </Link>
 
         <nav

@@ -1,222 +1,98 @@
-﻿import { BadgeCheck, Pencil, Save, UserRound, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { BadgeCheck, BriefcaseBusiness, CalendarDays, Camera, Mail, MapPin, Pencil, Phone, ShieldCheck, UserRound } from "lucide-react";
+import { useEffect, useState } from "react";
+import EditProfileModal from "../../components/profile/EditProfileModal.jsx";
 import useAuthStore from "../../stores/authStore.js";
 import useOwnerStore from "../../stores/ownerStore.js";
 
-const emptyForm = {
-  firstName: "",
-  lastName: "",
-  phone: "",
-  birthdate: "",
-  gender: "",
-  occupation: "",
-  currentAddress: "",
-  bio: ""
-};
+const formatDate = (value) => value ? new Date(value).toLocaleDateString([], { year: "numeric", month: "long", day: "numeric" }) : "Not provided";
 
-const fieldClass = "grid gap-1.5 text-xs text-muted-copy";
-const inputClass = "w-full rounded-[10px] border border-line bg-cream px-3 py-2.5 text-ink outline-none transition focus:border-sage-dark focus:ring-3 focus:ring-sage-dark/10 disabled:cursor-default disabled:opacity-100";
-
-const toProfileForm = (profile = {}) => {
-  profile ??= {}; //ถ้าเป็น null หรือ undifined ให้เป็น object ว่าง
-  return Object.fromEntries(
-    Object.keys(emptyForm).map((key) => [
-      key,
-      key === "birthdate"
-        ? profile[key]?.slice(0, 10) || ""
-        : profile[key] || "",
-    ]),
-  );
-};
-
-
-const OwnerProfilePage = () => {
+export default function OwnerProfilePage() {
   const user = useAuthStore((state) => state.user) || {};
-  const { profile, profileLoading, profileError, getMyProfile, updateMyProfile, } = useOwnerStore();
+  const { profile, profileLoading, profileError, getMyProfile } = useOwnerStore();
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState(emptyForm);
-  const [saved, setSaved] = useState(false);
-  const successTimer = useRef(null);
-
-  useEffect(() => {
-    getMyProfile().catch(() => { });
-    if (successTimer.current) window.clearTimeout(successTimer.current);
-  }, []);
-
-  const updateField = (event) => setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const payload = Object.fromEntries(Object.entries(form).map(([key, value]) => [key, value || null]));
-    try {
-      await updateMyProfile(payload);
-      setEditing(false);
-      setSaved(true);
-      if (successTimer.current) window.clearTimeout(successTimer.current);
-      successTimer.current = window.setTimeout(() => setSaved(false), 2500);
-    }
-    catch { /* The store exposes the API error in the page alert. */ }
-  };
+  useEffect(() => { getMyProfile().catch(() => { }); }, [getMyProfile]);
 
   const fullName = [profile?.firstName, profile?.lastName].filter(Boolean).join(" ") || user.username || "Owner";
-  const completion = profile ? Math.round(["firstName", "lastName", "phone", "birthdate", "occupation", "currentAddress", "bio"].filter((key) => profile[key]).length / 7 * 100) : 0;
-  const displayedForm = editing ? form : toProfileForm(profile);
+  const initials = fullName.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase();
+  const fields = ["firstName", "lastName", "phone", "birthdate", "gender", "occupation", "currentAddress", "bio"];
+  const completion = profile ? Math.round(fields.filter((key) => profile[key]).length / fields.length * 100) : 0;
+  const details = [
+    { icon: Mail, label: "Email", value: user.email || "Not provided" },
+    { icon: Phone, label: "Phone", value: profile?.phone || "Not provided" },
+    { icon: CalendarDays, label: "Date of birth", value: formatDate(profile?.birthdate) },
+    { icon: BriefcaseBusiness, label: "Occupation", value: profile?.occupation || "Not provided" },
+    { icon: UserRound, label: "Gender", value: profile?.gender ? profile.gender.charAt(0) + profile.gender.slice(1).toLowerCase() : "Not provided" },
+    { icon: MapPin, label: "Current address", value: profile?.currentAddress || "Not provided" },
+  ];
+  const closeEditor = () => { setEditing(false); getMyProfile().catch(() => { }); };
 
-  return <section className="mx-auto w-full max-w-330">
-    <header className="mb-6 flex items-end justify-between gap-6 max-md:flex-col max-md:items-stretch">
-      <div>
-        <p className="mb-2 text-[11px] font-extrabold uppercase tracking-[.16em] text-sage-dark">Owner portal</p><h1 className="m-0 font-serif text-[clamp(32px,4vw,44px)] leading-tight text-ink">Profile</h1><p className="mt-2 text-muted-copy">Manage your personal details and account information.</p>
-      </div>
-      {!editing &&
-        <button
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-terracotta px-4.5 py-3 font-bold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
-          type="button"
-          onClick={() => { setForm(toProfileForm(profile)); setEditing(true); }}
-          disabled={!profile || profileLoading}><Pencil size={17} aria-hidden="true" />{profileLoading ? "Loading..." : "Edit profile"}</button>}
-    </header>
-    {profileError &&
-      <p className="mb-4 rounded-xl bg-[#fde8e6] px-3.5 py-3 text-danger"
-        role="alert">{profileError}
-      </p>
-    }
-    {saved &&
-      <p className="mb-4 rounded-xl bg-[#e5f2e5] px-3.5 py-3 text-[#47724f]"
-        role="status">Profile updated successfully.
-      </p>
-    }
-    <div
-      className="overflow-hidden rounded-xl border border-line bg-surface shadow-[0_5px_16px_rgba(50,66,54,.05)]">
-      <div className="flex items-center gap-4 border-b border-line p-6 max-md:flex-col max-md:items-stretch">
-        {profile?.profileImageUrl ?
-          <img className="size-17.5 shrink-0 rounded-full object-cover" src={profile.profileImageUrl} alt={`${fullName} profile`} />
-          :
-          <span className="grid size-17.5 shrink-0 place-items-center rounded-full bg-sage-dark text-white">
-            <UserRound size={30} aria-hidden="true" />
-          </span>
-        }
-        <div>
-          <h2 className="m-0 font-serif text-2xl text-ink">{fullName}</h2>
-          <p className="my-1 text-muted-copy">{user.email || user.username}</p>
-          <span className="inline-flex items-center gap-1 text-xs font-bold text-sage-dark">
-            <BadgeCheck size={16} aria-hidden="true" />
-            {profile?.isVerified ? "Verified profile" : "Owner account"}
-          </span>
-        </div>
-        <div className="ml-auto w-full max-w-65 max-md:ml-0">
-          <span className="mb-2 flex justify-between text-xs text-muted-copy">Profile completion <strong>{completion}%</strong>
-          </span>
-          <div className="h-1.75 overflow-hidden rounded-full bg-[#eeece4]" role="progressbar" aria-label="Profile completion" aria-valuemin="0" aria-valuemax="100" aria-valuenow={completion}>
-            <i className="block h-full bg-sage-dark" style={{ width: `${completion}%` }} />
+  return <section className="mx-auto w-full max-w-6xl pb-12">
+    <header><p className="owner-eyebrow">Account settings</p><h1 className="font-serif text-4xl text-ink md:text-5xl">Profile</h1><p className="mt-2 text-muted-copy">Your personal and owner account information.</p></header>
+    {profileError && <p className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-danger" role="alert">{profileError}</p>}
+    {profileLoading && !profile ? <div className="mt-7 grid min-h-96 place-items-center rounded-3xl border border-line bg-white text-muted-copy">Loading profile...</div> : profile && <div className="mt-7 grid items-start gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
+      <aside className="overflow-hidden rounded-3xl border border-line bg-white shadow-[0_12px_35px_rgba(50,66,54,.08)] lg:sticky lg:top-8">
+        <div className="h-28 bg-linear-to-br from-[#29483a] to-sage-dark" />
+        <div className="px-6 pb-7 text-center">
+          <div
+            className="relative mx-auto "
+            style={{ width: 100, height: 100, marginTop: 70 }}
+          >
+            {profile.profileImageUrl ? (
+              <img
+                src={profile.profileImageUrl}
+                alt={fullName}
+                className="block rounded-full border-4 border-white bg-white object-cover object-center shadow-md"
+                style={{
+                  width: 100,
+                  height: 100,
+                  minWidth: 100,
+                  maxWidth: 100,
+                  minHeight: 100,
+                  maxHeight: 100,
+                }}
+              />
+            ) : (
+              <span
+                className="grid place-items-center rounded-full border-4 border-white bg-sage-light font-serif text-3xl font-bold text-sage-dark shadow-md"
+                style={{ width: 100, height: 100 }}
+              >
+                {initials}
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              aria-label="Change photo"
+              className="absolute bottom-0 right-0 grid size-9 place-items-center rounded-full border-3 border-white bg-terracotta text-white shadow-sm transition hover:scale-105"
+            >
+              <Camera size={15} />
+            </button>
           </div>
-        </div>
-      </div>
-      {profileLoading && !profile ?
-        <div
-          className="grid min-h-72.5 place-content-center justify-items-center p-8 text-center text-muted-copy">
-          Loading profile...
-        </div> :
-        <form className="p-6" onSubmit={handleSubmit}>
-          <div className="grid grid-cols-2 gap-4.25 max-md:grid-cols-1">
-            <label className={fieldClass}>
-              <span>First name</span>
-              <input
-                name="firstName"
-                className={inputClass}
-                value={displayedForm?.firstName}
-                onChange={updateField} disabled={!editing} />
-            </label>
-            <label className={fieldClass}>
-              <span>Last name</span>
-              <input
-                name="lastName"
-                className={inputClass}
-                value={displayedForm?.lastName}
-                onChange={updateField}
-                disabled={!editing} />
-            </label>
-            <label className={fieldClass}>
-              <span>Phone number</span>
-              <input
-                name="phone"
-                className={inputClass}
-                value={displayedForm?.phone}
-                onChange={updateField}
-                disabled={!editing} />
-            </label>
-            <label className={fieldClass}>
-              <span>Date of birth</span>
-              <input
-                type="date"
-                name="birthdate"
-                className={inputClass}
-                value={displayedForm?.birthdate}
-                onChange={updateField}
-                disabled={!editing} />
-            </label>
-            <label className={fieldClass}>
-              <span>Gender</span>
-              <select
-                name="gender"
-                className={inputClass}
-                value={displayedForm?.gender}
-                onChange={updateField}
-                disabled={!editing}>
-                <option value="">Not specified</option>
-                <option value="MALE">Male</option>
-                <option value="FEMALE">Female</option>
-                <option value="OTHER">Other</option>
-              </select>
-            </label>
-            <label className={fieldClass}>
-              <span>Occupation</span>
-              <input
-                name="occupation"
-                className={inputClass}
-                value={displayedForm?.occupation}
-                onChange={updateField}
-                disabled={!editing} />
-            </label>
-            <label className={`${fieldClass} col-span-full max-md:col-span-1`}>
-              <span>Current address</span>
-              <input
-                name="currentAddress"
-                className={inputClass}
-                value={displayedForm?.currentAddress}
-                onChange={updateField}
-                disabled={!editing} />
-            </label>
-            <label className={`${fieldClass} col-span-full max-md:col-span-1`}>
-              <span>Bio</span>
-              <textarea
-                rows="4"
-                name="bio"
-                className={`${inputClass} resize-y`}
-                value={displayedForm?.bio}
-                onChange={updateField}
-                disabled={!editing} />
-            </label>
+          <h2 className="mt-4 font-serif text-3xl leading-tight text-ink">{fullName}</h2>
+          <p className="mt-1 text-sm text-muted-copy">@{user.username}</p>
+          <div className="flex flex-col items-center justify-center gap-2">
+            <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#e8f0e5] px-3 py-1.5 text-xs font-bold text-[#527058]"><BadgeCheck size={15} />{profile.isVerified ? "Verified owner" : "Owner account"}</span>
+            <button type="button" onClick={() => setEditing(true)} className="mt-6 inline-flex w-40 items-center justify-center gap-2 rounded-xl bg-terracotta px-4 py-3 font-bold text-white transition hover:brightness-95"><Pencil size={14} /> Edit profile</button>
           </div>
-          {editing &&
-            <div className="mt-5 flex justify-end gap-2.5">
-              <button
-                type="button"
-                className="inline-flex items-center gap-2 rounded-xl border border-line bg-transparent px-4.5 py-3 font-bold text-ink hover:bg-sage-light"
-                onClick={() => {
-                  setEditing(false); setForm(toProfileForm(profile));
-                }}><X size={17} aria-hidden="true" />Cancel
-              </button>
-              <button
-                className="inline-flex items-center gap-2 rounded-xl bg-terracotta px-4.5 py-3 font-bold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={profileLoading}>
-                <Save size={17} aria-hidden="true" />
-                {profileLoading ? "Saving..." : "Save changes"}
-              </button>
+          <div className="m-6 border-t border-line pt-5 text-left">
+            <div className="flex justify-between text-xs">
+              <span className="font-semibold text-muted-copy">Profile completion</span><strong className="text-sage-dark">{completion}%</strong>
             </div>
-          }
-        </form>}
-    </div>
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#ebe9e0]">
+              <div className="h-full rounded-full bg-sage-dark" style={{ width: `${completion}%` }} />
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main className="overflow-hidden rounded-3xl border border-line bg-white shadow-[0_12px_35px_rgba(50,66,54,.07)]">
+        <section className="p-6 md:p-8"><div className="flex items-center justify-between gap-4 border-b border-line pb-5"><div><h2 className="font-serif text-2xl text-ink">Personal information</h2><p className="mt-1 text-sm text-muted-copy">Information associated with your RoomShare account.</p></div><button type="button" onClick={() => setEditing(true)} className="hidden items-center gap-2 rounded-xl border border-line px-4 py-2.5 text-sm font-bold text-sage-dark hover:bg-sage-light sm:inline-flex"><Pencil size={15} /> Edit</button></div>
+          <dl className="grid sm:grid-cols-2">{details.map(({ icon: Icon, label, value }, index) => <div key={label} className={`flex min-w-0 gap-4 py-5 ${index % 2 === 0 ? "sm:pr-6" : "sm:border-l sm:border-line sm:pl-6"} ${index < details.length - 2 ? "border-b border-line" : "max-sm:border-b max-sm:border-line"}`}><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-cream text-sage-dark"><Icon size={18} /></span><div className="min-w-0"><dt className="text-xs font-semibold text-muted-copy">{label}</dt><dd className="mt-1 wrap-anywhere text-sm font-semibold leading-5 text-ink">{value}</dd></div></div>)}</dl>
+        </section>
+        <section className="border-t border-line bg-[#fcfbf7] p-6 md:p-8"><h2 className="font-serif text-2xl text-ink">About</h2><p className="mt-3 max-w-2xl whitespace-pre-wrap text-sm leading-7 text-muted-copy">{profile.bio || "No bio added yet. Add a short introduction to help tenants learn more about you."}</p>{!profile.bio && <button type="button" onClick={() => setEditing(true)} className="mt-3 text-sm font-bold text-terracotta">Add bio</button>}</section>
+        <section className="flex flex-wrap items-center gap-4 border-t border-line p-6 md:px-8"><span className="grid size-11 place-items-center rounded-full bg-[#e8f0e5] text-[#527058]"><ShieldCheck size={20} /></span><div className="min-w-0 flex-1"><h3 className="font-serif text-lg text-ink">Owner account active</h3><p className="mt-0.5 text-xs text-muted-copy">You can publish properties and manage rooms and rentals.</p></div><strong className="rounded-full bg-[#e8f0e5] px-3 py-1.5 text-xs text-[#527058]">ACTIVE</strong></section>
+      </main>
+    </div>}
+    <EditProfileModal isOpen={editing} onClose={closeEditor} />
   </section>;
-};
-export default OwnerProfilePage;
-
-
+}

@@ -57,7 +57,8 @@ const getSocketMessage = (payload) => {
 };
 
 const ConversationList = () => {
-  const isOwnerView = useLocation().pathname.startsWith("/owner");
+  const location = useLocation();
+  const isOwnerView = location.pathname.startsWith("/owner");
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -72,6 +73,7 @@ const ConversationList = () => {
   const messagesContainerRef = useRef(null);
   const socketRef = useRef(null);
   const selectedConversationRef = useRef(null);
+  const openedConversationIdRef = useRef(null);
 
   const currentUser = useAuthStore((state) => state.user);
   const token = useAuthStore((state) => state.token);
@@ -284,6 +286,8 @@ const ConversationList = () => {
       );
 
       await api.patch(`/conversations/${conversationId}/read`);
+      window.dispatchEvent(new Event("owner-notifications:refresh"));
+      window.dispatchEvent(new Event("notifications:refresh"));
 
       setConversations((currentConversations) =>
         currentConversations.map((item) => {
@@ -300,6 +304,21 @@ const ConversationList = () => {
       setMessageLoading(false);
     }
   };
+
+  useEffect(() => {
+    const requestedId = location.state?.conversationId;
+    if (!requestedId || openedConversationIdRef.current === String(requestedId)) return;
+
+    const requestedConversation = conversations.find(
+      (conversation) => String(getConversationId(conversation)) === String(requestedId),
+    );
+    if (!requestedConversation) return;
+
+    openedConversationIdRef.current = String(requestedId);
+    openConversation(requestedConversation);
+    // Open only the conversation explicitly passed by the property page.
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversations, location.state?.conversationId]);
 
   const handleSendMessage = async (event) => {
     event.preventDefault();
