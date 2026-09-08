@@ -1,4 +1,4 @@
-﻿/* Authentication modal */
+/* Authentication modal */
 
 .auth-modal-overlay {
   position: fixed;
@@ -16,11 +16,15 @@
 .auth-modal {
   width: min(560px, 100%);
   max-height: calc(100vh - 40px);
-  overflow-y: auto;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
   border-radius: 22px;
   background: white;
   box-shadow: 0 30px 90px rgba(19, 25, 20, 0.35);
-  animation: auth-modal-in 0.24s ease;
 }
 
 .auth-modal-header {
@@ -63,6 +67,9 @@
 
 .auth-modal-content {
   padding: 27px;
+
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .auth-modal-logo {

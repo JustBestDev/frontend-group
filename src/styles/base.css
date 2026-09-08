@@ -1,4 +1,4 @@
-﻿@layer base {
+@layer base {
 :root {
   font-family: var(--font-sans);
   color: #29342d;
@@ -20,10 +20,41 @@
   --border: #e4e4d9;
   --danger: #b95858;
   --shadow: 0 14px 35px rgba(50, 66, 54, 0.08);
+  --sb-track-color: transparent;
+  --sb-thumb-color: #8fa18b;
+  --sb-thumb-hover: var(--sage-dark);
+  --sb-size: 6px;
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* Keep standard properties from overriding WebKit sizing and thumb hover. */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+  }
+}
+
+*::-webkit-scrollbar {
+  width: var(--sb-size);
+  height: var(--sb-size);
+}
+
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner {
+  background: var(--sb-track-color);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb-color);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--sb-thumb-hover);
 }
 
 html {
