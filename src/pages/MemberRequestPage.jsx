@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router";
 import {
   ArrowLeft,
   FileEdit,
@@ -21,73 +21,68 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
-
-const INITIAL_REQUESTS = [
-  {
-    id: 1,
-    name: "Emily Johnson",
-    avatar:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCBdGm-zmGTv8Epv1y2t9pFEZdBoUmB7N1IKLzKT_6pEh4oX_uokhi96eQDPSKVbnFIWzQEAtRj5z60Kg0syvtFvTV4rO4uCkzmtgKbJgDAI6yU2SAUsKpL7bdrQhZVKVe7619VukTuV5RHoKLPnxgSI1UZLEgYlY1ZU3BtE0OFJ2Y-Tq2yp-c15W9clzoe6egsw7nR9gh9qNYH-JsY3EcTsSR-9milV3mz3O4VOp7JwFpCvrwxerTf",
-    status: "pending", // 'pending' | 'accepted' | 'rejected'
-  },
-  {
-    id: 2,
-    name: "Thanawat S.",
-    avatar:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCKxtozUZJ1neaVQdBoeEjkaWswTxnXM2ZoOA9jJKBb5LlKC5OxWOZaor6qY8zrKtPQUPnVuV7R7QrkvIHrF5AtuU6lel_XBbDfslqw9_E-3JIciVWh-EWYMX1osY7xtWyApCXrOel0cyjYdTd3RWZEY-Lzm-Cg1BlU1TpSGYyKACKLeJ1xkOm-sP8ACRLMlRnOlO6-vxc8uDr37e-8qws3hXhI0wWq-x9ICErL-WZbHf7K6swGIucU",
-    status: "pending",
-  },
-  {
-    id: 3,
-    name: "Kittipong M.",
-    avatar:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCYwNkWhJ-3icktWa5souxKoTZL8sM8P7ZVeTHWqkhn921H4_d_NBAzfioZguONWVmofwyNtKyeuaO0-y0OGujpWjHiWzRjaidV05RgfNwkMRlKkAt1_51S1i-9Dz3nkVo8xpvq_Y02ZWg0gsBjRlYX8Id1FtamX6xRUJVAzbbQNnRFuCSeaPBI-SayXBBqbEgz08GqL4CR8eTe194kHotqRNf3FzbnINJ8pkCqolhhlAuyv9etxe9H",
-    status: "pending",
-  },
-];
-
-const INITIAL_ACCEPTED = [
-  {
-    id: "acc-1",
-    name: "Numfon W.",
-    room: "Master Bedroom 1",
-    badge: "Deposit Paid",
-    avatar:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuD7c79_BWQvrEIwVixvgULYSL0y7tCED4kuWl1-pYFOLlMiaKBpAKnexWgR7kVGIvkBjdHLpRGyj17jKHaRD-7XPIBhUoZ0vF7ZtF95-S7YjRFt-b0IfgOJOLKyvASoaqK75aF2v-lcTsS94b2dn4L5pUsWDcfD9k0BB2_l1dLwuIjlt0crz5ZEdeET4PK23jKJ29z3Drx3ClzjLh8MGgQb0tXcKn1CVLOr4WShASQE7zoPVGCkL7QG",
-  },
-  {
-    id: "acc-2",
-    name: "Sarah Jenkins",
-    room: "Standard Bedroom 2",
-    badge: "Deposit Paid",
-    avatar:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCTEtQtPRMGM9vUp7E2QEz0a7PFvgowGAYN8c9ihV7jlzrUaEDOqGndIY41KRU496PSlgh9niVhUrADnMR4RiMFwif5OHCMyMaIj0xEHqnr_QCVHbJCGBBDNuFZ5rxsWXB-HyQNC3KUG9t3ftoeBjU4FTOoHqb6aIeHL9TerSx0vGNyXyQQalsp-dl09HiRhajQ3ln6aoV8fjioqNtAZI8yrD29aVLt0awrugWU3xTmwwDul-hkUvGm",
-  },
-  {
-    id: "acc-3",
-    name: "Alex Rivera",
-    room: "Standard Bedroom 3",
-    badge: "Verified",
-    avatar:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCWJfy6Rxw200CWhRdlwl3oL73I3-WXEm04FY6U1fcyrRUHYcXBxmfeUo8pcCRRK0IpJ0TRyXTphgFEXuwlTf7azdldrIa0nZcaX4KlYnlD2sGIpItW8bnSi49suGEFFIVWtRcenQxpAyMea11qTFeCvs28LYeUAWnnglf3xV4zhT6-qsOakB-RQUn0MLesqjrjD2U9M6JT2vyjglGkIyr2UoyeydFvIlU-TnExl9mHwK0NQCyBqTrI",
-  },
-];
+import api, { getApiErrorMessage } from "../services/api.js";
 
 export default function MemberRequestPage() {
-  const [requests, setRequests] = useState(INITIAL_REQUESTS);
-  const [acceptedMembers, setAcceptedMembers] = useState(INITIAL_ACCEPTED);
-  const [rejectedCount, setRejectedCount] = useState(1);
+  const { postId } = useParams();
+  const navigate = useNavigate();
+  const [post, setPost] = useState(null);
+  const [requests, setRequests] = useState([]);
+  const [acceptedMembers, setAcceptedMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [processingRequestId, setProcessingRequestId] = useState(null);
 
   // Toast
   const [toast, setToast] = useState({ show: false, message: "", isError: false });
 
-  const maxCapacity = 4;
-  const pendingRequests = requests.filter((r) => r.status === "pending");
+  const maxCapacity = Number(post?.requiredMembers) || 0;
+  const pendingRequests = requests.filter((r) => r.status === "PENDING");
   const pendingCount = pendingRequests.length;
   const acceptedCount = acceptedMembers.length;
+  const rejectedCount = requests.filter((r) => r.status === "REJECTED").length;
   const isFull = acceptedCount >= maxCapacity;
   const spotsRemaining = Math.max(0, maxCapacity - acceptedCount);
   const capacityPercentage = Math.min(100, Math.round((acceptedCount / maxCapacity) * 100));
+
+  const getMemberName = (member) =>
+    member?.user?.profile?.firstName || member?.user?.username || "Unknown member";
+
+  const getMemberAvatar = (member) =>
+    member?.user?.profile?.profileImageUrl ||
+    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80";
+
+  const loadPageData = async () => {
+    setLoading(true);
+    try {
+      const [postResponse, requestResponse, memberResponse] = await Promise.all([
+        api.get(`/community-posts/${postId}`),
+        api.get(`/community-posts/${postId}/join-requests`),
+        api.get(`/community-posts/${postId}/members`),
+      ]);
+
+      setPost(postResponse.data);
+      setRequests(Array.isArray(requestResponse.data) ? requestResponse.data : []);
+      setAcceptedMembers(
+        (Array.isArray(memberResponse.data) ? memberResponse.data : []).map(
+          (member) => ({
+            ...member,
+            name: getMemberName(member),
+            avatar: getMemberAvatar(member),
+            badge: member.memberRole || "MEMBER",
+            room: member.room?.roomName || "Not assigned",
+          }),
+        ),
+      );
+    } catch (error) {
+      triggerToast(getApiErrorMessage(error, "Unable to load community requests"), true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadPageData();
+  }, [postId]);
 
   const triggerToast = (message, isError = false) => {
     setToast({ show: true, message, isError });
@@ -96,38 +91,29 @@ export default function MemberRequestPage() {
     }, 3200);
   };
 
-  const handleAccept = (applicant) => {
+  const handleRequestAction = async (applicant, action) => {
     if (isFull) {
-      triggerToast("Cannot accept: Listing is already at maximum 4/4 capacity", true);
+      triggerToast(`Cannot accept: group is already at maximum ${maxCapacity}/${maxCapacity} capacity`, true);
       return;
     }
-
-    const newMember = {
-      id: `acc-${Date.now()}`,
-      name: applicant.name,
-      room: "Bedroom 4",
-      badge: "Accepted",
-      avatar: applicant.avatar,
-    };
-
-    setAcceptedMembers([...acceptedMembers, newMember]);
-    setRequests((prev) =>
-      prev.map((r) =>
-        r.id === applicant.id ? { ...r, status: "accepted" } : r
-      )
-    );
-    triggerToast(`${applicant.name} has been approved into the group!`);
+    setProcessingRequestId(applicant.id);
+    try {
+      await api.patch(`/join-requests/${applicant.id}`, { action });
+      await loadPageData();
+      triggerToast(
+        action === "ACCEPT"
+          ? `${getMemberName(applicant)} has been approved into the group!`
+          : `Request from ${getMemberName(applicant)} was declined.`,
+      );
+    } catch (error) {
+      triggerToast(getApiErrorMessage(error, "Unable to update join request"), true);
+    } finally {
+      setProcessingRequestId(null);
+    }
   };
 
-  const handleReject = (applicant) => {
-    setRequests((prev) =>
-      prev.map((r) =>
-        r.id === applicant.id ? { ...r, status: "rejected" } : r
-      )
-    );
-    setRejectedCount((prev) => prev + 1);
-    triggerToast(`Request from ${applicant.name} was declined.`);
-  };
+  if (loading) return <div className="p-8 text-muted-copy">Loading community requests...</div>;
+  if (!post) return <div className="p-8 text-danger">Community post not found.</div>;
 
   return (
     <main className="min-h-screen bg-[#f7f5ee] text-[#465346] pt-6 sm:pt-8 pb-16">
@@ -169,19 +155,19 @@ export default function MemberRequestPage() {
             <div className="lg:w-2/5 min-h-60 relative overflow-hidden bg-[#ebe8de]">
               <img
                 className="w-full h-full object-cover min-h-60"
-                alt="XELF Sukhumvit Master Bedroom"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCr2lbdMb7OhjXChx3wJbpvN-fJCAKrZY2WL3PQJ5-R9VhQCK5OZ1HwBHWHql6W43Umoky-jQPgHuf41HviGxEcR7yv74B0MVXLuPX-5FgbZUvhjy3IMVbdDnjsy3r_avlFUDNmfxO7ZPRpY5uOX7iRslzqy8QflUdoPOpYq1GQ9M9J5q95fQu_qRKP14KZek3-ukWUSmz0GnTCgq2neGLCk6Fl2fFODHoSwX35jCJVO04PqA5kvy5v"
+                alt={post.property?.title || post.title}
+                src={post.property?.images?.[0]?.imageUrl || "https://placehold.co/1200x800/png?text=Property"}
               />
               <div className="absolute top-3.5 left-3.5 flex items-center gap-1.5 bg-white/95 backdrop-blur-md px-3 py-1 rounded-full shadow-sm">
                 <span className="relative flex h-2.5 w-2.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#4f614d] opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#4f614d]"></span>
                 </span>
-                <span className="text-xs font-bold text-[#4f614d]">Active Listing</span>
+                <span className="text-xs font-bold text-[#4f614d]">{post.status}</span>
               </div>
               <div className="absolute bottom-3.5 right-3.5 bg-[#1c1c16]/80 text-white px-2.5 py-1 rounded-lg text-xs font-medium backdrop-blur-sm flex items-center gap-1.5">
                 <Camera className="w-3.5 h-3.5" />
-                8 Photos
+                {post.property?.images?.length || 0} Photos
               </div>
             </div>
 
@@ -190,29 +176,28 @@ export default function MemberRequestPage() {
               <div>
                 <div className="flex flex-wrap items-center gap-2.5 mb-2.5">
                   <span className="px-3 py-1 rounded-full bg-[#eedcd4] text-[#695c56] text-xs font-semibold">
-                    Condo · Sukhumvit, Bangkok
+                    {post.property?.propertyType || "Property"} · {post.property?.address?.province || "Location unavailable"}
                   </span>
                   <span className="px-3 py-1 rounded-full bg-[#ebe8de] text-[#414753] text-xs font-semibold flex items-center gap-1">
                     <Users className="w-3.5 h-3.5 text-terracotta" />
-                    Sukhumvit Roommates Club
+                    {post.title}
                   </span>
                   <span className="text-muted-copy text-xs font-medium ml-auto">
-                    Shared Oct 14, 2026
+                    Shared {new Date(post.createdAt).toLocaleDateString()}
                   </span>
                 </div>
                 <h2 className="font-serif text-2xl md:text-3xl text-[#1c1c16] font-bold tracking-tight mb-2">
-                  Modern Condo near BTS - XELF Sukhumvit
+                  {post.property?.title || post.title}
                 </h2>
                 <p className="text-sm md:text-[15px] text-muted-copy line-clamp-2 leading-relaxed mb-4">
-                  Spacious 4-bedroom corner unit with panoramic city vista, smart amenities, high-speed fiber, and serene co-working lounge. 250m walking distance to BTS Thong Lor.
+                  {post.description || post.property?.description || "No description provided."}
                 </p>
               </div>
 
               <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-[#f1eee4] mt-auto">
                 <div className="flex items-baseline gap-1.5">
-                  <span className="font-serif text-2xl font-bold text-[#4f614d]">฿12,000</span>
-                  <span className="text-muted-copy text-xs sm:text-sm font-medium">/ person / month</span>
-                  <span className="text-[#889188] text-xs">(฿48,000 total)</span>
+                  <span className="font-serif text-2xl font-bold text-[#4f614d]">฿{Number(post.property?.monthlyRent || 0).toLocaleString()}</span>
+                  <span className="text-muted-copy text-xs sm:text-sm font-medium">/ month</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2 bg-[#f7f4ea] px-3.5 py-1.5 rounded-lg border border-line">
@@ -226,10 +211,10 @@ export default function MemberRequestPage() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => triggerToast("Viewing property details...")}
+                    onClick={() => navigate(`/properties/${post.propertyId}`)}
                     className="px-4 py-2 rounded-lg bg-[#ebe8de] hover:bg-[#dddad0] text-[#1c1c16] text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
                   >
-                    <span>Inspect Unit</span>
+                    <span>Inspect Property</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -343,7 +328,7 @@ export default function MemberRequestPage() {
 
               {/* Applicant Cards Feed */}
               <div className="flex flex-col gap-4 mt-5">
-                {requests.length === 0 ? (
+                {pendingRequests.length === 0 ? (
                   <div className="py-12 text-center text-muted-copy">
                     <Clock className="w-10 h-10 mx-auto mb-2 text-sage" />
                     <p className="font-medium">No pending requests at the moment.</p>
@@ -352,9 +337,9 @@ export default function MemberRequestPage() {
                   requests.map((applicant) => (
                     <div
                       key={applicant.id}
-                      className={`p-4 sm:p-5 rounded-2xl border transition-all duration-300 ${applicant.status === "rejected"
+                      className={`p-4 sm:p-5 rounded-2xl border transition-all duration-300 ${applicant.status === "REJECTED"
                           ? "bg-[#faf9f5] border-[#e1e5dd] opacity-60"
-                          : applicant.status === "accepted"
+                          : applicant.status === "ACCEPTED"
                             ? "bg-[#f4f7f2] border-sage"
                             : "bg-[#f7f4ea] border-[#e1e5dd] hover:shadow-md"
                         }`}
@@ -365,21 +350,21 @@ export default function MemberRequestPage() {
                           <img
                             className="w-12 h-12 rounded-full object-cover shadow-xs border-2 border-white shrink-0"
                             alt={applicant.name}
-                            src={applicant.avatar}
+                            src={getMemberAvatar(applicant)}
                           />
                           <h4 className="font-serif text-base sm:text-lg font-bold text-[#1c1c16]">
-                            {applicant.name}
+                            {getMemberName(applicant)}
                           </h4>
                         </div>
 
                         {/* Reject & Accept Buttons */}
                         <div className="flex items-center gap-2 self-end sm:self-center">
-                          {applicant.status === "accepted" ? (
+                          {applicant.status === "ACCEPTED" ? (
                             <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#d4e8ce] text-[#3a4b38] text-xs font-bold">
                               <CheckCircle2 className="w-4 h-4" />
                               Accepted
                             </span>
-                          ) : applicant.status === "rejected" ? (
+                          ) : applicant.status === "REJECTED" ? (
                             <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#ebe8de] text-[#695c56] text-xs font-semibold">
                               <X className="w-4 h-4" />
                               Declined
@@ -388,22 +373,22 @@ export default function MemberRequestPage() {
                             <>
                               <button
                                 type="button"
-                                onClick={() => handleReject(applicant)}
+                                onClick={() => handleRequestAction(applicant, "REJECT")}
                                 className="px-4 py-2 rounded-xl bg-white hover:bg-red-50 hover:text-red-700 hover:border-red-200 border border-[#cfd7cd] text-xs font-bold text-muted-copy transition-all cursor-pointer"
                               >
                                 Reject
                               </button>
                               <button
                                 type="button"
-                                onClick={() => handleAccept(applicant)}
-                                disabled={isFull}
+                                onClick={() => handleRequestAction(applicant, "ACCEPT")}
+                                disabled={isFull || processingRequestId === applicant.id}
                                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1 shadow-xs cursor-pointer ${isFull
                                     ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                                     : "bg-[#4f614d] hover:bg-[#687964] text-white"
                                   }`}
                               >
                                 <Check className="w-4 h-4" />
-                                Accept
+                                {processingRequestId === applicant.id ? "Saving..." : "Accept"}
                               </button>
                             </>
                           )}
@@ -433,7 +418,7 @@ export default function MemberRequestPage() {
                 </h5>
                 <p className="text-xs md:text-sm text-[#695c56] mt-0.5 leading-relaxed">
                   {isFull
-                    ? "All 4 member spots for XELF Sukhumvit are confirmed. New applicants cannot apply unless a spot opens up."
+                    ? `All ${maxCapacity} member spots for ${post.property?.title || post.title} are confirmed. New applicants cannot apply unless a spot opens up.`
                     : `When you accept ${spotsRemaining} more roommate${spotsRemaining > 1 ? "s" : ""
                     }, the group capacity reaches ${maxCapacity}/${maxCapacity}. All other pending requests will automatically receive a gentle status update, and your listing will change to 'Group Full'.`}
                 </p>
