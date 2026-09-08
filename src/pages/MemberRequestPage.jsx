@@ -22,6 +22,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import api, { getApiErrorMessage } from "../services/api.js";
+import { parsePostGender } from "../utils/communityRental.js";
 
 export default function MemberRequestPage() {
   const { postId } = useParams();
@@ -182,6 +183,16 @@ export default function MemberRequestPage() {
                     <Users className="w-3.5 h-3.5 text-terracotta" />
                     {post.title}
                   </span>
+                  {parsePostGender(post.description).gender === "FEMALE" && (
+                    <span className="px-3 py-1 rounded-full bg-[#fdf2f4] text-[#be185d] text-xs font-semibold border border-[#fbcfe8]">
+                      🚺 Female Only
+                    </span>
+                  )}
+                  {parsePostGender(post.description).gender === "MALE" && (
+                    <span className="px-3 py-1 rounded-full bg-[#eff6ff] text-[#1d4ed8] text-xs font-semibold border border-[#bfdbfe]">
+                      🚹 Male Only
+                    </span>
+                  )}
                   <span className="text-muted-copy text-xs font-medium ml-auto">
                     Shared {new Date(post.createdAt).toLocaleDateString()}
                   </span>
@@ -190,7 +201,7 @@ export default function MemberRequestPage() {
                   {post.property?.title || post.title}
                 </h2>
                 <p className="text-sm md:text-[15px] text-muted-copy line-clamp-2 leading-relaxed mb-4">
-                  {post.description || post.property?.description || "No description provided."}
+                  {parsePostGender(post.description).cleanDescription || post.property?.description || "No description provided."}
                 </p>
               </div>
 

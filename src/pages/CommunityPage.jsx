@@ -14,7 +14,7 @@ import {
 import useAuthStore from "../stores/authStore.js";
 import RentalRequestModal from "../components/rentalRequest/RentalRequestModal.jsx";
 import api, { getApiErrorMessage } from "../services/api.js";
-import { getCommunityReadiness } from "../utils/communityRental.js";
+import { getCommunityReadiness, parsePostGender } from "../utils/communityRental.js";
 
 const fallbackImage =
   "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80";
@@ -24,6 +24,7 @@ function CommunityPage() {
   const userId = useAuthStore((state) => state.user?.id);
   const [searchText, setSearchText] = useState("");
   const [propertyTypeFilter, setPropertyTypeFilter] = useState("ALL");
+  const [genderFilter, setGenderFilter] = useState("ALL");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [groupSizeFilter, setGroupSizeFilter] = useState("ALL");
@@ -139,9 +140,12 @@ function CommunityPage() {
   const filteredPosts = (posts || [])
     .filter((post) => {
       const property = post.property;
+      const { gender: postGender, cleanDescription } = parsePostGender(
+        post.description,
+      );
       const searchableText = [
         post.title,
-        post.description,
+        cleanDescription,
         property?.title,
         property?.address?.province,
         property?.address?.district,
@@ -173,6 +177,8 @@ function CommunityPage() {
           requiredMembers >= 3 &&
           requiredMembers <= 4) ||
         (groupSizeFilter === "5+" && requiredMembers >= 5);
+      const matchesGender =
+        genderFilter === "ALL" || postGender === genderFilter;
       const matchesMinBudget =
         !minBudget || (!Number.isNaN(monthlyRent) && monthlyRent >= Number(minBudget));
       const matchesMaxBudget =
@@ -184,6 +190,7 @@ function CommunityPage() {
         matchesFromDate &&
         matchesToDate &&
         matchesGroupSize &&
+        matchesGender &&
         matchesMinBudget &&
         matchesMaxBudget
       );
@@ -201,6 +208,7 @@ function CommunityPage() {
   const hasActiveFilters = Boolean(
     searchText ||
       propertyTypeFilter !== "ALL" ||
+      genderFilter !== "ALL" ||
       fromDate ||
       toDate ||
       groupSizeFilter !== "ALL" ||
@@ -212,6 +220,7 @@ function CommunityPage() {
   const clearFilters = () => {
     setSearchText("");
     setPropertyTypeFilter("ALL");
+    setGenderFilter("ALL");
     setFromDate("");
     setToDate("");
     setGroupSizeFilter("ALL");
@@ -274,7 +283,7 @@ function CommunityPage() {
                 />
               </div>
 
-              <div className="mt-4 grid gap-3 md:grid-cols-4">
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
                 <label className="grid gap-1.5 text-xs font-bold text-[#596859]">
                   Category
                   <select
@@ -288,6 +297,19 @@ function CommunityPage() {
                     <option value="APARTMENT">Apartment</option>
                     <option value="DORMITORY">Dormitory</option>
                     <option value="OTHER">Other</option>
+                  </select>
+                </label>
+                <label className="grid gap-1.5 text-xs font-bold text-[#596859]">
+                  Roommate Gender
+                  <select
+                    value={genderFilter}
+                    onChange={(event) => setGenderFilter(event.target.value)}
+                    className="h-10 rounded-full border border-[#d8ddd6] bg-white px-3.5 text-sm font-normal text-[#475547] outline-none focus:border-[#748a75]"
+                  >
+                    <option value="ALL">All Genders</option>
+                    <option value="FEMALE">Female Only</option>
+                    <option value="MALE">Male Only</option>
+                    <option value="ANY">No Restriction</option>
                   </select>
                 </label>
                 <label className="grid gap-1.5 text-xs font-bold text-[#596859]">
@@ -382,6 +404,8 @@ function CommunityPage() {
                 const supportsGroupRental =
                   Boolean(post.propertyId) &&
                   post.property?.rentType === "WHOLE_UNIT";
+                const { gender: postGender, cleanDescription } =
+                  parsePostGender(post.description);
 
                 return (
                   <article
@@ -418,6 +442,16 @@ function CommunityPage() {
                           {post.property?.propertyType && (
                             <span className="flex items-center gap-0.5 text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-[#fafbf8] text-[#5e6d5e] border border-[#cfd7cd]">
                               {post.property.propertyType}
+                            </span>
+                          )}
+                          {postGender === "FEMALE" && (
+                            <span className="flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-[#fdf2f4] text-[#be185d] border border-[#fbcfe8]">
+                              🚺 Female Only
+                            </span>
+                          )}
+                          {postGender === "MALE" && (
+                            <span className="flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-[#eff6ff] text-[#1d4ed8] border border-[#bfdbfe]">
+                              🚹 Male Only
                             </span>
                           )}
                           <span>·</span>
@@ -474,9 +508,11 @@ function CommunityPage() {
                   )}
 
                   {/* Post Content Description */}
-                  <p className="text-[15px] text-[#465346] leading-relaxed">
-                    {post.description}
-                  </p>
+                  {cleanDescription && (
+                    <p className="text-[15px] text-[#465346] leading-relaxed">
+                      {cleanDescription}
+                    </p>
+                  )}
 
                   {/* Action Area */}
                   <div className="flex items-center justify-end border-t border-[#edf0ea] pt-3.5 mt-1 gap-3">

@@ -54,6 +54,7 @@ const PropertyDetailPage = () => {
   const [postTitle, setPostTitle] = useState("");
   const [postDescription, setPostDescription] = useState("");
   const [requireMember, setRequireMember] = useState(1);
+  const [genderPreference, setGenderPreference] = useState("ANY");
 
   // Interaction State
   const [isSaved, setIsSaved] = useState(false);
@@ -157,6 +158,7 @@ const PropertyDetailPage = () => {
     setPostTitle(property?.title || property?.name || "");
     setPostDescription("");
     setRequireMember(1);
+    setGenderPreference("ANY");
     setIsShareModalOpen(true);
   };
 
@@ -168,9 +170,16 @@ const PropertyDetailPage = () => {
     }
     setIsSharingToCommunity(true);
     try {
+      let formattedDescription = postDescription.trim();
+      if (genderPreference === "FEMALE_ONLY") {
+        formattedDescription = `[GENDER:FEMALE] ${formattedDescription}`;
+      } else if (genderPreference === "MALE_ONLY") {
+        formattedDescription = `[GENDER:MALE] ${formattedDescription}`;
+      }
+
       await saveShareToDatabase(property, {
         title: postTitle.trim(),
-        description: postDescription.trim(),
+        description: formattedDescription,
         requireMember: Number(requireMember) || 1,
       });
       showToast("Shared to Community successfully!");
@@ -1178,6 +1187,33 @@ const PropertyDetailPage = () => {
                         person
                       </span>
                     </div>
+                  </div>
+                </div>
+
+                {/* Roommate Gender Preference */}
+                <div>
+                  <label className="block text-xs font-bold text-[#1c1c16] mb-1.5">
+                    Roommate Gender Preference / เพศที่ต้องการ
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { value: "ANY", label: "ไม่จำกัด (Any)" },
+                      { value: "FEMALE_ONLY", label: "หญิงเท่านั้น (Female)" },
+                      { value: "MALE_ONLY", label: "ชายเท่านั้น (Male)" },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setGenderPreference(option.value)}
+                        className={`py-2 px-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer text-center ${
+                          genderPreference === option.value
+                            ? "bg-[#4f614d] text-white border-[#4f614d] shadow-xs"
+                            : "bg-white text-[#465346] border-[#e1e5dd] hover:bg-[#f5f7f4]"
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
