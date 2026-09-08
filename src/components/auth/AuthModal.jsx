@@ -1,6 +1,8 @@
 import { useState } from "react";
 import {
   Building2,
+  Eye,
+  EyeOff,
   Home,
   LockKeyhole,
   Mail,
@@ -10,10 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { useNavigate } from "react-router";
-import {
-  login,
-  register,
-} from "../../services/authService.js";
+import { login, register } from "../../services/authService.js";
 import useAuthStore from "../../stores/authStore.js";
 
 import roomHubIcon from "../../assets/roomhub-icon.svg";
@@ -22,10 +21,10 @@ const AuthModal = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
   const [mode, setMode] = useState("login");
-  const [accountPurpose, setAccountPurpose] =
-    useState("CUSTOMER");
-  const [applicantType, setApplicantType] =
-    useState("OWNER");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [accountPurpose, setAccountPurpose] = useState("CUSTOMER");
+  const [applicantType, setApplicantType] = useState("OWNER");
 
   const [formData, setFormData] = useState({
     username: "",
@@ -72,14 +71,12 @@ const AuthModal = ({ isOpen, onClose }) => {
         : authentication.user.role === "OWNER"
           ? "/"
           : "/properties",
-      { replace: true }
+      { replace: true },
     );
   };
 
   const handleRegister = async () => {
-    if (
-      formData.password !== formData.confirmPassword
-    ) {
+    if (formData.password !== formData.confirmPassword) {
       throw new Error("Passwords do not match");
     }
 
@@ -91,9 +88,7 @@ const AuthModal = ({ isOpen, onClose }) => {
     });
 
     if (accountPurpose === "CUSTOMER") {
-      setSuccess(
-        "Account created successfully. You can now log in."
-      );
+      setSuccess("Account created successfully. You can now log in.");
 
       setMode("login");
 
@@ -110,10 +105,7 @@ const AuthModal = ({ isOpen, onClose }) => {
       email: formData.email,
       password: formData.password,
     });
-    sessionStorage.setItem(
-      "openOwnerApplicationModal",
-      "true"
-    );
+    sessionStorage.setItem("openOwnerApplicationModal", "true");
     setAuth(authentication);
     onClose();
     navigate("/properties", { replace: true });
@@ -133,25 +125,15 @@ const AuthModal = ({ isOpen, onClose }) => {
         await handleRegister();
       }
     } catch (requestError) {
-      const responseMessage =
-        requestError.response?.data?.message;
+      const responseMessage = requestError.response?.data?.message;
 
-      if (
-        responseMessage &&
-        typeof responseMessage === "object"
-      ) {
-        const firstError = Object.values(
-          responseMessage
-        )
-          .flat()
-          .find(Boolean);
+      if (responseMessage && typeof responseMessage === "object") {
+        const firstError = Object.values(responseMessage).flat().find(Boolean);
 
         setError(firstError || "Unable to continue");
       } else {
         setError(
-          responseMessage ||
-          requestError.message ||
-          "Unable to continue"
+          responseMessage || requestError.message || "Unable to continue",
         );
       }
     } finally {
@@ -160,26 +142,19 @@ const AuthModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div
-      className="auth-modal-overlay"
-      onMouseDown={onClose}
-    >
+    <div className="auth-modal-overlay" onMouseDown={onClose}>
       <section
         className="auth-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="auth-modal-title"
-        onMouseDown={(event) =>
-          event.stopPropagation()
-        }
+        onMouseDown={(event) => event.stopPropagation()}
       >
         <header className="auth-modal-header">
           <div>
             <h2 id="auth-modal-title">Welcome to RoomHub</h2>
 
-            <p>
-              Find a room or start listing your property.
-            </p>
+            <p>Find a room or start listing your property.</p>
           </div>
 
           <button
@@ -205,9 +180,7 @@ const AuthModal = ({ isOpen, onClose }) => {
           <div className="auth-mode-tabs">
             <button
               type="button"
-              className={
-                mode === "login" ? "active" : ""
-              }
+              className={mode === "login" ? "active" : ""}
               onClick={() => changeMode("login")}
             >
               Log in
@@ -215,19 +188,14 @@ const AuthModal = ({ isOpen, onClose }) => {
 
             <button
               type="button"
-              className={
-                mode === "register" ? "active" : ""
-              }
+              className={mode === "register" ? "active" : ""}
               onClick={() => changeMode("register")}
             >
               Register
             </button>
           </div>
 
-          <form
-            className="auth-modal-form"
-            onSubmit={handleSubmit}
-          >
+          <form className="auth-modal-form" onSubmit={handleSubmit}>
             {mode === "register" && (
               <>
                 <div className="account-purpose-section">
@@ -241,17 +209,13 @@ const AuthModal = ({ isOpen, onClose }) => {
                           ? "account-purpose-card active"
                           : "account-purpose-card"
                       }
-                      onClick={() =>
-                        setAccountPurpose("CUSTOMER")
-                      }
+                      onClick={() => setAccountPurpose("CUSTOMER")}
                     >
                       <Home size={23} />
 
                       <span>
                         <strong>Find a home</strong>
-                        <small>
-                          Browse and rent properties
-                        </small>
+                        <small>Browse and rent properties</small>
                       </span>
                     </button>
 
@@ -262,17 +226,13 @@ const AuthModal = ({ isOpen, onClose }) => {
                           ? "account-purpose-card active"
                           : "account-purpose-card"
                       }
-                      onClick={() =>
-                        setAccountPurpose("LISTER")
-                      }
+                      onClick={() => setAccountPurpose("LISTER")}
                     >
                       <Building2 size={23} />
 
                       <span>
                         <strong>List a property</strong>
-                        <small>
-                          Apply as an owner or agent
-                        </small>
+                        <small>Apply as an owner or agent</small>
                       </span>
                     </button>
                   </div>
@@ -285,14 +245,8 @@ const AuthModal = ({ isOpen, onClose }) => {
                     <div className="applicant-type-options">
                       <button
                         type="button"
-                        className={
-                          applicantType === "OWNER"
-                            ? "active"
-                            : ""
-                        }
-                        onClick={() =>
-                          setApplicantType("OWNER")
-                        }
+                        className={applicantType === "OWNER" ? "active" : ""}
+                        onClick={() => setApplicantType("OWNER")}
                       >
                         <UserRound size={18} />
                         Property owner
@@ -300,14 +254,8 @@ const AuthModal = ({ isOpen, onClose }) => {
 
                       <button
                         type="button"
-                        className={
-                          applicantType === "AGENT"
-                            ? "active"
-                            : ""
-                        }
-                        onClick={() =>
-                          setApplicantType("AGENT")
-                        }
+                        className={applicantType === "AGENT" ? "active" : ""}
+                        onClick={() => setApplicantType("AGENT")}
                       >
                         <UsersRound size={18} />
                         Property agent
@@ -350,18 +298,25 @@ const AuthModal = ({ isOpen, onClose }) => {
               <LockKeyhole size={19} />
 
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 placeholder="Enter your password"
                 value={formData.password}
                 onChange={handleChange}
                 autoComplete={
-                  mode === "login"
-                    ? "current-password"
-                    : "new-password"
+                  mode === "login" ? "current-password" : "new-password"
                 }
                 required
               />
+
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword((current) => !current)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
+              </button>
             </div>
 
             {mode === "register" && (
@@ -369,7 +324,7 @@ const AuthModal = ({ isOpen, onClose }) => {
                 <LockKeyhole size={19} />
 
                 <input
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   name="confirmPassword"
                   placeholder="Confirm your password"
                   value={formData.confirmPassword}
@@ -377,20 +332,29 @@ const AuthModal = ({ isOpen, onClose }) => {
                   autoComplete="new-password"
                   required
                 />
+
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowConfirmPassword((current) => !current)}
+                  aria-label={
+                    showConfirmPassword
+                      ? "Hide confirm password"
+                      : "Show confirm password"
+                  }
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff size={19} />
+                  ) : (
+                    <Eye size={19} />
+                  )}
+                </button>
               </div>
             )}
 
-            {error && (
-              <p className="auth-modal-error">
-                {error}
-              </p>
-            )}
+            {error && <p className="auth-modal-error">{error}</p>}
 
-            {success && (
-              <p className="auth-modal-success">
-                {success}
-              </p>
-            )}
+            {success && <p className="auth-modal-success">{success}</p>}
 
             <button
               type="submit"
@@ -408,8 +372,8 @@ const AuthModal = ({ isOpen, onClose }) => {
           </form>
 
           <p className="auth-modal-terms">
-            By continuing, you agree to RoomShare&apos;s
-            Terms of Service and Privacy Policy.
+            By continuing, you agree to RoomShare&apos;s Terms of Service and
+            Privacy Policy.
           </p>
         </div>
       </section>
