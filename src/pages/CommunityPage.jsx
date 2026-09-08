@@ -458,7 +458,9 @@ function CommunityPage() {
                         <div className="flex flex-wrap items-center gap-4 text-[13px] text-[#607060] pt-1">
                           <div className="flex items-center gap-1.5">
                             <BedSingle className="w-4 h-4 text-[#889188]" />
-                            <span> {post.property.totalBedrooms} /rooms</span>
+                            <span>
+                              {post.property.rooms?.length ?? 0} rooms
+                            </span>
                           </div>
                           <div className="flex items-center gap-1.5">
                             <Users className="w-4 h-4 text-[#889188]" />
