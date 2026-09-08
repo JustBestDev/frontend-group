@@ -228,7 +228,6 @@ const PropertyApprovalDetail = () => {
   const publishStatus = property.publishStatus || "PENDING";
 
   const images = property.images || [];
-  const rooms = property.rooms || [];
 
   const address =
     property.address?.fullAddress ||
@@ -411,7 +410,7 @@ const PropertyApprovalDetail = () => {
               <InfoItem
                 label="Monthly rent"
                 value={
-                  property.monthlyRent
+                  property.monthlyRent != null
                     ? `฿${Number(property.monthlyRent).toLocaleString()} / month`
                     : "—"
                 }
@@ -420,7 +419,7 @@ const PropertyApprovalDetail = () => {
               <InfoItem
                 label="Deposit"
                 value={
-                  property.deposit
+                  property.deposit != null
                     ? `฿${Number(property.deposit).toLocaleString()}`
                     : "—"
                 }
@@ -435,7 +434,7 @@ const PropertyApprovalDetail = () => {
               ) : (
                 <InfoItem
                   label="Rooms"
-                  value={rooms.length}
+                  value={property.rooms?.length ?? 0}
                   icon={<BedDouble size={15} />}
                 />
               )}
@@ -446,7 +445,7 @@ const PropertyApprovalDetail = () => {
               />
 
               <InfoItem
-                label="Available date"
+                label="Available from"
                 value={
                   property.availableDate
                     ? new Date(property.availableDate).toLocaleDateString()
