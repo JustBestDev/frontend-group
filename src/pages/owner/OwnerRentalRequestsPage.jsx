@@ -20,6 +20,8 @@ const OwnerRentalRequestsPage = () => {
     try {
       const response = await api.get("/rental-requests/owner");
       setRequests(Array.isArray(response.data.data) ? response.data.data : []);
+      await api.patch("/rental-requests/owner/viewed");
+      window.dispatchEvent(new Event("owner-notifications:refresh"));
     } catch (requestError) {
       setError(getApiErrorMessage(requestError, "Unable to load rental requests"));
     } finally {

@@ -286,6 +286,8 @@ const ConversationList = () => {
       );
 
       await api.patch(`/conversations/${conversationId}/read`);
+      window.dispatchEvent(new Event("owner-notifications:refresh"));
+      window.dispatchEvent(new Event("notifications:refresh"));
 
       setConversations((currentConversations) =>
         currentConversations.map((item) => {

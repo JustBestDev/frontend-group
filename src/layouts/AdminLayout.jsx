@@ -1,4 +1,5 @@
-import { NavLink, Outlet, useNavigate } from "react-router";
+import { useCallback, useEffect, useState } from "react";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import {
   Bell,
   Building2,
@@ -12,15 +13,20 @@ import {
   UsersRound,
 } from "lucide-react";
 import useAuthStore from "../stores/authStore.js";
+import api from "../services/api.js";
+import { createSocketClient, SOCKET_EVENTS } from "../services/socket.js";
 
 import roomHubWordmark from "../assets/roomhub-wordmark.svg";
 import roomHubAppIcon from "../assets/roomhub-app-icon.svg";
 
 const AdminLayout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
+  const token = useAuthStore((state) => state.token);
+  const [notificationCounts, setNotificationCounts] = useState({ ownerApplications: 0, properties: 0, messages: 0 });
 
   const handleLogout = () => {
     logout();
@@ -55,6 +61,52 @@ const AdminLayout = () => {
       icon: MessageCircle,
     },
   ];
+
+  const refreshNotifications = useCallback(async () => {
+    try {
+      const [adminResponse, messageResponse] = await Promise.all([
+        api.get("/admin/notifications/unread-counts"),
+        api.get("/conversations/unread-count"),
+      ]);
+      setNotificationCounts({
+        ownerApplications: Number(adminResponse.data?.data?.ownerApplications) || 0,
+        properties: Number(adminResponse.data?.data?.properties) || 0,
+        messages: Number(messageResponse.data?.data?.count) || 0,
+      });
+    } catch {
+      // Notification failures should not prevent admin navigation.
+    }
+  }, []);
+
+  useEffect(() => {
+    // Notification totals are server state and should follow route changes.
+    // oxlint-disable-next-line react/set-state-in-effect
+    refreshNotifications();
+  }, [location.pathname, refreshNotifications]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(refreshNotifications, 30000);
+    const handleRefresh = () => refreshNotifications();
+    window.addEventListener("notifications:refresh", handleRefresh);
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener("notifications:refresh", handleRefresh);
+    };
+  }, [refreshNotifications]);
+
+  useEffect(() => {
+    if (!token) return undefined;
+    const socket = createSocketClient(token);
+    const handleNewMessage = ({ message }) => {
+      if (String(message?.senderId) !== String(user?.id || user?.userId)) refreshNotifications();
+    };
+    socket.on(SOCKET_EVENTS.NEW_MESSAGE, handleNewMessage);
+    socket.on(SOCKET_EVENTS.MESSAGES_READ, refreshNotifications);
+    socket.connect();
+    return () => socket.disconnect();
+  }, [refreshNotifications, token, user?.id, user?.userId]);
+
+  const totalNotifications = notificationCounts.ownerApplications + notificationCounts.properties + notificationCounts.messages;
 
   return (
     <div className="min-h-screen bg-[#F5F6F4]">
@@ -93,6 +145,12 @@ const AdminLayout = () => {
 
           {menuItems.map((item) => {
             const Icon = item.icon;
+            const notificationCount = item.name === "Owner Applications"
+              ? notificationCounts.ownerApplications
+              : item.name === "Property Approvals"
+                ? notificationCounts.properties
+                : item.name === "Conversations" ? notificationCounts.messages : 0;
+            const isMessageItem = item.name === "Conversations";
 
             return (
               <NavLink
@@ -122,6 +180,9 @@ const AdminLayout = () => {
                     </span>
 
                     <span>{item.name}</span>
+                    {notificationCount > 0 && (isMessageItem
+                      ? <span className="ml-auto inline-flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-extrabold leading-none text-white shadow-[0_0_0_3px_rgba(239,68,68,.12)]" title={`${notificationCount} unread messages`} aria-label={`${notificationCount} unread messages`}>{notificationCount > 99 ? "99+" : notificationCount}</span>
+                      : <span className="ml-auto size-2 rounded-full bg-red-500 shadow-[0_0_0_3px_rgba(239,68,68,.12)]" title={`${notificationCount} unread`} aria-label={`${notificationCount} unread`} />)}
                   </>
                 )}
               </NavLink>
@@ -183,7 +244,7 @@ const AdminLayout = () => {
               >
                 <Bell size={19} />
 
-                <span className="absolute right-2.5 top-2.5 size-2 rounded-full bg-[#D97757] ring-2 ring-white" />
+                {totalNotifications > 0 && <span className="absolute right-2.5 top-2.5 size-2 rounded-full bg-[#D97757] ring-2 ring-white" title={`${totalNotifications} unread notifications`} />}
               </button>
 
               <div className="mx-1 hidden h-8 w-px bg-[#E5EAE6] sm:block" />

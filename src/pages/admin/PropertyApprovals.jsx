@@ -33,6 +33,8 @@ const PropertyApprovals = () => {
     try {
       const response = await api.get("/admin/properties");
       setProperties(response.data.data ?? []);
+      await api.patch("/admin/properties/viewed");
+      window.dispatchEvent(new Event("notifications:refresh"));
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
@@ -44,6 +46,8 @@ const PropertyApprovals = () => {
   };
 
   useEffect(() => {
+    // Loading server state is the purpose of this effect.
+    // oxlint-disable-next-line react/set-state-in-effect
     fetchProperties();
   }, []);
 

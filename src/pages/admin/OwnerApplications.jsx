@@ -42,6 +42,8 @@ const OwnerApplications = () => {
       setApplications(
         Array.isArray(applicationData) ? applicationData : []
       );
+      await api.patch("/admin/owner-applications/viewed");
+      window.dispatchEvent(new Event("notifications:refresh"));
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
@@ -53,6 +55,8 @@ const OwnerApplications = () => {
   };
 
   useEffect(() => {
+    // Loading server state is the purpose of this effect.
+    // oxlint-disable-next-line react/set-state-in-effect
     fetchApplications();
   }, []);
 
