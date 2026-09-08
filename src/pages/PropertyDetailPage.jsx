@@ -49,6 +49,7 @@ const PropertyDetailPage = () => {
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isRentalRequestOpen, setIsRentalRequestOpen] = useState(false);
+  const [isContactingOwner, setIsContactingOwner] = useState(false);
   const [isSharingToCommunity, setIsSharingToCommunity] = useState(false);
   const [postTitle, setPostTitle] = useState("");
   const [postDescription, setPostDescription] = useState("");
@@ -202,12 +203,34 @@ const PropertyDetailPage = () => {
   };
 
   // Contact Owner Handler
-  const handleContactOwner = () => {
-    if (!user) {
+  const handleContactOwner = async () => {
+    if (!token || !user) {
       navigate("/login");
       return;
     }
-    navigate("/Message");
+
+    const ownerId = property?.owner?.id || property?.user?.id || property?.ownerId;
+    if (!ownerId) {
+      showToast("Unable to find the property host");
+      return;
+    }
+
+    setIsContactingOwner(true);
+    try {
+      const response = await api.post("/conversations", {
+        propertyId: Number(property.id || propertyId),
+        memberId: Number(ownerId),
+      });
+      const conversation = response.data.conversation || response.data.data?.conversation;
+      const conversationId = conversation?.id || conversation?.conversationId;
+
+      if (!conversationId) throw new Error("Conversation was not returned");
+      navigate("/Message", { state: { conversationId } });
+    } catch (requestError) {
+      showToast(requestError.response?.data?.message || "Unable to contact the host");
+    } finally {
+      setIsContactingOwner(false);
+    }
   };
 
   const handleRequestToRent = () => {
@@ -886,10 +909,11 @@ const PropertyDetailPage = () => {
                 <button
                   type="button"
                   onClick={handleContactOwner}
+                  disabled={isContactingOwner}
                   className="w-full py-3 px-4 rounded-xl border border-[#4f614d] text-[#4f614d] bg-white hover:bg-[#e6ede3]/40 text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
                 >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>Contact Host</span>
+                  {isContactingOwner ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageCircle className="w-4 h-4" />}
+                  <span>{isContactingOwner ? "Opening conversation..." : "Contact Host"}</span>
                 </button>
               </div>
             </div>
@@ -932,10 +956,11 @@ const PropertyDetailPage = () => {
               <button
                 type="button"
                 onClick={handleContactOwner}
+                disabled={isContactingOwner}
                 className="w-full py-2.5 rounded-xl bg-[#f1eee4] hover:bg-[#e8e4d8] text-[#1c1c16] text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                <MessageCircle className="w-3.5 h-3.5 text-[#4f614d]" />
-                <span>Send Host a Message</span>
+                {isContactingOwner ? <Loader2 className="w-3.5 h-3.5 animate-spin text-[#4f614d]" /> : <MessageCircle className="w-3.5 h-3.5 text-[#4f614d]" />}
+                <span>{isContactingOwner ? "Opening..." : "Send Host a Message"}</span>
               </button>
             </div>
           </div>
