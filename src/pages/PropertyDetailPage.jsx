@@ -91,7 +91,7 @@ const PropertyDetailPage = () => {
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
-          "Unable to retrieve property details. Please try again.",
+        "Unable to retrieve property details. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -369,17 +369,15 @@ const PropertyDetailPage = () => {
             <button
               type="button"
               onClick={handleToggleSave}
-              className={`p-2.5 rounded-full border transition-all cursor-pointer shadow-xs flex items-center gap-1.5 text-xs font-semibold ${
-                isSaved
-                  ? "bg-[#eedcd4] border-[#d8b8a8] text-[#835024]"
-                  : "bg-white border-[#e1e5dd] text-[#6f7a73] hover:text-[#835024] hover:bg-[#faf7f2]"
-              }`}
+              className={`p-2.5 rounded-full border transition-all cursor-pointer shadow-xs flex items-center gap-1.5 text-xs font-semibold ${isSaved
+                ? "bg-[#eedcd4] border-[#d8b8a8] text-[#835024]"
+                : "bg-white border-[#e1e5dd] text-[#6f7a73] hover:text-[#835024] hover:bg-[#faf7f2]"
+                }`}
               title={isSaved ? "Saved" : "Save Property"}
             >
               <Heart
-                className={`w-4 h-4 ${
-                  isSaved ? "fill-[#835024] text-[#835024]" : ""
-                }`}
+                className={`w-4 h-4 ${isSaved ? "fill-[#835024] text-[#835024]" : ""
+                  }`}
               />
               <span className="hidden sm:inline">
                 {isSaved ? "Saved" : "Save"}
@@ -588,174 +586,175 @@ const PropertyDetailPage = () => {
               </div>
             </div>
 
-            {!isWholeUnit && (
+            {rooms.length > 0 && (
               <>
-              {/* Room Availability Status Banner */}
-              <div className="bg-white p-6 rounded-2xl border border-[#e1e5dd] shadow-xs">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-                <div>
-                  <h2 className="font-serif text-xl font-bold text-[#1c1c16]">
-                    Unit Room Status
-                  </h2>
-                  <p className="text-xs text-[#6f7a73] mt-0.5">
-                    This unit has {rooms.length || 1} bedrooms available for
-                    individual rental.
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2.5">
-                  <div className="inline-flex items-center gap-2 bg-[#e6ede3] border border-[#cbe0c6] px-3.5 py-1.5 rounded-full text-xs font-bold text-[#294c25]">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#4f614d]" />
-                    {availableRooms.length} Available
-                  </div>
-                  {occupiedRoomsCount > 0 && (
-                    <div className="inline-flex items-center gap-2 bg-[#f1f0ea] border border-[#e1ded5] px-3.5 py-1.5 rounded-full text-xs font-medium text-[#6f7a73]">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#a8b0a7]" />
-                      {occupiedRoomsCount} Occupied
+                {/* Room Availability Status Banner */}
+                <div className="bg-white p-6 rounded-2xl border border-[#e1e5dd] shadow-xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                    <div>
+                      <h2 className="font-serif text-xl font-bold text-[#1c1c16]">
+                        {isWholeUnit ? "Rooms in this property" : "Unit Room Status"}
+                      </h2>
+                      <p className="text-xs text-[#6f7a73] mt-0.5">
+                        {isWholeUnit
+                          ? `This property has ${rooms.length} ${rooms.length === 1 ? "room" : "rooms"}.`
+                          : `This unit has ${rooms.length || 1} bedrooms available for individual rental.`}
+                      </p>
                     </div>
-                  )}
+                    <div className="flex flex-wrap gap-2.5">
+                      <div className="inline-flex items-center gap-2 bg-[#e6ede3] border border-[#cbe0c6] px-3.5 py-1.5 rounded-full text-xs font-bold text-[#294c25]">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#4f614d]" />
+                        {availableRooms.length} Available
+                      </div>
+                      {occupiedRoomsCount > 0 && (
+                        <div className="inline-flex items-center gap-2 bg-[#f1f0ea] border border-[#e1ded5] px-3.5 py-1.5 rounded-full text-xs font-medium text-[#6f7a73]">
+                          <span className="w-2.5 h-2.5 rounded-full bg-[#a8b0a7]" />
+                          {occupiedRoomsCount} Occupied
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-              </div>
 
-              {/* Bedroom Selection Cards (Stitch Style) */}
-              <div className="bg-white p-6 sm:p-8 rounded-2xl border border-[#e1e5dd] shadow-xs space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#1c1c16]">
-                    Select a Bedroom
-                  </h2>
-                  <p className="text-xs sm:text-sm text-[#6f7a73] mt-0.5">
-                    Choose a room to view pricing, specifications, and
-                    amenities.
-                  </p>
-                </div>
-                <span className="text-xs font-semibold text-[#4f614d] bg-[#e6ede3] px-3 py-1 rounded-lg">
-                  {rooms.length} {rooms.length === 1 ? "Room" : "Rooms"} Total
-                </span>
-              </div>
+                {/* Bedroom Selection Cards (Stitch Style) */}
+                <div className="bg-white p-6 sm:p-8 rounded-2xl border border-[#e1e5dd] shadow-xs space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#1c1c16]">
+                        {isWholeUnit ? "Rooms" : "Select a Bedroom"}
+                      </h2>
 
-              {rooms.length === 0 ? (
-                <div className="p-8 text-center bg-[#f7f5ee] rounded-xl border border-dashed border-[#dcd8cc]">
-                  <DoorOpen className="w-8 h-8 text-[#6f7a73] mx-auto mb-2" />
-                  <p className="text-sm font-medium text-[#1c1c16]">
-                    No rooms are currently available for this property.
-                  </p>
-                  <p className="text-xs text-[#6f7a73] mt-1">
-                    Contact the host directly to inquire about lease terms and
-                    booking.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3.5 pt-2">
-                  {rooms.map((room, index) => {
-                    const roomId = room.id || room.roomId || index + 1;
-                    const isAvailable =
-                      (room.status || room.roomStatus || "").toUpperCase() ===
-                        "AVAILABLE" ||
-                      (!room.status && !room.roomStatus);
-                    const roomPrice =
-                      room.monthlyRent || property.monthlyRent || 0;
-                    const roomImage =
-                      room.images?.[0]?.imageUrl ||
-                      room.images?.[0]?.url ||
-                      room.imageUrl ||
-                      galleryImages[index % galleryImages.length];
+                      <p className="text-xs sm:text-sm text-[#6f7a73] mt-0.5">
+                        {isWholeUnit
+                          ? "View the rooms included in this property."
+                          : "Choose a room to view pricing, specifications, and amenities."}
+                      </p>
+                    </div>
+                    <span className="text-xs font-semibold text-[#4f614d] bg-[#e6ede3] px-3 py-1 rounded-lg">
+                      {rooms.length} {rooms.length === 1 ? "Room" : "Rooms"} Total
+                    </span>
+                  </div>
 
-                    const isCardSelected =
-                      String(selectedRoomId) === String(roomId);
+                  {rooms.length === 0 ? (
+                    <div className="p-8 text-center bg-[#f7f5ee] rounded-xl border border-dashed border-[#dcd8cc]">
+                      <DoorOpen className="w-8 h-8 text-[#6f7a73] mx-auto mb-2" />
+                      <p className="text-sm font-medium text-[#1c1c16]">
+                        No rooms are currently available for this property.
+                      </p>
+                      <p className="text-xs text-[#6f7a73] mt-1">
+                        Contact the host directly to inquire about lease terms and
+                        booking.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3.5 pt-2">
+                      {rooms.map((room, index) => {
+                        const roomId = room.id || room.roomId || index + 1;
+                        const isAvailable =
+                          (room.status || room.roomStatus || "").toUpperCase() ===
+                          "AVAILABLE" ||
+                          (!room.status && !room.roomStatus);
+                        const roomPrice =
+                          room.monthlyRent || property.monthlyRent || 0;
+                        const roomImage =
+                          room.images?.[0]?.imageUrl ||
+                          room.images?.[0]?.url ||
+                          room.imageUrl ||
+                          galleryImages[index % galleryImages.length];
 
-                    return (
-                      <div
-                        key={roomId}
-                        onClick={() => setSelectedRoomId(String(roomId))}
-                        className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-5 rounded-xl border transition-all cursor-pointer gap-4 ${
-                          isCardSelected
-                            ? "border-[#4f614d] bg-[#f8faf7] shadow-sm ring-1 ring-[#4f614d]"
-                            : isAvailable
-                              ? "border-[#e1e5dd] bg-white hover:border-[#a9bba3] hover:shadow-xs"
-                              : "border-[#e1e5dd] bg-[#fcfbf9] opacity-75"
-                        }`}
-                      >
-                        <div className="flex items-center gap-4">
-                          {/* Room Thumbnail */}
-                          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg bg-[#e5e2d9] overflow-hidden shrink-0 relative">
-                            <img
-                              src={roomImage}
-                              alt={room.name || `Bedroom ${index + 1}`}
-                              className={`w-full h-full object-cover ${
-                                !isAvailable ? "grayscale" : ""
+                        const isCardSelected =
+                          String(selectedRoomId) === String(roomId);
+
+                        return (
+                          <div
+                            key={roomId}
+                            onClick={() => setSelectedRoomId(String(roomId))}
+                            className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-5 rounded-xl border transition-all cursor-pointer gap-4 ${isCardSelected
+                              ? "border-[#4f614d] bg-[#f8faf7] shadow-sm ring-1 ring-[#4f614d]"
+                              : isAvailable
+                                ? "border-[#e1e5dd] bg-white hover:border-[#a9bba3] hover:shadow-xs"
+                                : "border-[#e1e5dd] bg-[#fcfbf9] opacity-75"
                               }`}
-                            />
-                            {!isAvailable && (
-                              <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                                <span className="text-[10px] font-bold text-white uppercase bg-black/60 px-2 py-0.5 rounded">
-                                  Occupied
-                                </span>
+                          >
+                            <div className="flex items-center gap-4">
+                              {/* Room Thumbnail */}
+                              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg bg-[#e5e2d9] overflow-hidden shrink-0 relative">
+                                <img
+                                  src={roomImage}
+                                  alt={room.name || `Bedroom ${index + 1}`}
+                                  className={`w-full h-full object-cover ${!isAvailable ? "grayscale" : ""
+                                    }`}
+                                />
+                                {!isAvailable && (
+                                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                    <span className="text-[10px] font-bold text-white uppercase bg-black/60 px-2 py-0.5 rounded">
+                                      Occupied
+                                    </span>
+                                  </div>
+                                )}
                               </div>
-                            )}
-                          </div>
 
-                          {/* Room Info */}
-                          <div className="space-y-1.5">
-                            <div className="flex items-center gap-2.5">
-                              <h3 className="font-serif text-lg font-bold text-[#1c1c16]">
-                                {room.name ||
-                                  room.roomName ||
-                                  `Bedroom ${index + 1}`}
-                              </h3>
+                              {/* Room Info */}
+                              <div className="space-y-1.5">
+                                <div className="flex items-center gap-2.5">
+                                  <h3 className="font-serif text-lg font-bold text-[#1c1c16]">
+                                    {room.name ||
+                                      room.roomName ||
+                                      `Bedroom ${index + 1}`}
+                                  </h3>
+                                  {isAvailable ? (
+                                    <span className="bg-[#e6ede3] text-[#294c25] border border-[#b8deb0] px-2.5 py-0.5 rounded-full text-xs font-bold">
+                                      Available
+                                    </span>
+                                  ) : (
+                                    <span className="bg-[#f1f0ea] text-[#6f7a73] border border-[#e1ded5] px-2.5 py-0.5 rounded-full text-xs font-medium">
+                                      Occupied
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="flex items-baseline gap-1 text-[#1c1c16]">
+                                  <span className="font-serif text-lg font-bold text-[#4f614d]">
+                                    ฿{Number(roomPrice).toLocaleString()}
+                                  </span>
+                                  <span className="text-xs text-[#6f7a73]">
+                                    / month
+                                  </span>
+                                </div>
+
+                                {/* Features Tags */}
+                                <div className="flex flex-wrap gap-2 text-xs text-[#6f7a73]">
+                                  <span className="bg-[#f1eee4] px-2 py-0.5 rounded">
+                                    {room.capacity
+                                      ? `Capacity: ${room.capacity}`
+                                      : "Single Bed"}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Action Link */}
+                            <div className="flex items-center justify-end sm:justify-center">
                               {isAvailable ? (
-                                <span className="bg-[#e6ede3] text-[#294c25] border border-[#b8deb0] px-2.5 py-0.5 rounded-full text-xs font-bold">
-                                  Available
-                                </span>
+                                <Link
+                                  to={`/properties/${propertyId}/${roomId}`}
+                                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#4f614d] text-white text-xs font-bold hover:bg-[#41513f] transition-all text-center cursor-pointer shadow-xs active:scale-98"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  View Room Details
+                                </Link>
                               ) : (
-                                <span className="bg-[#f1f0ea] text-[#6f7a73] border border-[#e1ded5] px-2.5 py-0.5 rounded-full text-xs font-medium">
-                                  Occupied
+                                <span className="text-xs text-[#889188] bg-[#f1f0ea] px-4 py-2 rounded-xl font-medium cursor-not-allowed">
+                                  Unavailable
                                 </span>
                               )}
                             </div>
-
-                            <div className="flex items-baseline gap-1 text-[#1c1c16]">
-                              <span className="font-serif text-lg font-bold text-[#4f614d]">
-                                ฿{Number(roomPrice).toLocaleString()}
-                              </span>
-                              <span className="text-xs text-[#6f7a73]">
-                                / month
-                              </span>
-                            </div>
-
-                            {/* Features Tags */}
-                            <div className="flex flex-wrap gap-2 text-xs text-[#6f7a73]">
-                              <span className="bg-[#f1eee4] px-2 py-0.5 rounded">
-                                {room.capacity
-                                  ? `Capacity: ${room.capacity}`
-                                  : "Single Bed"}
-                              </span>
-                            </div>
                           </div>
-                        </div>
-
-                        {/* Action Link */}
-                        <div className="flex items-center justify-end sm:justify-center">
-                          {isAvailable ? (
-                            <Link
-                              to={`/properties/${propertyId}/${roomId}`}
-                              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#4f614d] text-white text-xs font-bold hover:bg-[#41513f] transition-all text-center cursor-pointer shadow-xs active:scale-98"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              View Room Details
-                            </Link>
-                          ) : (
-                            <span className="text-xs text-[#889188] bg-[#f1f0ea] px-4 py-2 rounded-xl font-medium cursor-not-allowed">
-                              Unavailable
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-              )}
-              </div>
               </>
             )}
 
@@ -839,7 +838,7 @@ const PropertyDetailPage = () => {
                       const id = String(r.id || r.roomId || i + 1);
                       const isAvail =
                         (r.status || r.roomStatus || "").toUpperCase() ===
-                          "AVAILABLE" ||
+                        "AVAILABLE" ||
                         (!r.status && !r.roomStatus);
                       return (
                         <option key={id} value={id} disabled={!isAvail}>
@@ -1048,11 +1047,10 @@ const PropertyDetailPage = () => {
                 type="button"
                 key={i}
                 onClick={() => setActivePhotoIndex(i)}
-                className={`w-14 h-14 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
-                  activePhotoIndex === i
-                    ? "border-white scale-105 shadow-md"
-                    : "border-transparent opacity-60 hover:opacity-100"
-                }`}
+                className={`w-14 h-14 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${activePhotoIndex === i
+                  ? "border-white scale-105 shadow-md"
+                  : "border-transparent opacity-60 hover:opacity-100"
+                  }`}
               >
                 <img
                   src={imgUrl}
