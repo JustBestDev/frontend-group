@@ -556,9 +556,11 @@ const PropertyDetailPage = () => {
                 <div className="flex items-center gap-2 bg-[#f7f4ea] px-3.5 py-1.5 rounded-xl border border-[#e4e4d9]">
                   <BedDouble className="w-4 h-4 text-[#4f614d]" />
                   <span className="font-medium">
-                    {rooms.length > 0
-                      ? `${rooms.length} ${rooms.length === 1 ? "Bedroom" : "Bedrooms"}`
-                      : "1 Bedroom"}
+                    {isWholeUnit
+                      ? property.totalBedrooms == null
+                        ? "— Bedrooms"
+                        : `${property.totalBedrooms} ${Number(property.totalBedrooms) === 1 ? "Bedroom" : "Bedrooms"}`
+                      : `${rooms.length} ${rooms.length === 1 ? "Bedroom" : "Bedrooms"}`}
                   </span>
                 </div>
 
@@ -581,7 +583,7 @@ const PropertyDetailPage = () => {
                     : "Contact for Price"}
                 </span>
                 <span className="text-sm text-[#6f7a73]">
-                  / month (entire unit starting price)
+                  / month ({isWholeUnit ? "Entire unit" : "Starting room price"})
                 </span>
               </div>
             </div>
@@ -636,7 +638,7 @@ const PropertyDetailPage = () => {
                 <div className="p-8 text-center bg-[#f7f5ee] rounded-xl border border-dashed border-[#dcd8cc]">
                   <DoorOpen className="w-8 h-8 text-[#6f7a73] mx-auto mb-2" />
                   <p className="text-sm font-medium text-[#1c1c16]">
-                    This property is rented as an entire unit
+                    No rooms are currently available for this property.
                   </p>
                   <p className="text-xs text-[#6f7a73] mt-1">
                     Contact the host directly to inquire about lease terms and
@@ -840,7 +842,7 @@ const PropertyDetailPage = () => {
                           "AVAILABLE" ||
                         (!r.status && !r.roomStatus);
                       return (
-                        <option key={id} value={id}>
+                        <option key={id} value={id} disabled={!isAvail}>
                           {r.name || r.roomName || `Bedroom ${i + 1}`} (฿
                           {Number(
                             r.monthlyRent || property.monthlyRent || 0,
