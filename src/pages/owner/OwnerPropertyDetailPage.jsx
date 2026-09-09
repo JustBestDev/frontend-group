@@ -12,12 +12,19 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
+import PropertyOptionsFields from "../../components/owner/PropertyOptionsFields.jsx";
 import {
   createPropertyAddressApi,
   getOwnerPropertyApi,
   updatePropertyAddressApi,
   updatePropertyApi,
 } from "../../services/ownerApi.js";
+import {
+  hasValidQuietHours,
+  parseQuietHours,
+  propertyOptionIcons,
+  toHouseRulesPayload,
+} from "../../utils/propertyOptions.js";
 
 const inputClass =
   "w-full rounded-xl border border-line bg-white px-4 py-3 text-ink outline-none focus:border-sage-dark focus:ring-3 focus:ring-sage-dark/10";
@@ -70,6 +77,12 @@ const OwnerPropertyDetailPage = () => {
           availableDate: data.availableDate
             ? data.availableDate.slice(0, 10)
             : "",
+          amenityIds: (data.amenities || []).map(({ id }) => id),
+          houseRules: (data.houseRules || []).map(({ id, code, value }) => ({
+            houseRuleId: id,
+            code,
+            ...(code === "QUIET_HOURS" ? parseQuietHours(value) : {}),
+          })),
           ...Object.fromEntries(
             addressFields.map((field) => [
               field,
@@ -107,6 +120,11 @@ const OwnerPropertyDetailPage = () => {
     setError("");
 
     try {
+      if (!hasValidQuietHours(form.houseRules || [])) {
+        setError("Quiet hours must use the format 22:00-07:00");
+        return;
+      }
+
       const details = Object.fromEntries(
         propertyFields.map((field) => [field, form[field]]),
       );
@@ -118,20 +136,27 @@ const OwnerPropertyDetailPage = () => {
           ? null
           : Number(details.totalBedrooms);
       details.availableDate = details.availableDate || null;
+      details.amenityIds = form.amenityIds || [];
+      details.houseRules = toHouseRulesPayload(form.houseRules || []);
 
       const address = Object.fromEntries(
         addressFields.map((field) => [field, form[field] || null]),
       );
       address.province = form.province;
 
-      await updatePropertyApi(propertyId, details);
+      const { data: updatedProperty } = await updatePropertyApi(
+        propertyId,
+        details,
+      );
 
+      let addressResponse;
       if (property.address) {
-        await updatePropertyAddressApi(propertyId, address);
+        addressResponse = await updatePropertyAddressApi(propertyId, address);
       } else {
-        await createPropertyAddressApi(propertyId, address);
+        addressResponse = await createPropertyAddressApi(propertyId, address);
       }
 
+      setProperty({ ...updatedProperty, address: addressResponse.data });
       navigate(`/owner/properties/${propertyId}`);
     } catch (requestError) {
       setError(
@@ -280,6 +305,43 @@ const OwnerPropertyDetailPage = () => {
                 </div>
               ))}
             </div>
+
+            {property.amenities?.length > 0 && (
+              <div className="mt-7 border-t border-line pt-6">
+                <h3 className="font-serif text-xl text-ink">Amenities</h3>
+                <ul className="mt-3 flex flex-wrap gap-2">
+                  {property.amenities.map((amenity) => {
+                    const Icon = propertyOptionIcons[amenity.code];
+                    return (
+                      <li
+                        key={amenity.id}
+                        className="inline-flex items-center gap-2 rounded-full bg-sage-light px-3 py-1.5 text-sm font-semibold text-sage-dark"
+                      >
+                        {Icon && <Icon size={18} className="shrink-0" aria-hidden="true" />}
+                        {amenity.name}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+
+            {property.houseRules?.length > 0 && (
+              <div className="mt-7 border-t border-line pt-6">
+                <h3 className="font-serif text-xl text-ink">House Rules</h3>
+                <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {property.houseRules.map((rule) => {
+                    const Icon = propertyOptionIcons[rule.code];
+                    return (
+                      <li key={rule.id} className="flex items-center gap-2 rounded-xl bg-cream p-3 text-sm text-ink">
+                        {Icon && <Icon size={18} className="shrink-0 text-sage-dark" aria-hidden="true" />}
+                        <span>{rule.name}{rule.value ? `: ${rule.value}` : ""}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
           </article>
 
           <aside className="rounded-2xl border border-line bg-white p-6 shadow-[0_8px_25px_rgba(50,66,54,.05)]">
@@ -548,6 +610,17 @@ const OwnerPropertyDetailPage = () => {
             className={inputClass}
           />
         </label>
+
+        <PropertyOptionsFields
+          amenityIds={form.amenityIds || []}
+          houseRules={form.houseRules || []}
+          onAmenityIdsChange={(amenityIds) =>
+            setForm((current) => ({ ...current, amenityIds }))
+          }
+          onHouseRulesChange={(houseRules) =>
+            setForm((current) => ({ ...current, houseRules }))
+          }
+        />
 
         <h2 className="mt-3 font-serif text-2xl md:col-span-2">Address</h2>
 
