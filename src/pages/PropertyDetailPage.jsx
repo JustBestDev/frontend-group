@@ -6,7 +6,6 @@ import {
   Building2,
   Camera,
   Check,
-  CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Copy,
@@ -26,6 +25,7 @@ import {
 import api from "../services/api";
 import useAuthStore from "../stores/authStore";
 import RentalRequestModal from "../components/rentalRequest/RentalRequestModal.jsx";
+import { propertyOptionIcons } from "../utils/propertyOptions.js";
 
 const FALLBACK_GALLERY = [
   "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80",
@@ -786,30 +786,51 @@ const PropertyDetailPage = () => {
                   )}
                 </div>
               </div>
-              {/* House Guidelines / Rules */}
-              <div className="pt-6 border-t border-[#f1eee4]">
-                <h3 className="font-serif text-lg font-bold text-[#1c1c16] mb-3">
-                  House Rules & Guidelines
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-[#505a54]">
-                  <div className="flex items-center gap-2 p-3 rounded-xl bg-[#f7f5ee]">
-                    <CheckCircle2 className="w-4 h-4 text-[#4f614d] shrink-0" />
-                    <span>Quiet hours after 10:00 PM</span>
-                  </div>
-                  <div className="flex items-center gap-2 p-3 rounded-xl bg-[#f7f5ee]">
-                    <CheckCircle2 className="w-4 h-4 text-[#4f614d] shrink-0" />
-                    <span>Strictly no smoking indoors or in common areas</span>
-                  </div>
-                  <div className="flex items-center gap-2 p-3 rounded-xl bg-[#f7f5ee]">
-                    <CheckCircle2 className="w-4 h-4 text-[#4f614d] shrink-0" />
-                    <span>Keep common spaces tidy and clean up after use</span>
-                  </div>
-                  <div className="flex items-center gap-2 p-3 rounded-xl bg-[#f7f5ee]">
-                    <CheckCircle2 className="w-4 h-4 text-[#4f614d] shrink-0" />
-                    <span>Pets allowed upon prior host approval</span>
+              {property.amenities?.length > 0 && (
+                <div className="pt-6 border-t border-[#f1eee4]">
+                  <h3 className="font-serif text-lg font-bold text-[#1c1c16] mb-3">
+                    Amenities
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-[#505a54]">
+                    {property.amenities.map((amenity) => {
+                      const Icon = propertyOptionIcons[amenity.code];
+                      return (
+                        <div
+                          key={amenity.id}
+                          className="flex items-center gap-2 p-3 rounded-xl bg-[#f7f5ee]"
+                        >
+                          {Icon && <Icon size={18} className="text-[#4f614d] shrink-0" aria-hidden="true" />}
+                          <span>{amenity.name}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
-              </div>
+              )}
+
+              {property.houseRules?.length > 0 && (
+                <div className="pt-6 border-t border-[#f1eee4]">
+                  <h3 className="font-serif text-lg font-bold text-[#1c1c16] mb-3">
+                    House Rules
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-[#505a54]">
+                    {property.houseRules.map((rule) => {
+                      const Icon = propertyOptionIcons[rule.code];
+                      return (
+                        <div
+                          key={rule.id}
+                          className="flex items-center gap-2 p-3 rounded-xl bg-[#f7f5ee]"
+                        >
+                          {Icon && <Icon size={18} className="text-[#4f614d] shrink-0" aria-hidden="true" />}
+                          <span>
+                            {rule.name}{rule.value ? `: ${rule.value}` : ""}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

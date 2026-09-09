@@ -20,6 +20,16 @@ export const getOwnerPropertyApi = async (propertyId) => {
     return res.data;
 };
 
+export const getAmenitiesApi = async () => {
+    const res = await api.get("/amenities");
+    return res.data;
+};
+
+export const getHouseRulesApi = async () => {
+    const res = await api.get("/house-rules");
+    return res.data;
+};
+
 export const updatePropertyApi = async (propertyId, propertyData) => {
     const res = await api.patch(`/properties/${propertyId}`, propertyData);
     return res.data;

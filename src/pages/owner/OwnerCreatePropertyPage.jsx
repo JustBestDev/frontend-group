@@ -10,11 +10,16 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
 import GoogleMapPicker from "../../components/owner/GoogleMapPicker.jsx";
+import PropertyOptionsFields from "../../components/owner/PropertyOptionsFields.jsx";
 import {
   createPropertyAddressApi,
   createPropertyApi,
   uploadPropertyImagesApi,
 } from "../../services/ownerApi.js";
+import {
+  hasValidQuietHours,
+  toHouseRulesPayload,
+} from "../../utils/propertyOptions.js";
 
 const steps = ["Property details", "Address", "Photos"];
 const inputClass =
@@ -30,6 +35,8 @@ const OwnerCreatePropertyPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [addressCreated, setAddressCreated] = useState(false);
   const [imagesUploaded, setImagesUploaded] = useState(false);
+  const [amenityIds, setAmenityIds] = useState([]);
+  const [houseRules, setHouseRules] = useState([]);
   const {
     register,
     handleSubmit,
@@ -77,6 +84,9 @@ const OwnerCreatePropertyPage = () => {
         ? ["title", "description", "propertyType", "rentType", "monthlyRent", "totalBedrooms"]
         : ["province"];
     if (step < 3 && !(await trigger(groups))) return;
+    if (step === 1 && !hasValidQuietHours(houseRules)) {
+      return setPageError("Quiet hours must use the format 22:00-07:00");
+    }
     if (step === 3 && images.length === 0)
       return setPageError("Add at least one property image");
     setPageError("");
@@ -99,6 +109,8 @@ const OwnerCreatePropertyPage = () => {
           deposit: data.deposit ? Number(data.deposit) : null,
           availableDate: data.availableDate || null,
           totalBedrooms: data.totalBedrooms ? Number(data.totalBedrooms) : null,
+          amenityIds,
+          houseRules: toHouseRulesPayload(houseRules),
         });
         id = response.data.id;
         setPropertyId(id);
@@ -255,6 +267,12 @@ const OwnerCreatePropertyPage = () => {
                   />
                   {errors.totalBedrooms && <small className="text-danger">{errors.totalBedrooms.message}</small>}
                 </label>
+                <PropertyOptionsFields
+                  amenityIds={amenityIds}
+                  houseRules={houseRules}
+                  onAmenityIdsChange={setAmenityIds}
+                  onHouseRulesChange={setHouseRules}
+                />
               </div>
             )}
             {step === 2 && (
