@@ -387,10 +387,13 @@ function CommunityPage() {
                 const memberIds = new Set(
                   communityMembers
                     .map((member) => member.userId ?? member.user?.id)
-                    .filter((memberId) => memberId != null)
+                    .filter(
+                      (memberId) =>
+                        memberId != null &&
+                        Number(memberId) !== Number(creatorId),
+                    )
                     .map(Number),
                 );
-                if (creatorId != null) memberIds.add(Number(creatorId));
                 const currentMemberCount = memberIds.size;
                 const requiredMemberCount = Number(post.requiredMembers) || 0;
                 const readiness = getCommunityReadiness(
@@ -429,7 +432,18 @@ function CommunityPage() {
                             "Community member"}
                         </div>
                         <div className="text-[12px] text-[#889188] flex flex-wrap items-center gap-1.5 mt-0.5 font-medium">
-                          <span>{post.createdAt}</span>
+                          <span>
+                            {post.createdAt
+                              ? new Date(post.createdAt).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  },
+                                )
+                              : ""}
+                          </span>
                           <span>·</span>
                           <span
                             className={`flex items-center gap-0.5 text-[11px] px-2.5 py-0.5 rounded-full font-bold ${post.property?.rentType === "INDIVIDUAL_ROOM"
