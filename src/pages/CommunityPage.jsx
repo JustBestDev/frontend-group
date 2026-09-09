@@ -10,6 +10,8 @@ import {
   Users,
   BedSingle,
   AlertCircle,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import useAuthStore from "../stores/authStore.js";
 import RentalRequestModal from "../components/rentalRequest/RentalRequestModal.jsx";
@@ -45,6 +47,7 @@ function CommunityPage() {
   const [zodiacMatches, setZodiacMatches] = useState([]);
   const [userZodiac, setUserZodiac] = useState(null);
   const [zodiacLoading, setZodiacLoading] = useState(false);
+  const [expandedMatchId, setExpandedMatchId] = useState(null);
 
   const fetchCommunity = useCallback(async () => {
     setGroupDataLoading(true);
@@ -154,6 +157,7 @@ function CommunityPage() {
         Array.isArray(response.data?.matches) ? response.data.matches : [],
       );
       setUserZodiac(response.data?.userZodiac || null);
+      setExpandedMatchId(null);
       setZodiacMode(true);
     } catch (error) {
       setJoinFeedback({
@@ -298,7 +302,12 @@ function CommunityPage() {
           <button
             type="button"
             onClick={
-              zodiacMode ? () => setZodiacMode(false) : handleFindByZodiac
+              zodiacMode
+                ? () => {
+                    setZodiacMode(false);
+                    setExpandedMatchId(null);
+                  }
+                : handleFindByZodiac
             }
             disabled={zodiacLoading}
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#748a75] px-5 py-3 text-sm font-bold text-white shadow-xs transition hover:bg-[#627863] disabled:cursor-not-allowed disabled:opacity-60"
@@ -476,6 +485,16 @@ function CommunityPage() {
                   post.property?.rentType === "WHOLE_UNIT";
                 const { gender: postGender, cleanDescription } =
                   parsePostGender(post.description);
+                const compatibilityReasons = Array.isArray(
+                  post.compatibilityReasons,
+                )
+                  ? post.compatibilityReasons
+                  : [];
+                const canExplainMatch =
+                  zodiacMode &&
+                  typeof post.compatibilityScore === "number" &&
+                  compatibilityReasons.length > 0;
+                const isMatchExpanded = expandedMatchId === post.id;
 
                 return (
                   <article
@@ -607,38 +626,79 @@ function CommunityPage() {
                   )}
 
                   {zodiacMode && (
-                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#e1e5dd] bg-[#fafbf8] px-4 py-3">
-                      <div>
-                        <div className="text-sm font-bold text-[#475547]">
-                          {communityMembers
-                            .map((member) =>
-                              formatZodiac(member.user?.profile?.zodiac),
-                            )
-                            .join(" · ") || "Unknown"}
-                        </div>
-                        {Number(post.matchedMembers) <
-                          Number(post.totalMembers) && (
-                          <div className="mt-1 text-xs text-[#879387]">
-                            Zodiac data: {post.matchedMembers} of {post.totalMembers}{" "}
-                            members
+                    <div className="rounded-xl border border-[#e1e5dd] bg-[#fafbf8] px-4 py-3">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <div className="text-sm font-bold text-[#475547]">
+                            {communityMembers
+                              .map((member) =>
+                                formatZodiac(member.user?.profile?.zodiac),
+                              )
+                              .join(" · ") || "Unknown"}
                           </div>
-                        )}
+                          {Number(post.matchedMembers) <
+                            Number(post.totalMembers) && (
+                            <div className="mt-1 text-xs text-[#879387]">
+                              Zodiac data: {post.matchedMembers} of{" "}
+                              {post.totalMembers} members
+                            </div>
+                          )}
+                        </div>
+                        <span
+                          className={`rounded-full px-3 py-1.5 text-sm font-extrabold ${
+                            post.compatibilityScore == null
+                              ? "bg-[#edf0ea] text-[#687568]"
+                              : post.compatibilityScore >= 85
+                                ? "bg-[#dcebd8] text-[#4d684e]"
+                                : post.compatibilityScore >= 65
+                                  ? "bg-[#f4ead6] text-[#8a682f]"
+                                  : "bg-[#f3e3df] text-[#98594b]"
+                          }`}
+                        >
+                          {post.compatibilityScore == null
+                            ? "Not enough zodiac data"
+                            : `${post.compatibilityScore}% Match`}
+                        </span>
                       </div>
-                      <span
-                        className={`rounded-full px-3 py-1.5 text-sm font-extrabold ${
-                          post.compatibilityScore == null
-                            ? "bg-[#edf0ea] text-[#687568]"
-                            : post.compatibilityScore >= 85
-                              ? "bg-[#dcebd8] text-[#4d684e]"
-                              : post.compatibilityScore >= 65
-                                ? "bg-[#f4ead6] text-[#8a682f]"
-                                : "bg-[#f3e3df] text-[#98594b]"
-                        }`}
-                      >
-                        {post.compatibilityScore == null
-                          ? "Not enough zodiac data"
-                          : `${post.compatibilityScore}% Match`}
-                      </span>
+                      {canExplainMatch && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setExpandedMatchId(
+                                isMatchExpanded ? null : post.id,
+                              )
+                            }
+                            aria-expanded={isMatchExpanded}
+                            aria-controls={`zodiac-reasons-${post.id}`}
+                            className="mt-3 flex items-center gap-1.5 border-t border-[#e1e5dd] pt-3 text-xs font-bold text-[#607861] transition-colors hover:text-[#475547]"
+                          >
+                            Why this match?
+                            {isMatchExpanded ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                          </button>
+                          {isMatchExpanded && (
+                            <div
+                              id={`zodiac-reasons-${post.id}`}
+                              className="mt-3 rounded-lg border border-[#e1e5dd] bg-white px-4 py-3"
+                            >
+                              <p className="mb-2 text-xs text-[#879387]">
+                                Based on zodiac traits and sign relationships.
+                              </p>
+                              <ul className="list-disc space-y-1 pl-4 text-[13px] leading-relaxed text-[#596859]">
+                                {compatibilityReasons.map((reason, index) => (
+                                  <li key={`${post.id}-${index}-${reason}`}>
+                                    {reason}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </>
+                      )}
                     </div>
                   )}
 
