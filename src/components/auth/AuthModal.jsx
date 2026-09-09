@@ -68,7 +68,7 @@ const AuthModal = ({ isOpen, onClose }) => {
       authentication.user.role === "ADMIN"
         ? "/admin"
         : authentication.user.role === "OWNER"
-          ? "/owner"
+          ? "/owner/properties"
           : "/properties");
   };
 
