@@ -34,35 +34,30 @@ const guestRouter = createBrowserRouter([
     path: "/",
     Component: HomeLayout,
     children: [
-      {
-        index: true,
-        element: <Navigate to="/properties" replace />,
-      },
-      {
-        path: "properties",
-        Component: HomePage,
-      },
-      {
-        path: "properties/:propertyId",
-        Component: PropertyDetailPage,
-      },
-      {
-        path: "login",
-        Component: LoginPage,
-      },
-      {
-        path: "register",
-        Component: RegisterPage,
-      },
+      { index: true, element: <Navigate to="/properties" replace />, },
+      { path: "properties", Component: HomePage, },
+      { path: "properties/:propertyId", Component: PropertyDetailPage, },
+      { path: "login", Component: LoginPage, },
+      { path: "register", Component: RegisterPage, },
     ],
   },
-  {
-    path: "*",
-    element: <Navigate to="/properties" replace />,
-  },
+  { path: "*", element: <Navigate to="/properties" replace />, },
 ]);
 
 const adminRouter = createBrowserRouter([
+  {
+    path: "/",
+    Component: HomeLayout,
+    children: [
+      { index: true, element: <Navigate to="/properties" replace /> },
+      { path: "properties", Component: HomePage },
+      { path: "properties/:propertyId", Component: PropertyDetailPage },
+      { path: "properties/:propertyId/:roomId", Component: RoomDetail, },
+      { path: "community", Component: CommunityPage },
+      { path: "community/:postId/join-requests", Component: MemberRequestPage },
+      { path: "message", Component: ConversationList },
+    ]
+  },
   {
     path: "/admin",
     Component: AdminLayout,
@@ -85,38 +80,14 @@ const userRouter = createBrowserRouter([
     path: "/",
     Component: HomeLayout,
     children: [
-      {
-        index: true,
-        element: <Navigate to="/properties" replace />,
-      },
-      {
-        path: "properties",
-        Component: HomePage,
-      },
-      {
-        path: "community",
-        Component: CommunityPage,
-      },
-      {
-        path: "community/:postId/join-requests",
-        Component: MemberRequestPage
-      },
-      {
-        path: "Message",
-        Component: ConversationList,
-      },
-      {
-        path: "rental-requests",
-        Component: RentalRequestsPage,
-      },
-      {
-        path: "properties/:propertyId",
-        Component: PropertyDetailPage,
-      },
-      {
-        path: "properties/:propertyId/:roomId",
-        Component: RoomDetail,
-      },
+      { index: true, element: <Navigate to="/properties" replace />, },
+      { path: "properties", Component: HomePage, },
+      { path: "community", Component: CommunityPage, },
+      { path: "community/:postId/join-requests", Component: MemberRequestPage },
+      { path: "Message", Component: ConversationList, },
+      { path: "rental-requests", Component: RentalRequestsPage, },
+      { path: "properties/:propertyId", Component: PropertyDetailPage, },
+      { path: "properties/:propertyId/:roomId", Component: RoomDetail, },
     ],
   },
   { path: "*", element: <Navigate to="/properties" replace /> },
@@ -131,7 +102,6 @@ const ownerRouter = createBrowserRouter([
       { path: "properties", Component: HomePage },
       { path: "properties/:propertyId", Component: PropertyDetailPage },
       { path: "properties/:propertyId/:roomId", Component: RoomDetail, },
-
       { path: "community", Component: CommunityPage },
       { path: "community/:postId/join-requests", Component: MemberRequestPage },
       { path: "message", Component: ConversationList },

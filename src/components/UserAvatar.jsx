@@ -17,6 +17,7 @@ const UserAvatar = ({ user, onLogout, onEditProfile }) => {
   const showImage = profileImageUrl && failedImageUrl !== profileImageUrl;
   const fallbackInitial = user?.email?.trim().charAt(0).toUpperCase() || "?";
   const hasOwnerRoutes = user?.role === "OWNER";
+  const hasAdminRoutes = user?.role === "ADMIN";
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -87,6 +88,18 @@ const UserAvatar = ({ user, onLogout, onEditProfile }) => {
               >
                 <LayoutDashboard size={17} aria-hidden="true" />
                 Owner Portal
+              </Link>
+            </>
+          )}
+          {hasAdminRoutes && (
+            <>
+              <Link
+                to="/admin"
+                role="menuitem"
+                onClick={() => setIsOpen(false)}
+              >
+                <LayoutDashboard size={17} aria-hidden="true" />
+                Admin Portal
               </Link>
             </>
           )}
