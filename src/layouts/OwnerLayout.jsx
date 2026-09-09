@@ -26,7 +26,7 @@ const OwnerLayout = () => {
   const [notificationCounts, setNotificationCounts] = useState({ rentalRequests: 0, messages: 0 });
   const menuItems = [
     { name: "Homepage", path: "/", icon: House, end: true },
-    { name: "My Properties", path: "/owner/properties", icon: Building2, end: true },
+    { name: "My Properties", path: "/owner/properties", icon: Building2},
     { name: "Rooms", path: "/owner/rooms", icon: BedDouble },
     { name: "Rentals", path: "/owner/rentals", icon: ReceiptText },
     { name: "Rental Requests", path: "/owner/rental-requests", icon: ClipboardList },
