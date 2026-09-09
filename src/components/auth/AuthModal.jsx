@@ -64,7 +64,12 @@ const AuthModal = ({ isOpen, onClose }) => {
     });
     setAuth(authentication);
     onClose();
-    navigate("/properties", { replace: true });
+    navigate(
+      authentication.user.role === "ADMIN"
+        ? "/admin"
+        : authentication.user.role === "OWNER"
+          ? "/owner"
+          : "/properties");
   };
 
   const handleRegister = async () => {
