@@ -19,6 +19,9 @@ import { getCommunityReadiness, parsePostGender } from "../utils/communityRental
 const fallbackImage =
   "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80";
 
+const formatZodiac = (zodiac) =>
+  zodiac ? zodiac.charAt(0) + zodiac.slice(1).toLowerCase() : "Unknown";
+
 function CommunityPage() {
   const navigate = useNavigate();
   const userId = useAuthStore((state) => state.user?.id);
@@ -38,6 +41,10 @@ function CommunityPage() {
   const [rentalRequests, setRentalRequests] = useState([]);
   const [groupDataLoading, setGroupDataLoading] = useState(true);
   const [selectedGroupPost, setSelectedGroupPost] = useState(null);
+  const [zodiacMode, setZodiacMode] = useState(false);
+  const [zodiacMatches, setZodiacMatches] = useState([]);
+  const [userZodiac, setUserZodiac] = useState(null);
+  const [zodiacLoading, setZodiacLoading] = useState(false);
 
   const fetchCommunity = useCallback(async () => {
     setGroupDataLoading(true);
@@ -137,6 +144,27 @@ function CommunityPage() {
     }
   };
 
+  const handleFindByZodiac = async () => {
+    setZodiacLoading(true);
+    setJoinFeedback(null);
+
+    try {
+      const response = await api.get("/community-posts/zodiac-matches");
+      setZodiacMatches(
+        Array.isArray(response.data?.matches) ? response.data.matches : [],
+      );
+      setUserZodiac(response.data?.userZodiac || null);
+      setZodiacMode(true);
+    } catch (error) {
+      setJoinFeedback({
+        message: getApiErrorMessage(error, "Unable to find zodiac matches"),
+        isError: true,
+      });
+    } finally {
+      setZodiacLoading(false);
+    }
+  };
+
   const filteredPosts = (posts || [])
     .filter((post) => {
       const property = post.property;
@@ -229,6 +257,8 @@ function CommunityPage() {
     setSortOrder("NEWEST");
   };
 
+  const displayedPosts = zodiacMode ? zodiacMatches : filteredPosts;
+
   if (posts == null) {
     return <div className="">Loading ...</div>;
   }
@@ -265,12 +295,28 @@ function CommunityPage() {
               experience.
             </p>
           </div>
+          <button
+            type="button"
+            onClick={
+              zodiacMode ? () => setZodiacMode(false) : handleFindByZodiac
+            }
+            disabled={zodiacLoading}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#748a75] px-5 py-3 text-sm font-bold text-white shadow-xs transition hover:bg-[#627863] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Sparkles className="h-4 w-4" />
+            {zodiacLoading
+              ? "Finding matches..."
+              : zodiacMode
+                ? "Show all communities"
+                : "Find rooms by Zodiac"}
+          </button>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left Column (Main Feed - 68%) */}
           <div className="w-full lg:w-full flex flex-col gap-6">
             {/* Community search and filters */}
+            {!zodiacMode && (
             <div className="rounded-[18px] border border-[#e1e5dd] bg-white p-4 sm:p-5 shadow-[0_15px_45px_rgba(68,83,68,0.12)]">
               <div className="flex items-center gap-3 rounded-full border border-[#d8ddd6] bg-[#fafbf8] px-4 py-2.5">
                 <Search className="h-4 w-4 shrink-0 text-[#879387]" />
@@ -377,13 +423,32 @@ function CommunityPage() {
                 </label>
               </div>
             </div>
+            )}
+
+            {zodiacMode && (
+              <div className="rounded-[18px] border border-[#d8ddd6] bg-white px-5 py-4 shadow-[0_8px_25px_rgba(67,81,67,0.07)]">
+                <p className="text-sm font-bold text-[#475547]">
+                  Your zodiac: {formatZodiac(userZodiac)}
+                </p>
+                <p className="mt-1 text-xs text-[#879387]">
+                  {zodiacMatches.length} ranked matches found
+                </p>
+              </div>
+            )}
 
             {/* Community Feed Posts */}
             <div className="flex flex-col gap-6">
-              {filteredPosts.map((post) => {
-                const creatorId = post.creatorId ?? post.creator?.id;
+              {displayedPosts.map((post) => {
+                const creator =
+                  post.creator ||
+                  post.members?.find(
+                    (member) => member.memberRole === "CREATOR",
+                  )?.user;
+                const creatorId = post.creatorId ?? creator?.id;
                 const isCreator = Number(creatorId) === Number(userId);
-                const communityMembers = membersByPost[post.id] || [];
+                const communityMembers = zodiacMode
+                  ? post.members || []
+                  : membersByPost[post.id] || [];
                 const memberIds = new Set(
                   communityMembers
                     .map((member) => member.userId ?? member.user?.id)
@@ -394,7 +459,9 @@ function CommunityPage() {
                     )
                     .map(Number),
                 );
-                const currentMemberCount = memberIds.size;
+                const currentMemberCount = zodiacMode
+                  ? Number(post.totalMembers) || communityMembers.length
+                  : memberIds.size;
                 const requiredMemberCount = Number(post.requiredMembers) || 0;
                 const readiness = getCommunityReadiness(
                   post,
@@ -422,13 +489,13 @@ function CommunityPage() {
                         <img
                           alt="User Avatar"
                           className="w-full h-full object-cover"
-                          src={post.creator?.profile?.profileImageUrl || fallbackImage}
+                          src={creator?.profile?.profileImageUrl || fallbackImage}
                         />
                       </div>
                       <div>
                         <div className="text-[15px] font-bold text-[#475547]">
-                          {post.creator?.profile?.firstName ||
-                            post.creator?.username ||
+                          {creator?.profile?.firstName ||
+                            creator?.username ||
                             "Community member"}
                         </div>
                         <div className="text-[12px] text-[#889188] flex flex-wrap items-center gap-1.5 mt-0.5 font-medium">
@@ -458,6 +525,17 @@ function CommunityPage() {
                               {post.property.propertyType}
                             </span>
                           )}
+                          {zodiacMode && (
+                            <span
+                              className={`flex items-center gap-0.5 rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${
+                                post.status === "FULL"
+                                  ? "border-[#edd7cb] bg-[#f8ede6] text-terracotta"
+                                  : "border-[#cfd7cd] bg-[#eef3eb] text-[#546b55]"
+                              }`}
+                            >
+                              {post.status}
+                            </span>
+                          )}
                           {postGender === "FEMALE" && (
                             <span className="flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-[#fdf2f4] text-[#be185d] border border-[#fbcfe8]">
                               🚺 Female Only
@@ -473,7 +551,7 @@ function CommunityPage() {
                         </div>
                       </div>
                     </div>
-                    <button className="text-[#889188] hover:text-[#475547] p-1.5 rounded-full hover:bg-[#eef3eb] transition-colors">
+                    <button type="button" className="text-[#889188] hover:text-[#475547] p-1.5 rounded-full hover:bg-[#eef3eb] transition-colors">
                       <MoreHorizontal className="w-5 h-5" />
                     </button>
                   </div>
@@ -528,9 +606,45 @@ function CommunityPage() {
                     </p>
                   )}
 
+                  {zodiacMode && (
+                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#e1e5dd] bg-[#fafbf8] px-4 py-3">
+                      <div>
+                        <div className="text-sm font-bold text-[#475547]">
+                          {communityMembers
+                            .map((member) =>
+                              formatZodiac(member.user?.profile?.zodiac),
+                            )
+                            .join(" · ") || "Unknown"}
+                        </div>
+                        {Number(post.matchedMembers) <
+                          Number(post.totalMembers) && (
+                          <div className="mt-1 text-xs text-[#879387]">
+                            Zodiac data: {post.matchedMembers} of {post.totalMembers}{" "}
+                            members
+                          </div>
+                        )}
+                      </div>
+                      <span
+                        className={`rounded-full px-3 py-1.5 text-sm font-extrabold ${
+                          post.compatibilityScore == null
+                            ? "bg-[#edf0ea] text-[#687568]"
+                            : post.compatibilityScore >= 85
+                              ? "bg-[#dcebd8] text-[#4d684e]"
+                              : post.compatibilityScore >= 65
+                                ? "bg-[#f4ead6] text-[#8a682f]"
+                                : "bg-[#f3e3df] text-[#98594b]"
+                        }`}
+                      >
+                        {post.compatibilityScore == null
+                          ? "Not enough zodiac data"
+                          : `${post.compatibilityScore}% Match`}
+                      </span>
+                    </div>
+                  )}
+
                   {/* Action Area */}
                   <div className="flex items-center justify-end border-t border-[#edf0ea] pt-3.5 mt-1 gap-3">
-                    {isCreator && (
+                    {!zodiacMode && isCreator && (
                       <button
                         type="button"
                         onClick={() =>
@@ -541,7 +655,32 @@ function CommunityPage() {
                         View Details
                       </button>
                     )}
-                    {isCreator ? (
+                    {zodiacMode ? (
+                      post.isMember ? (
+                        <span className="rounded-full bg-[#eef3eb] px-4 py-2 text-[13px] font-bold text-[#546b55]">
+                          Already a member
+                        </span>
+                      ) : post.status === "FULL" ? (
+                        <button
+                          type="button"
+                          disabled
+                          className="cursor-not-allowed rounded-xl bg-[#748a75] px-5 py-2 text-[13px] font-bold text-white opacity-60"
+                        >
+                          Group is full
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleRequestToJoin(post.id)}
+                          disabled={requestingPostId !== null}
+                          className="cursor-pointer rounded-xl bg-[#748a75] px-5 py-2 text-center text-[13px] font-bold text-white shadow-xs transition-all hover:bg-[#627863] disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {requestingPostId === post.id
+                            ? "Submitting..."
+                            : "Request to Join"}
+                        </button>
+                      )
+                    ) : isCreator ? (
                       existingGroupRequest ? (
                         <span className="rounded-full bg-[#eef3eb] px-4 py-2 text-[13px] font-bold text-[#546b55]">
                           Group rental: {existingGroupRequest.status}
@@ -597,6 +736,13 @@ function CommunityPage() {
                   </article>
                 );
               })}
+              {displayedPosts.length === 0 && (
+                <div className="rounded-[18px] border border-[#e1e5dd] bg-white p-8 text-center text-sm text-[#879387]">
+                  {zodiacMode
+                    ? "No zodiac matches found."
+                    : "No community posts found."}
+                </div>
+              )}
             </div>
           </div>
 
