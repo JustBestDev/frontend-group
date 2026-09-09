@@ -10,7 +10,7 @@ import {
   Menu,
   MessageCircle,
   Search,
-  UsersRound,
+  UsersRound, House
 } from "lucide-react";
 import useAuthStore from "../stores/authStore.js";
 import api from "../services/api.js";
@@ -34,32 +34,12 @@ const AdminLayout = () => {
   };
 
   const menuItems = [
-    {
-      name: "Dashboard",
-      path: "/admin",
-      icon: LayoutDashboard,
-      end: true,
-    },
-    {
-      name: "Users",
-      path: "/admin/users",
-      icon: UsersRound,
-    },
-    {
-      name: "Owner Applications",
-      path: "/admin/owner-applications",
-      icon: FileCheck2,
-    },
-    {
-      name: "Property Approvals",
-      path: "/admin/properties",
-      icon: Building2,
-    },
-    {
-      name: "Conversations",
-      path: "/admin/conversations",
-      icon: MessageCircle,
-    },
+    { name: "Homepage", path: "/", icon: House, end: true },
+    { name: "Dashboard", path: "/admin", icon: LayoutDashboard, end: true },
+    { name: "Users", path: "/admin/users", icon: UsersRound, },
+    { name: "Owner Applications", path: "/admin/owner-applications", icon: FileCheck2, },
+    { name: "Property Approvals", path: "/admin/properties", icon: Building2, },
+    { name: "Conversations", path: "/admin/conversations", icon: MessageCircle, },
   ];
 
   const refreshNotifications = useCallback(async () => {
@@ -115,7 +95,7 @@ const AdminLayout = () => {
         {/* Brand */}
         <div className="flex h-20 items-center border-b border-[#E8ECE8] px-6">
           <div className="flex items-center gap-3">
-            <div className="grid size-10 place-items-center rounded-xl bg-[#17382E]">
+            <div className="grid size-10 place-items-center rounded-xl bg-forest">
               <img
                 src={roomHubAppIcon}
                 alt="RoomHub"
@@ -161,8 +141,8 @@ const AdminLayout = () => {
                   [
                     "group flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-medium transition-all duration-200",
                     isActive
-                      ? "bg-[#EAF0EC] text-[#17382E]"
-                      : "text-[#6B756F] hover:bg-[#F5F7F5] hover:text-[#17382E]",
+                      ? "bg-[#EAF0EC] text-forest"
+                      : "text-[#6B756F] hover:bg-[#F5F7F5] hover:text-forest",
                   ].join(" ")
                 }
               >
@@ -172,8 +152,8 @@ const AdminLayout = () => {
                       className={[
                         "grid size-9 place-items-center rounded-lg transition",
                         isActive
-                          ? "bg-[#17382E] text-white"
-                          : "text-[#76827B] group-hover:bg-white group-hover:text-[#17382E]",
+                          ? "bg-forest text-white"
+                          : "text-[#76827B] group-hover:bg-white group-hover:text-forest",
                       ].join(" ")}
                     >
                       <Icon size={18} strokeWidth={1.9} />
@@ -231,7 +211,7 @@ const AdminLayout = () => {
                 <input
                   type="text"
                   placeholder="Search..."
-                  className="h-11 w-full rounded-xl border border-[#E5EAE6] bg-[#F8FAF8] pl-11 pr-4 text-sm text-[#26352D] outline-none transition placeholder:text-[#A0AAA4] focus:border-[#A9BBA3] focus:bg-white focus:ring-4 focus:ring-[#A9BBA3]/15"
+                  className="h-11 w-full rounded-xl border border-[#E5EAE6] bg-[#F8FAF8] pl-11 pr-4 text-sm text-[#26352D] outline-none transition placeholder:text-[#A0AAA4] focus:border-sage focus:bg-white focus:ring-4 focus:ring-[#A9BBA3]/15"
                 />
               </div>
             </div>
@@ -240,7 +220,7 @@ const AdminLayout = () => {
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                className="relative grid size-10 place-items-center rounded-xl text-[#657169] transition hover:bg-[#F4F7F4] hover:text-[#17382E]"
+                className="relative grid size-10 place-items-center rounded-xl text-[#657169] transition hover:bg-[#F4F7F4] hover:text-forest"
               >
                 <Bell size={19} />
 
@@ -254,7 +234,7 @@ const AdminLayout = () => {
                 type="button"
                 className="flex items-center gap-3 rounded-xl p-1.5 transition hover:bg-[#F4F7F4]"
               >
-                <div className="grid size-9 shrink-0 place-items-center rounded-full bg-[#17382E] text-sm font-semibold text-white">
+                <div className="grid size-9 shrink-0 place-items-center rounded-full bg-forest text-sm font-semibold text-white">
                   {user?.username?.charAt(0)?.toUpperCase() || "A"}
                 </div>
 

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
 import AdminLayout from "../layouts/AdminLayout.jsx";
 import HomeLayout from "../layouts/HomeLayout.jsx";
@@ -29,40 +30,35 @@ import RentalRequestsPage from "../pages/RentalRequestsPage.jsx";
 import OwnerRentalRequestsPage from "../pages/owner/OwnerRentalRequestsPage.jsx";
 import UserDetail from "../pages/admin/UserDetail.jsx";
 
-const guestRouter = createBrowserRouter([
+const createGuestRouter = () => createBrowserRouter([
   {
     path: "/",
     Component: HomeLayout,
     children: [
-      {
-        index: true,
-        element: <Navigate to="/properties" replace />,
-      },
-      {
-        path: "properties",
-        Component: HomePage,
-      },
-      {
-        path: "properties/:propertyId",
-        Component: PropertyDetailPage,
-      },
-      {
-        path: "login",
-        Component: LoginPage,
-      },
-      {
-        path: "register",
-        Component: RegisterPage,
-      },
+      { index: true, element: <Navigate to="/properties" replace />, },
+      { path: "properties", Component: HomePage, },
+      { path: "properties/:propertyId", Component: PropertyDetailPage, },
+      { path: "login", Component: LoginPage, },
+      { path: "register", Component: RegisterPage, },
     ],
   },
-  {
-    path: "*",
-    element: <Navigate to="/properties" replace />,
-  },
+  { path: "*", element: <Navigate to="/properties" replace />, },
 ]);
 
-const adminRouter = createBrowserRouter([
+const createAdminRouter = () => createBrowserRouter([
+  {
+    path: "/",
+    Component: HomeLayout,
+    children: [
+      { index: true, element: <Navigate to="/properties" replace /> },
+      { path: "properties", Component: HomePage },
+      { path: "properties/:propertyId", Component: PropertyDetailPage },
+      { path: "properties/:propertyId/:roomId", Component: RoomDetail, },
+      { path: "community", Component: CommunityPage },
+      { path: "community/:postId/join-requests", Component: MemberRequestPage },
+      { path: "message", Component: ConversationList },
+    ]
+  },
   {
     path: "/admin",
     Component: AdminLayout,
@@ -80,49 +76,25 @@ const adminRouter = createBrowserRouter([
   { path: "*", element: <Navigate to="/admin" replace /> },
 ]);
 
-const userRouter = createBrowserRouter([
+const createUserRouter = () => createBrowserRouter([
   {
     path: "/",
     Component: HomeLayout,
     children: [
-      {
-        index: true,
-        element: <Navigate to="/properties" replace />,
-      },
-      {
-        path: "properties",
-        Component: HomePage,
-      },
-      {
-        path: "community",
-        Component: CommunityPage,
-      },
-      {
-        path: "community/:postId/join-requests",
-        Component: MemberRequestPage
-      },
-      {
-        path: "Message",
-        Component: ConversationList,
-      },
-      {
-        path: "rental-requests",
-        Component: RentalRequestsPage,
-      },
-      {
-        path: "properties/:propertyId",
-        Component: PropertyDetailPage,
-      },
-      {
-        path: "properties/:propertyId/:roomId",
-        Component: RoomDetail,
-      },
+      { index: true, element: <Navigate to="/properties" replace />, },
+      { path: "properties", Component: HomePage, },
+      { path: "community", Component: CommunityPage, },
+      { path: "community/:postId/join-requests", Component: MemberRequestPage },
+      { path: "Message", Component: ConversationList, },
+      { path: "rental-requests", Component: RentalRequestsPage, },
+      { path: "properties/:propertyId", Component: PropertyDetailPage, },
+      { path: "properties/:propertyId/:roomId", Component: RoomDetail, },
     ],
   },
   { path: "*", element: <Navigate to="/properties" replace /> },
 ]);
 
-const ownerRouter = createBrowserRouter([
+const createOwnerRouter = () => createBrowserRouter([
   {
     path: "/",
     Component: HomeLayout,
@@ -131,7 +103,6 @@ const ownerRouter = createBrowserRouter([
       { path: "properties", Component: HomePage },
       { path: "properties/:propertyId", Component: PropertyDetailPage },
       { path: "properties/:propertyId/:roomId", Component: RoomDetail, },
-
       { path: "community", Component: CommunityPage },
       { path: "community/:postId/join-requests", Component: MemberRequestPage },
       { path: "message", Component: ConversationList },
@@ -143,6 +114,7 @@ const ownerRouter = createBrowserRouter([
     Component: OwnerLayout,
     children: [
       { index: true, element: <Navigate to="properties" replace /> },
+      { path: "property", element: <Navigate to="/owner/properties" replace /> },
       { path: "properties", Component: OwnerPropertiesPage },
       { path: "properties/new", Component: OwnerCreatePropertyPage },
       { path: "properties/:propertyId", Component: OwnerPropertyDetailPage },
@@ -163,15 +135,15 @@ const AppRouter = () => {
   const token = useAuthStore((state) => state.token);
   const user = useAuthStore((state) => state.user);
 
-  const finalRouter = !token || !user
-    ? guestRouter
-    : user.role === "ADMIN"
-      ? adminRouter
-      : user.role === "OWNER"
-        ? ownerRouter
-        : userRouter;
+  const authMode = !token || !user ? "GUEST" : user.role;
+  const finalRouter = useMemo(() => {
+    if (authMode === "ADMIN") return createAdminRouter();
+    if (authMode === "OWNER") return createOwnerRouter();
+    if (authMode === "USER") return createUserRouter();
+    return createGuestRouter();
+  }, [authMode]);
 
-  return <RouterProvider router={finalRouter} />;
+  return <RouterProvider key={authMode} router={finalRouter} />;
 };
 
 export default AppRouter;

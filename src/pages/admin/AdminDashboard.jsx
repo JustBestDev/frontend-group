@@ -41,9 +41,9 @@ const AdminDashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[420px] items-center justify-center">
+      <div className="flex min-h-105 items-center justify-center">
         <div className="text-center">
-          <div className="mx-auto size-10 animate-spin rounded-full border-4 border-[#DCE5DF] border-t-[#17382E]" />
+          <div className="mx-auto size-10 animate-spin rounded-full border-4 border-[#DCE5DF] border-t-forest" />
 
           <p className="mt-4 text-sm font-medium text-[#7D8981]">
             Loading dashboard...
@@ -156,7 +156,7 @@ const AdminDashboard = () => {
               </div>
 
               <div className="mt-5 h-1 rounded-full bg-[#F0F3F0]">
-                <div className="h-full w-2/3 rounded-full bg-[#A9BBA3]" />
+                <div className="h-full w-2/3 rounded-full bg-sage" />
               </div>
             </article>
           );
@@ -213,7 +213,7 @@ const AdminDashboard = () => {
 
                 <ArrowRight
                   size={18}
-                  className="text-[#9AA39D] transition group-hover:translate-x-1 group-hover:text-[#17382E]"
+                  className="text-[#9AA39D] transition group-hover:translate-x-1 group-hover:text-forest"
                 />
               </div>
             </Link>
@@ -245,7 +245,7 @@ const AdminDashboard = () => {
 
                 <ArrowRight
                   size={18}
-                  className="text-[#9AA39D] transition group-hover:translate-x-1 group-hover:text-[#17382E]"
+                  className="text-[#9AA39D] transition group-hover:translate-x-1 group-hover:text-forest"
                 />
               </div>
             </Link>
@@ -277,7 +277,7 @@ const AdminDashboard = () => {
                   </p>
                 </div>
 
-                <div className="grid size-12 place-items-center rounded-xl bg-white text-[#17382E] shadow-sm">
+                <div className="grid size-12 place-items-center rounded-xl bg-white text-forest shadow-sm">
                   <House size={22} />
                 </div>
               </div>
@@ -295,7 +295,7 @@ const AdminDashboard = () => {
                   </p>
                 </div>
 
-                <div className="grid size-12 place-items-center rounded-xl bg-white text-[#17382E] shadow-sm">
+                <div className="grid size-12 place-items-center rounded-xl bg-white text-forest shadow-sm">
                   <UsersRound size={22} />
                 </div>
               </div>
