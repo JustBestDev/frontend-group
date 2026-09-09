@@ -9,11 +9,7 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import {
-  Link,
-  useNavigate,
-  useParams,
-} from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import api from "../../services/api";
 import RejectReasonModal from "../../components/admin/RejectReasonModal";
 
@@ -35,9 +31,7 @@ const PropertyApprovalDetail = () => {
     setError("");
 
     try {
-      const response = await api.get(
-        `/admin/properties/${propertyId}`
-      );
+      const response = await api.get(`/admin/properties/${propertyId}`);
 
       const propertyData =
         response.data.data?.property ||
@@ -55,8 +49,7 @@ const PropertyApprovalDetail = () => {
       setSelectedImage(firstImage);
     } catch (requestError) {
       setError(
-        requestError.response?.data?.message ||
-        "Unable to retrieve property"
+        requestError.response?.data?.message || "Unable to retrieve property",
       );
     } finally {
       setLoading(false);
@@ -68,78 +61,62 @@ const PropertyApprovalDetail = () => {
   }, [propertyId]);
 
   useEffect(() => {
-  if (!lightboxOpen) return;
+    if (!lightboxOpen) return;
 
-  const handleKeyDown = (event) => {
-    const images = property?.images || [];
+    const handleKeyDown = (event) => {
+      const images = property?.images || [];
 
-    if (images.length === 0) {
+      if (images.length === 0) {
+        if (event.key === "Escape") {
+          setLightboxOpen(false);
+        }
+        return;
+      }
+
+      if (event.key === "ArrowLeft") {
+        setSelectedImageIndex((currentIndex) => {
+          const newIndex =
+            currentIndex === 0 ? images.length - 1 : currentIndex - 1;
+
+          const imageUrl = images[newIndex]?.imageUrl || images[newIndex]?.url;
+
+          setSelectedImage(imageUrl);
+
+          return newIndex;
+        });
+      }
+
+      if (event.key === "ArrowRight") {
+        setSelectedImageIndex((currentIndex) => {
+          const newIndex =
+            currentIndex === images.length - 1 ? 0 : currentIndex + 1;
+
+          const imageUrl = images[newIndex]?.imageUrl || images[newIndex]?.url;
+
+          setSelectedImage(imageUrl);
+
+          return newIndex;
+        });
+      }
+
       if (event.key === "Escape") {
         setLightboxOpen(false);
       }
-      return;
-    }
+    };
 
-    if (event.key === "ArrowLeft") {
-      setSelectedImageIndex((currentIndex) => {
-        const newIndex =
-          currentIndex === 0
-            ? images.length - 1
-            : currentIndex - 1;
+    window.addEventListener("keydown", handleKeyDown);
 
-        const imageUrl =
-          images[newIndex]?.imageUrl ||
-          images[newIndex]?.url;
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [lightboxOpen, property]);
 
-        setSelectedImage(imageUrl);
-
-        return newIndex;
-      });
-    }
-
-    if (event.key === "ArrowRight") {
-      setSelectedImageIndex((currentIndex) => {
-        const newIndex =
-          currentIndex === images.length - 1
-            ? 0
-            : currentIndex + 1;
-
-        const imageUrl =
-          images[newIndex]?.imageUrl ||
-          images[newIndex]?.url;
-
-        setSelectedImage(imageUrl);
-
-        return newIndex;
-      });
-    }
-
-    if (event.key === "Escape") {
-      setLightboxOpen(false);
-    }
-  };
-
-  window.addEventListener("keydown", handleKeyDown);
-
-  return () => {
-    window.removeEventListener("keydown", handleKeyDown);
-  };
-}, [lightboxOpen, property]);
-
-  const updatePublishStatus = async (
-    publishStatus,
-    rejectReason
-  ) => {
-    const action =
-      publishStatus === "APPROVED"
-        ? "approve"
-        : "reject";
+  const updatePublishStatus = async (publishStatus, rejectReason) => {
+    const action = publishStatus === "APPROVED" ? "approve" : "reject";
 
     const confirmed =
       publishStatus === "REJECTED" ||
-      window.confirm(
-        `Are you sure you want to ${action} this property?`
-      );
+      window.confirm(`Are you sure you want to ${action} this property?`);
 
     if (!confirmed) return;
 
@@ -151,7 +128,7 @@ const PropertyApprovalDetail = () => {
         `/admin/properties/${propertyId}/publish-status`,
         publishStatus === "REJECTED"
           ? { publishStatus, rejectReason }
-          : { publishStatus }
+          : { publishStatus },
       );
 
       setProperty((currentProperty) => ({
@@ -160,9 +137,7 @@ const PropertyApprovalDetail = () => {
         ...(rejectReason ? { rejectReason } : {}),
       }));
 
-      window.alert(
-        `Property ${publishStatus.toLowerCase()} successfully`
-      );
+      window.alert(`Property ${publishStatus.toLowerCase()} successfully`);
 
       if (publishStatus === "REJECTED") {
         setRejectModalOpen(false);
@@ -170,7 +145,7 @@ const PropertyApprovalDetail = () => {
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
-        "Unable to update property status"
+          "Unable to update property status",
       );
     } finally {
       setUpdating(false);
@@ -214,9 +189,7 @@ const PropertyApprovalDetail = () => {
           Property unavailable
         </h1>
 
-        <p className="mx-auto mt-2 max-w-md text-sm text-[#7B8780]">
-          {error}
-        </p>
+        <p className="mx-auto mt-2 max-w-md text-sm text-[#7B8780]">{error}</p>
 
         <div className="mt-5 flex flex-wrap justify-center gap-3">
           <button
@@ -241,25 +214,20 @@ const PropertyApprovalDetail = () => {
 
   if (!property) return null;
 
-  const owner =
-    property.owner || property.user || {};
+  const owner = property.owner || property.user || {};
 
   const profile = owner.profile || {};
 
   const ownerName =
     profile.fullName ||
-    [profile.firstName, profile.lastName]
-      .filter(Boolean)
-      .join(" ") ||
+    [profile.firstName, profile.lastName].filter(Boolean).join(" ") ||
     owner.username ||
     property.ownerName ||
     "Unknown owner";
 
-  const publishStatus =
-    property.publishStatus || "PENDING";
+  const publishStatus = property.publishStatus || "PENDING";
 
   const images = property.images || [];
-  const rooms = property.rooms || [];
 
   const address =
     property.address?.fullAddress ||
@@ -276,22 +244,15 @@ const PropertyApprovalDetail = () => {
     property.city ||
     "Address not provided";
 
-  const propertyName =
-    property.title ||
-    property.name ||
-    "Untitled property";
+  const propertyName = property.title || property.name || "Untitled property";
 
   const goToPreviousImage = () => {
     if (images.length === 0) return;
 
     const newIndex =
-      selectedImageIndex === 0
-        ? images.length - 1
-        : selectedImageIndex - 1;
+      selectedImageIndex === 0 ? images.length - 1 : selectedImageIndex - 1;
 
-    const imageUrl =
-      images[newIndex]?.imageUrl ||
-      images[newIndex]?.url;
+    const imageUrl = images[newIndex]?.imageUrl || images[newIndex]?.url;
 
     setSelectedImageIndex(newIndex);
     setSelectedImage(imageUrl);
@@ -301,13 +262,9 @@ const PropertyApprovalDetail = () => {
     if (images.length === 0) return;
 
     const newIndex =
-      selectedImageIndex === images.length - 1
-        ? 0
-        : selectedImageIndex + 1;
+      selectedImageIndex === images.length - 1 ? 0 : selectedImageIndex + 1;
 
-    const imageUrl =
-      images[newIndex]?.imageUrl ||
-      images[newIndex]?.url;
+    const imageUrl = images[newIndex]?.imageUrl || images[newIndex]?.url;
 
     setSelectedImageIndex(newIndex);
     setSelectedImage(imageUrl);
@@ -337,14 +294,14 @@ const PropertyApprovalDetail = () => {
           </h1>
 
           <p className="mt-2 text-sm text-[#7B8780]">
-            Review property information, location and images
-            before publishing it on RoomHub.
+            Review property information, location and images before publishing
+            it on RoomHub.
           </p>
         </div>
 
         <span
           className={`inline-flex w-fit rounded-full px-3 py-1.5 text-xs font-semibold ${getStatusClass(
-            publishStatus
+            publishStatus,
           )}`}
         >
           {publishStatus}
@@ -393,8 +350,7 @@ const PropertyApprovalDetail = () => {
             {images.length > 1 && (
               <div className="mt-4 flex gap-3 overflow-x-auto pb-1">
                 {images.map((image, index) => {
-                  const imageUrl =
-                    image.imageUrl || image.url;
+                  const imageUrl = image.imageUrl || image.url;
 
                   return (
                     <button
@@ -404,10 +360,11 @@ const PropertyApprovalDetail = () => {
                         setSelectedImage(imageUrl);
                         setSelectedImageIndex(index);
                       }}
-                      className={`shrink-0 overflow-hidden rounded-xl border-2 transition ${selectedImage === imageUrl
-                        ? "border-[#17382E]"
-                        : "border-transparent hover:border-[#A9BBA3]"
-                        }`}
+                      className={`shrink-0 overflow-hidden rounded-xl border-2 transition ${
+                        selectedImage === imageUrl
+                          ? "border-[#17382E]"
+                          : "border-transparent hover:border-[#A9BBA3]"
+                      }`}
                     >
                       <img
                         src={imageUrl}
@@ -442,54 +399,65 @@ const PropertyApprovalDetail = () => {
             <div className="grid gap-x-8 gap-y-6 p-6 sm:grid-cols-2 lg:grid-cols-3">
               <InfoItem
                 label="Property type"
-                value={
-                  property.propertyType ||
-                  property.type ||
-                  "—"
-                }
+                value={property.propertyType || property.type || "—"}
               />
 
               <InfoItem
                 label="Rent type"
-                value={
-                  property.rentType
-                    ?.replaceAll("_", " ") || "—"
-                }
+                value={property.rentType?.replaceAll("_", " ") || "—"}
               />
 
               <InfoItem
-                label="Monthly price"
+                label="Monthly rent"
                 value={
-                  property.price
-                    ? `฿${Number(
-                      property.price
-                    ).toLocaleString()}`
+                  property.monthlyRent != null
+                    ? `฿${Number(property.monthlyRent).toLocaleString()} / month`
                     : "—"
                 }
               />
 
               <InfoItem
-                label="Property status"
+                label="Deposit"
                 value={
-                  property.propertyStatus ||
-                  property.status ||
-                  "—"
+                  property.deposit != null
+                    ? `฿${Number(property.deposit).toLocaleString()}`
+                    : "—"
                 }
               />
 
+              {property.rentType === "WHOLE_UNIT" ? (
+                <InfoItem
+                  label="Bedrooms"
+                  value={property.totalBedrooms ?? "—"}
+                  icon={<BedDouble size={15} />}
+                />
+              ) : (
+                <InfoItem
+                  label="Rooms"
+                  value={property.rooms?.length ?? 0}
+                  icon={<BedDouble size={15} />}
+                />
+              )}
+
               <InfoItem
-                label="Rooms"
-                value={rooms.length}
-                icon={<BedDouble size={15} />}
+                label="Property status"
+                value={property.propertyStatus || property.status || "—"}
+              />
+
+              <InfoItem
+                label="Available from"
+                value={
+                  property.availableDate
+                    ? new Date(property.availableDate).toLocaleDateString()
+                    : "—"
+                }
               />
 
               <InfoItem
                 label="Submitted"
                 value={
                   property.createdAt
-                    ? new Date(
-                      property.createdAt
-                    ).toLocaleString()
+                    ? new Date(property.createdAt).toLocaleString()
                     : "—"
                 }
               />
@@ -515,17 +483,11 @@ const PropertyApprovalDetail = () => {
             </div>
 
             <div className="space-y-5 p-6">
-              <DetailBlock
-                label="Address"
-                value={address}
-              />
+              <DetailBlock label="Address" value={address} />
 
               <DetailBlock
                 label="Description"
-                value={
-                  property.description ||
-                  "No description was provided."
-                }
+                value={property.description || "No description was provided."}
               />
             </div>
           </section>
@@ -549,28 +511,20 @@ const PropertyApprovalDetail = () => {
             </div>
 
             <div className="grid gap-x-8 gap-y-6 p-6 sm:grid-cols-2">
-              <InfoItem
-                label="Owner name"
-                value={ownerName}
-              />
+              <InfoItem label="Owner name" value={ownerName} />
 
-              <InfoItem
-                label="Email"
-                value={owner.email || "—"}
-              />
+              <InfoItem label="Email" value={owner.email || "—"} />
             </div>
           </section>
         </div>
 
         {/* Decision */}
         <aside className="h-fit rounded-2xl border border-[#E4E9E4] bg-white p-5 shadow-sm xl:sticky xl:top-28">
-          <h2 className="font-semibold text-[#26382F]">
-            Publishing decision
-          </h2>
+          <h2 className="font-semibold text-[#26382F]">Publishing decision</h2>
 
           <p className="mt-2 text-sm leading-6 text-[#7B8780]">
-            Approve the listing only after checking the
-            property information, location and images.
+            Approve the listing only after checking the property information,
+            location and images.
           </p>
 
           <div className="my-5 h-px bg-[#EEF1EE]" />
@@ -580,9 +534,7 @@ const PropertyApprovalDetail = () => {
               <button
                 type="button"
                 disabled={updating}
-                onClick={() =>
-                  updatePublishStatus("APPROVED")
-                }
+                onClick={() => updatePublishStatus("APPROVED")}
                 className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#17382E] text-sm font-semibold text-white transition hover:bg-[#214A3D] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Check size={17} />
@@ -605,11 +557,10 @@ const PropertyApprovalDetail = () => {
           ) : (
             <div
               className={`rounded-xl px-4 py-4 text-sm font-semibold ${getStatusClass(
-                publishStatus
+                publishStatus,
               )}`}
             >
-              This property has been{" "}
-              {publishStatus.toLowerCase()}.
+              This property has been {publishStatus.toLowerCase()}.
             </div>
           )}
 
@@ -634,10 +585,7 @@ const PropertyApprovalDetail = () => {
             }
           }}
           onReject={(rejectReason) =>
-            updatePublishStatus(
-              "REJECTED",
-              rejectReason
-            )
+            updatePublishStatus("REJECTED", rejectReason)
           }
         />
       )}
@@ -701,10 +649,7 @@ const PropertyApprovalDetail = () => {
               className="absolute right-50 z-10 grid size-12 place-items-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25"
               aria-label="Next image"
             >
-              <ArrowLeft
-                size={24}
-                className="rotate-180"
-              />
+              <ArrowLeft size={24} className="rotate-180" />
             </button>
           )}
         </div>
@@ -715,9 +660,7 @@ const PropertyApprovalDetail = () => {
 
 const InfoItem = ({ label, value, icon }) => (
   <div>
-    <p className="text-xs font-medium text-[#8A958E]">
-      {label}
-    </p>
+    <p className="text-xs font-medium text-[#8A958E]">{label}</p>
 
     <div className="mt-1.5 flex items-center gap-2 text-sm font-semibold text-[#33463C]">
       {icon}
