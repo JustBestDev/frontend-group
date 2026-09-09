@@ -1,159 +1,36 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import {
-  Building2,
-  Maximize2,
+  CalendarDays,
   MoreHorizontal,
   Globe,
-  ChevronDown,
+  Search,
   Sparkles,
   CheckCircle2,
-  Send,
   Users,
-  RefreshCw,
   BedSingle,
   AlertCircle,
 } from "lucide-react";
 import useAuthStore from "../stores/authStore.js";
 import RentalRequestModal from "../components/rentalRequest/RentalRequestModal.jsx";
 import api, { getApiErrorMessage } from "../services/api.js";
-import { getCommunityReadiness } from "../utils/communityRental.js";
+import { getCommunityReadiness, parsePostGender } from "../utils/communityRental.js";
 
 const fallbackImage =
   "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80";
 
-const INITIAL_POSTS = [
-  {
-    id: 1,
-    author: {
-      name: "Numfon Wongphattarachoti",
-      avatar:
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
-      role: "Member",
-    },
-    rentType: "INDIVIDUAL_ROOM",
-    propertyType: "CONDO",
-    category: "Roommate Search",
-    createdAt: "8m ago",
-    content:
-      "Brand-new condo in the heart of Sukhumvit. Convenient commute close to BTS Ekkamai and expressway. Fully equipped with premium facilities. Ideal for working professionals seeking quality living. Feel free to inquire!",
-    property: {
-      title: "XELF by Sansiri",
-      location: "Khlong Toei, Bangkok",
-      price: "From 3.59M THB / 18,000 THB/mo",
-      image:
-        "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=80",
-      floors: "34 Floors",
-      area: "23.75–85.5 sq.m.",
-    },
-  },
-  {
-    id: 2,
-    author: {
-      name: "Thanaphol S.",
-      avatar:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
-      role: "Tenant",
-    },
-    rentType: "INDIVIDUAL_ROOM",
-    propertyType: "APARTMENT",
-    category: "Room Search",
-    createdAt: "45m ago",
-    content:
-      "Looking for a studio or 1-bedroom condo around Ari - Saphan Khwai. Budget up to 12,000 THB/month, ready to move in by end of this month. Parking space preferred. Please message me if you have an available room or want to co-rent!",
-  },
-  {
-    id: 3,
-    author: {
-      name: "Supaporn Residence (Owner)",
-      avatar:
-        "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80",
-      role: "Property Owner",
-    },
-    rentType: "WHOLE_UNIT",
-    propertyType: "CONDO",
-    category: "Owner Listing",
-    createdAt: "2h ago",
-    content:
-      "Corner unit with pool view. Fully furnished with brand-new appliances: washing machine, microwave, 2-door refrigerator. 1-year contract, common fee included. Available for daily viewing!",
-    property: {
-      title: "Ideo Mobi Sukhumvit 66",
-      location: "Bang Na, Bangkok",
-      price: "16,500 THB/month",
-      image:
-        "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=900&q=80",
-      floors: "18th Floor",
-      area: "35 sq.m.",
-    },
-  },
-  {
-    id: 4,
-    author: {
-      name: "Kittisak W.",
-      avatar:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
-      role: "Tenant",
-    },
-    rentType: "WHOLE_UNIT",
-    propertyType: "HOUSE",
-    category: "Room Search",
-    createdAt: "3h ago",
-    content:
-      "Looking for a whole-unit house or townhouse rental around Phrom Phong - Thong Lo area. 2 bedrooms, pet-friendly. Budget 35,000 - 45,000 THB/month, 1-2 year lease.",
-  },
-  {
-    id: 5,
-    author: {
-      name: "Prasert Dormitory",
-      avatar:
-        "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80",
-      role: "Property Owner",
-    },
-    rentType: "INDIVIDUAL_ROOM",
-    propertyType: "DORMITORY",
-    category: "Owner Listing",
-    createdAt: "5h ago",
-    content:
-      "Student dormitory near university campus. Keycard access, 24-hr security guards, high-speed WiFi included. Rent starts at 6,500 THB/month.",
-  },
-  {
-    id: 6,
-    author: {
-      name: "Siriporn Loft Studio",
-      avatar:
-        "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80",
-      role: "Property Owner",
-    },
-    rentType: "WHOLE_UNIT",
-    propertyType: "OTHER",
-    category: "Owner Listing",
-    createdAt: "1d ago",
-    content:
-      "Creative live-work artist studio space with private entrance and high ceiling. Suitable for freelancers or design studio. Short or long-term lease available.",
-  },
-];
-
-const PROPERTY_TYPES = ["HOUSE", "CONDO", "APARTMENT", "DORMITORY", "OTHER"];
-
-const FILTER_TABS = [
-  { id: "ALL", label: "All" },
-  { id: "INDIVIDUAL_ROOM", label: "INDIVIDUAL_ROOM" },
-  { id: "WHOLE_UNIT", label: "WHOLE_UNIT" },
-  { id: "HOUSE", label: "HOUSE" },
-  { id: "CONDO", label: "CONDO" },
-  { id: "APARTMENT", label: "APARTMENT" },
-  { id: "DORMITORY", label: "DORMITORY" },
-  { id: "OTHER", label: "OTHER" },
-];
-
 function CommunityPage() {
   const navigate = useNavigate();
-  const user = useAuthStore((state) => state.user);
-  const userId = user?.id;
-  const [activeFilter, setActiveFilter] = useState("ALL");
-  const [newPostRentType, setNewPostRentType] = useState("INDIVIDUAL_ROOM");
-  const [newPostPropertyType, setNewPostPropertyType] = useState("CONDO");
-  const [postText, setPostText] = useState("");
+  const userId = useAuthStore((state) => state.user?.id);
+  const [searchText, setSearchText] = useState("");
+  const [propertyTypeFilter, setPropertyTypeFilter] = useState("ALL");
+  const [genderFilter, setGenderFilter] = useState("ALL");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [groupSizeFilter, setGroupSizeFilter] = useState("ALL");
+  const [minBudget, setMinBudget] = useState("");
+  const [maxBudget, setMaxBudget] = useState("");
+  const [sortOrder, setSortOrder] = useState("NEWEST");
   const [posts, setPosts] = useState(null);
   const [requestingPostId, setRequestingPostId] = useState(null);
   const [joinFeedback, setJoinFeedback] = useState(null);
@@ -163,13 +40,15 @@ function CommunityPage() {
   const [selectedGroupPost, setSelectedGroupPost] = useState(null);
 
   const fetchCommunity = useCallback(async () => {
+    setGroupDataLoading(true);
     try {
       const response = await api.get("/community-posts");
       const nextPosts = Array.isArray(response.data) ? response.data : [];
       setPosts(nextPosts);
 
+      const postsWithMembers = nextPosts.filter((post) => Boolean(post.id));
       const creatorPosts = userId
-        ? nextPosts.filter(
+        ? postsWithMembers.filter(
             (post) =>
               Number(post.creatorId ?? post.creator?.id) === Number(userId) &&
               Boolean(post.propertyId) &&
@@ -177,7 +56,9 @@ function CommunityPage() {
           )
         : [];
 
-      if (creatorPosts.length === 0) {
+      if (postsWithMembers.length === 0) {
+        setMembersByPost({});
+        setRentalRequests([]);
         setGroupDataLoading(false);
         return;
       }
@@ -185,7 +66,7 @@ function CommunityPage() {
       try {
         const [memberEntries, requestResponse] = await Promise.all([
           Promise.all(
-            creatorPosts.map(async (post) => {
+            postsWithMembers.map(async (post) => {
               const membersResponse = await api.get(
                 `/community-posts/${post.id}/members`,
               );
@@ -195,7 +76,9 @@ function CommunityPage() {
               ];
             }),
           ),
-          api.get("/rental-requests/me"),
+          creatorPosts.length > 0
+            ? api.get("/rental-requests/me")
+            : Promise.resolve({ data: [] }),
         ]);
         setMembersByPost(Object.fromEntries(memberEntries));
         setRentalRequests(
@@ -230,41 +113,6 @@ function CommunityPage() {
     fetchCommunity();
   }, [fetchCommunity]);
 
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    setActiveFilter("ALL");
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 400);
-  };
-
-  const handleCreatePost = (e) => {
-    e.preventDefault();
-    if (!postText.trim()) return;
-
-    const newPost = {
-      id: Date.now(),
-      author: {
-        name: user?.name || "You (RoomMate Member)",
-        avatar:
-          user?.avatar ||
-          "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
-        role: "Member",
-      },
-      rentType: newPostRentType,
-      propertyType: newPostPropertyType,
-      category:
-        newPostRentType === "INDIVIDUAL_ROOM"
-          ? "Roommate Search"
-          : "Owner Listing",
-      createdAt: "Just now",
-      content: postText,
-    };
-
-    setPosts([newPost, ...posts]);
-    setPostText("");
-  };
-
   const handleRequestToJoin = async (communityPostId) => {
     setRequestingPostId(communityPostId);
     setJoinFeedback(null);
@@ -289,12 +137,97 @@ function CommunityPage() {
     }
   };
 
-  const filteredPosts =
-    activeFilter === "ALL"
-      ? posts
-      : posts.filter(
-        (p) => p.rentType === activeFilter || p.propertyType === activeFilter,
+  const filteredPosts = (posts || [])
+    .filter((post) => {
+      const property = post.property;
+      const { gender: postGender, cleanDescription } = parsePostGender(
+        post.description,
       );
+      const searchableText = [
+        post.title,
+        cleanDescription,
+        property?.title,
+        property?.address?.province,
+        property?.address?.district,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      const monthlyRent = Number(property?.monthlyRent);
+      const requiredMembers = Number(post.requiredMembers);
+      const availableDate = property?.availableDate
+        ? new Date(property.availableDate)
+        : null;
+      const startDate = fromDate ? new Date(`${fromDate}T00:00:00`) : null;
+      const endDate = toDate ? new Date(`${toDate}T23:59:59.999`) : null;
+      const matchesSearch = searchableText.includes(
+        searchText.trim().toLowerCase(),
+      );
+      const matchesType =
+        propertyTypeFilter === "ALL" ||
+        property?.propertyType?.toUpperCase() === propertyTypeFilter;
+      const matchesFromDate =
+        !startDate || (availableDate && availableDate >= startDate);
+      const matchesToDate =
+        !endDate || (availableDate && availableDate <= endDate);
+      const matchesGroupSize =
+        groupSizeFilter === "ALL" ||
+        (groupSizeFilter === "1-2" && requiredMembers <= 2) ||
+        (groupSizeFilter === "3-4" &&
+          requiredMembers >= 3 &&
+          requiredMembers <= 4) ||
+        (groupSizeFilter === "5+" && requiredMembers >= 5);
+      const matchesGender =
+        genderFilter === "ALL" || postGender === genderFilter;
+      const matchesMinBudget =
+        !minBudget || (!Number.isNaN(monthlyRent) && monthlyRent >= Number(minBudget));
+      const matchesMaxBudget =
+        !maxBudget || (!Number.isNaN(monthlyRent) && monthlyRent <= Number(maxBudget));
+
+      return (
+        matchesSearch &&
+        matchesType &&
+        matchesFromDate &&
+        matchesToDate &&
+        matchesGroupSize &&
+        matchesGender &&
+        matchesMinBudget &&
+        matchesMaxBudget
+      );
+    })
+    .sort((firstPost, secondPost) => {
+      if (sortOrder === "LOWEST_RENT") {
+        return Number(firstPost.property?.monthlyRent || 0) - Number(secondPost.property?.monthlyRent || 0);
+      }
+      if (sortOrder === "HIGHEST_RENT") {
+        return Number(secondPost.property?.monthlyRent || 0) - Number(firstPost.property?.monthlyRent || 0);
+      }
+      return new Date(secondPost.createdAt) - new Date(firstPost.createdAt);
+    });
+
+  const hasActiveFilters = Boolean(
+    searchText ||
+      propertyTypeFilter !== "ALL" ||
+      genderFilter !== "ALL" ||
+      fromDate ||
+      toDate ||
+      groupSizeFilter !== "ALL" ||
+      minBudget ||
+      maxBudget ||
+      sortOrder !== "NEWEST",
+  );
+
+  const clearFilters = () => {
+    setSearchText("");
+    setPropertyTypeFilter("ALL");
+    setGenderFilter("ALL");
+    setFromDate("");
+    setToDate("");
+    setGroupSizeFilter("ALL");
+    setMinBudget("");
+    setMaxBudget("");
+    setSortOrder("NEWEST");
+  };
 
   if (posts == null) {
     return <div className="">Loading ...</div>;
@@ -337,118 +270,111 @@ function CommunityPage() {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left Column (Main Feed - 68%) */}
           <div className="w-full lg:w-full flex flex-col gap-6">
-            {/* Post Composer Card */}
-            <div className="bg-white border border-[#e1e5dd] rounded-[18px] p-6 shadow-[0_15px_45px_rgba(68,83,68,0.12)]">
-              <form onSubmit={handleCreatePost} className="flex flex-col gap-4">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border-2 border-[#e1e7df] shadow-sm">
-                    <img
-                      alt="User Avatar"
-                      className="w-full h-full object-cover"
-                      src={
-                        user?.profile?.profileImageUrl || fallbackImage
-                      }
-                    />
-                  </div>
-                  <div className="flex-1 flex items-center gap-2 bg-[#fafbf8] border border-[#cfd8cc] rounded-full px-4 py-1.5 focus-within:border-[#748a75] focus-within:ring-2 focus-within:ring-[#748a75]/20 transition-all">
-                    <input
-                      className="w-full bg-transparent border-0 outline-none text-[15px] text-[#475547] placeholder:text-[#879387] py-1.5"
-                      placeholder="Share something with the community..."
-                      type="text"
-                      value={postText}
-                      onChange={(e) => setPostText(e.target.value)}
-                    />
-                  </div>
-                  {postText.trim() && (
+            {/* Community search and filters */}
+            <div className="rounded-[18px] border border-[#e1e5dd] bg-white p-4 sm:p-5 shadow-[0_15px_45px_rgba(68,83,68,0.12)]">
+              <div className="flex items-center gap-3 rounded-full border border-[#d8ddd6] bg-[#fafbf8] px-4 py-2.5">
+                <Search className="h-4 w-4 shrink-0 text-[#879387]" />
+                <input
+                  type="search"
+                  value={searchText}
+                  onChange={(event) => setSearchText(event.target.value)}
+                  placeholder="Search posts, properties, or destinations..."
+                  className="w-full bg-transparent text-sm text-[#475547] outline-none placeholder:text-[#879387]"
+                />
+              </div>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+                <label className="grid gap-1.5 text-xs font-bold text-[#596859]">
+                  Category
+                  <select
+                    value={propertyTypeFilter}
+                    onChange={(event) => setPropertyTypeFilter(event.target.value)}
+                    className="h-10 rounded-full border border-[#d8ddd6] bg-white px-3.5 text-sm font-normal text-[#475547] outline-none focus:border-[#748a75]"
+                  >
+                    <option value="ALL">All Categories</option>
+                    <option value="HOUSE">House</option>
+                    <option value="CONDO">Condo</option>
+                    <option value="APARTMENT">Apartment</option>
+                    <option value="DORMITORY">Dormitory</option>
+                    <option value="OTHER">Other</option>
+                  </select>
+                </label>
+                <label className="grid gap-1.5 text-xs font-bold text-[#596859]">
+                  Roommate Gender
+                  <select
+                    value={genderFilter}
+                    onChange={(event) => setGenderFilter(event.target.value)}
+                    className="h-10 rounded-full border border-[#d8ddd6] bg-white px-3.5 text-sm font-normal text-[#475547] outline-none focus:border-[#748a75]"
+                  >
+                    <option value="ALL">All Genders</option>
+                    <option value="FEMALE">Female Only</option>
+                    <option value="MALE">Male Only</option>
+                    <option value="ANY">No Restriction</option>
+                  </select>
+                </label>
+                <label className="grid gap-1.5 text-xs font-bold text-[#596859]">
+                  From Date
+                  <span className="relative">
+                    <CalendarDays className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#596859]" />
+                    <input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} className="h-10 w-full rounded-full border border-[#d8ddd6] bg-white px-3.5 text-sm font-normal text-[#475547] outline-none focus:border-[#748a75]" />
+                  </span>
+                </label>
+                <label className="grid gap-1.5 text-xs font-bold text-[#596859]">
+                  To Date
+                  <span className="relative">
+                    <CalendarDays className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#596859]" />
+                    <input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} className="h-10 w-full rounded-full border border-[#d8ddd6] bg-white px-3.5 text-sm font-normal text-[#475547] outline-none focus:border-[#748a75]" />
+                  </span>
+                </label>
+                <label className="grid gap-1.5 text-xs font-bold text-[#596859]">
+                  Group Size
+                  <select value={groupSizeFilter} onChange={(event) => setGroupSizeFilter(event.target.value)} className="h-10 rounded-full border border-[#d8ddd6] bg-white px-3.5 text-sm font-normal text-[#475547] outline-none focus:border-[#748a75]">
+                    <option value="ALL">Any Group Size</option>
+                    <option value="1-2">1-2 members</option>
+                    <option value="3-4">3-4 members</option>
+                    <option value="5+">5+ members</option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <label className="grid gap-1.5 text-xs font-bold text-[#596859]">
+                  Minimum Budget
+                  <input type="number" min="0" value={minBudget} onChange={(event) => setMinBudget(event.target.value)} placeholder="Minimum budget" className="h-10 rounded-full border border-[#d8ddd6] bg-white px-3.5 text-sm font-normal text-[#475547] outline-none placeholder:text-[#879387] focus:border-[#748a75]" />
+                </label>
+                <label className="grid gap-1.5 text-xs font-bold text-[#596859]">
+                  Maximum Budget
+                  <input type="number" min="0" value={maxBudget} onChange={(event) => setMaxBudget(event.target.value)} placeholder="Maximum budget" className="h-10 rounded-full border border-[#d8ddd6] bg-white px-3.5 text-sm font-normal text-[#475547] outline-none placeholder:text-[#879387] focus:border-[#748a75]" />
+                </label>
+              </div>
+
+              <div className="mt-4 flex items-center justify-between gap-3 border-t border-[#edf0ea] pt-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-[#879387]">
+                    {filteredPosts.length} posts found
+                  </span>
+                  {hasActiveFilters && (
                     <button
-                      type="submit"
-                      className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#748a75] hover:bg-[#627863] text-white rounded-full text-sm font-bold transition-all shadow-sm shrink-0 cursor-pointer"
+                      type="button"
+                      onClick={clearFilters}
+                      className="text-xs font-bold text-terracotta underline-offset-2 hover:underline"
                     >
-                      <Send className="w-4 h-4" />
-                      Post
+                      Clear filters
                     </button>
                   )}
                 </div>
-
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-t border-[#edf0ea] pt-3.5 mt-1 gap-3">
-                  <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-                    {/* Post Rent Type Selection */}
-                    <div className="flex items-center gap-2">
-                      <label
-                        htmlFor="post-rent-type"
-                        className="text-xs font-bold text-[#596859] uppercase tracking-wider"
-                      >
-                        Rent type
-                      </label>
-                      <div className="relative">
-                        <select
-                          id="post-rent-type"
-                          value={newPostRentType}
-                          onChange={(e) => setNewPostRentType(e.target.value)}
-                          className="appearance-none bg-white hover:bg-[#fafbf8] border border-[#cfd7cd] text-xs font-bold text-[#556555] rounded-full pl-3.5 pr-8 py-1.5 cursor-pointer focus:outline-none focus:border-[#748a75] transition-all"
-                        >
-                          <option value="INDIVIDUAL_ROOM">
-                            INDIVIDUAL_ROOM
-                          </option>
-                          <option value="WHOLE_UNIT">WHOLE_UNIT</option>
-                        </select>
-                        <ChevronDown className="w-3.5 h-3.5 text-[#889188] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      </div>
-                    </div>
-
-                    {/* PropertyType Selection */}
-                    <div className="flex items-center gap-2">
-                      <label
-                        htmlFor="post-property-type"
-                        className="text-xs font-bold text-[#596859] uppercase tracking-wider"
-                      >
-                        PropertyType
-                      </label>
-                      <div className="relative">
-                        <select
-                          id="post-property-type"
-                          value={newPostPropertyType}
-                          onChange={(e) =>
-                            setNewPostPropertyType(e.target.value)
-                          }
-                          className="appearance-none bg-white hover:bg-[#fafbf8] border border-[#cfd7cd] text-xs font-bold text-[#556555] rounded-full pl-3.5 pr-8 py-1.5 cursor-pointer focus:outline-none focus:border-[#748a75] transition-all"
-                        >
-                          {PROPERTY_TYPES.map((pt) => (
-                            <option key={pt} value={pt}>
-                              {pt}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDown className="w-3.5 h-3.5 text-[#889188] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    className="text-[#889188] hover:text-[#475547] p-1.5 rounded-full hover:bg-[#eef3eb] transition-colors self-end sm:self-center"
+                <label className="flex items-center gap-2 text-xs font-bold text-[#596859]">
+                  Sort by
+                  <select
+                    value={sortOrder}
+                    onChange={(event) => setSortOrder(event.target.value)}
+                    className="h-9 rounded-full border border-[#d8ddd6] bg-white px-3 text-sm font-normal text-[#475547] outline-none focus:border-[#748a75]"
                   >
-                    <MoreHorizontal className="w-5 h-5" />
-                  </button>
-                </div>
-              </form>
-            </div>
-
-            {/* Filter Tabs Toolbar */}
-            <div className="flex justify-between items-center border-b border-[#e1e5dd] pb-3 gap-2">
-              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-                {FILTER_TABS.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveFilter(tab.id)}
-                    className={`px-4 py-1.5 rounded-full text-[13px] font-bold whitespace-nowrap transition-all cursor-pointer ${activeFilter === tab.id
-                        ? "bg-[#748a75] text-white shadow-[0_4px_12px_rgba(116,138,117,0.25)]"
-                        : "bg-white text-[#5e6d5e] hover:bg-[#eef3eb] border border-[#cfd7cd]"
-                      }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
+                    <option value="NEWEST">Newest</option>
+                    <option value="LOWEST_RENT">Lowest rent</option>
+                    <option value="HIGHEST_RENT">Highest rent</option>
+                  </select>
+                </label>
               </div>
             </div>
 
@@ -457,9 +383,22 @@ function CommunityPage() {
               {filteredPosts.map((post) => {
                 const creatorId = post.creatorId ?? post.creator?.id;
                 const isCreator = Number(creatorId) === Number(userId);
+                const communityMembers = membersByPost[post.id] || [];
+                const memberIds = new Set(
+                  communityMembers
+                    .map((member) => member.userId ?? member.user?.id)
+                    .filter(
+                      (memberId) =>
+                        memberId != null &&
+                        Number(memberId) !== Number(creatorId),
+                    )
+                    .map(Number),
+                );
+                const currentMemberCount = memberIds.size;
+                const requiredMemberCount = Number(post.requiredMembers) || 0;
                 const readiness = getCommunityReadiness(
                   post,
-                  membersByPost[post.id],
+                  communityMembers,
                 );
                 const existingGroupRequest = rentalRequests.find(
                   (request) =>
@@ -468,6 +407,8 @@ function CommunityPage() {
                 const supportsGroupRental =
                   Boolean(post.propertyId) &&
                   post.property?.rentType === "WHOLE_UNIT";
+                const { gender: postGender, cleanDescription } =
+                  parsePostGender(post.description);
 
                 return (
                   <article
@@ -481,30 +422,50 @@ function CommunityPage() {
                         <img
                           alt="User Avatar"
                           className="w-full h-full object-cover"
-                          src={
-                            post.creator.profile?.profileImageUrl || fallbackImage
-                          }
+                          src={post.creator?.profile?.profileImageUrl || fallbackImage}
                         />
                       </div>
                       <div>
                         <div className="text-[15px] font-bold text-[#475547]">
-                          {post.creator.profile?.firstName ||
-                            post.creator.username}
+                          {post.creator?.profile?.firstName ||
+                            post.creator?.username ||
+                            "Community member"}
                         </div>
                         <div className="text-[12px] text-[#889188] flex flex-wrap items-center gap-1.5 mt-0.5 font-medium">
-                          <span>{post.createdAt}</span>
+                          <span>
+                            {post.createdAt
+                              ? new Date(post.createdAt).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  },
+                                )
+                              : ""}
+                          </span>
                           <span>·</span>
                           <span
-                            className={`flex items-center gap-0.5 text-[11px] px-2.5 py-0.5 rounded-full font-bold ${post.property.rentType === "INDIVIDUAL_ROOM"
+                            className={`flex items-center gap-0.5 text-[11px] px-2.5 py-0.5 rounded-full font-bold ${post.property?.rentType === "INDIVIDUAL_ROOM"
                                 ? "bg-[#eef3eb] text-[#546b55] border border-[#cfd7cd]"
                                 : "bg-[#f8ede6] text-terracotta border border-[#edd7cb]"
                               }`}
                           >
-                            {post.property.rentType}
+                            {post.property?.rentType || "COMMUNITY"}
                           </span>
-                          {post.property.propertyType && (
+                          {post.property?.propertyType && (
                             <span className="flex items-center gap-0.5 text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-[#fafbf8] text-[#5e6d5e] border border-[#cfd7cd]">
                               {post.property.propertyType}
+                            </span>
+                          )}
+                          {postGender === "FEMALE" && (
+                            <span className="flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-[#fdf2f4] text-[#be185d] border border-[#fbcfe8]">
+                              🚺 Female Only
+                            </span>
+                          )}
+                          {postGender === "MALE" && (
+                            <span className="flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-[#eff6ff] text-[#1d4ed8] border border-[#bfdbfe]">
+                              🚹 Male Only
                             </span>
                           )}
                           <span>·</span>
@@ -524,7 +485,7 @@ function CommunityPage() {
                         <img
                           alt="Property"
                           className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                          src={post.property.images[0]?.imageUrl}
+                          src={post.property.images?.[0]?.imageUrl || fallbackImage}
                         />
                       </div>
 
@@ -545,7 +506,15 @@ function CommunityPage() {
                         <div className="flex flex-wrap items-center gap-4 text-[13px] text-[#607060] pt-1">
                           <div className="flex items-center gap-1.5">
                             <BedSingle className="w-4 h-4 text-[#889188]" />
-                            <span> {post.property.totalBedrooms} /rooms</span>
+                            <span>
+                              {post.property.rooms?.length ?? 0} rooms
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Users className="w-4 h-4 text-[#889188]" />
+                            <span>
+                              {currentMemberCount} / {requiredMemberCount} members
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -553,9 +522,11 @@ function CommunityPage() {
                   )}
 
                   {/* Post Content Description */}
-                  <p className="text-[15px] text-[#465346] leading-relaxed">
-                    {post.description}
-                  </p>
+                  {cleanDescription && (
+                    <p className="text-[15px] text-[#465346] leading-relaxed">
+                      {cleanDescription}
+                    </p>
+                  )}
 
                   {/* Action Area */}
                   <div className="flex items-center justify-end border-t border-[#edf0ea] pt-3.5 mt-1 gap-3">
@@ -646,16 +617,16 @@ function CommunityPage() {
               <div className="grid grid-cols-2 gap-3 p-3 bg-[#fafbf8] rounded-xl border border-[#e1e5dd] text-center">
                 <div>
                   <div className="font-bold text-[18px] text-[#607861]">
-                    1.2k+
+                    {posts.length}
                   </div>
-                  <div className="text-[12px] text-[#8c958b]">Members</div>
+                  <div className="text-[12px] text-[#8c958b]">Posts</div>
                 </div>
                 <div>
                   <div className="font-bold text-[18px] text-terracotta">
-                    850+
+                    {posts.filter((post) => post.status === "OPEN").length}
                   </div>
                   <div className="text-[12px] text-[#8c958b]">
-                    Rooms Matched
+                    Open groups
                   </div>
                 </div>
               </div>
