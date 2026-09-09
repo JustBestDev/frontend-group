@@ -145,7 +145,7 @@ const PropertyApprovalDetail = () => {
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
-          "Unable to update property status",
+        "Unable to update property status",
       );
     } finally {
       setUpdating(false);
@@ -166,9 +166,9 @@ const PropertyApprovalDetail = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-[420px] items-center justify-center">
+      <div className="flex min-h-105 items-center justify-center">
         <div className="text-center">
-          <div className="mx-auto size-10 animate-spin rounded-full border-4 border-[#DCE5DF] border-t-[#17382E]" />
+          <div className="mx-auto size-10 animate-spin rounded-full border-4 border-[#DCE5DF] border-t-forest" />
 
           <p className="mt-4 text-sm font-medium text-[#7D8981]">
             Loading property details...
@@ -181,7 +181,7 @@ const PropertyApprovalDetail = () => {
   if (error && !property) {
     return (
       <div className="rounded-2xl border border-[#E4E9E4] bg-white px-6 py-14 text-center shadow-sm">
-        <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#EEF3EF] text-[#17382E]">
+        <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#EEF3EF] text-forest">
           <Building2 size={26} />
         </div>
 
@@ -195,7 +195,7 @@ const PropertyApprovalDetail = () => {
           <button
             type="button"
             onClick={fetchProperty}
-            className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#17382E] px-4 text-sm font-semibold text-white transition hover:bg-[#214A3D]"
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-forest px-4 text-sm font-semibold text-white transition hover:bg-[#214A3D]"
           >
             <RefreshCw size={16} />
             Try again
@@ -276,7 +276,7 @@ const PropertyApprovalDetail = () => {
       <button
         type="button"
         onClick={() => navigate(-1)}
-        className="inline-flex items-center gap-2 text-sm font-semibold text-[#647168] transition hover:text-[#17382E]"
+        className="inline-flex items-center gap-2 text-sm font-semibold text-[#647168] transition hover:text-forest"
       >
         <ArrowLeft size={17} />
         Back
@@ -330,16 +330,16 @@ const PropertyApprovalDetail = () => {
                 <img
                   src={selectedImage}
                   alt={propertyName}
-                  className="h-[300px] w-full object-cover transition group-hover:scale-[1.01]"
+                  className="h-75 w-full object-cover transition group-hover:scale-[1.01]"
                 />
               ) : (
-                <div className="grid h-[300px] place-items-center text-[#9AA59E]">
+                <div className="grid h-75 place-items-center text-[#9AA59E]">
                   <Building2 size={52} />
                 </div>
               )}
 
               {selectedImage && (
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/40 to-transparent px-4 pb-3 pt-10 opacity-0 transition group-hover:opacity-100">
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/40 to-transparent px-4 pb-3 pt-10 opacity-0 transition group-hover:opacity-100">
                   <p className="text-sm font-medium text-white">
                     Click to view full image
                   </p>
@@ -360,11 +360,10 @@ const PropertyApprovalDetail = () => {
                         setSelectedImage(imageUrl);
                         setSelectedImageIndex(index);
                       }}
-                      className={`shrink-0 overflow-hidden rounded-xl border-2 transition ${
-                        selectedImage === imageUrl
-                          ? "border-[#17382E]"
-                          : "border-transparent hover:border-[#A9BBA3]"
-                      }`}
+                      className={`shrink-0 overflow-hidden rounded-xl border-2 transition ${selectedImage === imageUrl
+                          ? "border-forest"
+                          : "border-transparent hover:border-sage"
+                        }`}
                     >
                       <img
                         src={imageUrl}
@@ -381,7 +380,7 @@ const PropertyApprovalDetail = () => {
           {/* Property info */}
           <section className="rounded-2xl border border-[#E4E9E4] bg-white shadow-sm">
             <div className="flex items-center gap-3 border-b border-[#EEF1EE] px-6 py-5">
-              <div className="grid size-10 place-items-center rounded-xl bg-[#EEF3EF] text-[#17382E]">
+              <div className="grid size-10 place-items-center rounded-xl bg-[#EEF3EF] text-forest">
                 <Building2 size={19} />
               </div>
 
@@ -467,7 +466,7 @@ const PropertyApprovalDetail = () => {
           {/* Location */}
           <section className="rounded-2xl border border-[#E4E9E4] bg-white shadow-sm">
             <div className="flex items-center gap-3 border-b border-[#EEF1EE] px-6 py-5">
-              <div className="grid size-10 place-items-center rounded-xl bg-[#EEF3EF] text-[#17382E]">
+              <div className="grid size-10 place-items-center rounded-xl bg-[#EEF3EF] text-forest">
                 <MapPin size={19} />
               </div>
 
@@ -495,7 +494,7 @@ const PropertyApprovalDetail = () => {
           {/* Owner */}
           <section className="rounded-2xl border border-[#E4E9E4] bg-white shadow-sm">
             <div className="flex items-center gap-3 border-b border-[#EEF1EE] px-6 py-5">
-              <div className="grid size-10 place-items-center rounded-xl bg-[#EEF3EF] text-[#17382E]">
+              <div className="grid size-10 place-items-center rounded-xl bg-[#EEF3EF] text-forest">
                 <UserRound size={19} />
               </div>
 
@@ -535,7 +534,7 @@ const PropertyApprovalDetail = () => {
                 type="button"
                 disabled={updating}
                 onClick={() => updatePublishStatus("APPROVED")}
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#17382E] text-sm font-semibold text-white transition hover:bg-[#214A3D] disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-forest text-sm font-semibold text-white transition hover:bg-[#214A3D] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Check size={17} />
                 {updating ? "Updating..." : "Approve property"}
@@ -566,7 +565,7 @@ const PropertyApprovalDetail = () => {
 
           <Link
             to="/admin/properties"
-            className="mt-4 inline-flex w-full items-center justify-center text-sm font-semibold text-[#647168] transition hover:text-[#17382E]"
+            className="mt-4 inline-flex w-full items-center justify-center text-sm font-semibold text-[#647168] transition hover:text-forest"
           >
             Return to property list
           </Link>
@@ -592,7 +591,7 @@ const PropertyApprovalDetail = () => {
 
       {lightboxOpen && selectedImage && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-6"
+          className="fixed inset-0 z-100 flex items-center justify-center bg-black/85 p-6"
           onClick={() => setLightboxOpen(false)}
         >
           {/* Close */}
@@ -664,7 +663,7 @@ const InfoItem = ({ label, value, icon }) => (
 
     <div className="mt-1.5 flex items-center gap-2 text-sm font-semibold text-[#33463C]">
       {icon}
-      <span className="break-words">{value}</span>
+      <span className="wrap-break-word">{value}</span>
     </div>
   </div>
 );

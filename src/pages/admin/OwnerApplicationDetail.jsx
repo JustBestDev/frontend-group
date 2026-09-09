@@ -52,7 +52,7 @@ const OwnerApplicationDetail = () => {
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
-          "Unable to retrieve owner application"
+        "Unable to retrieve owner application"
       );
     } finally {
       setLoading(false);
@@ -106,7 +106,7 @@ const OwnerApplicationDetail = () => {
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
-          "Unable to update application"
+        "Unable to update application"
       );
     } finally {
       setUpdating(false);
@@ -134,9 +134,9 @@ const OwnerApplicationDetail = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-[420px] items-center justify-center">
+      <div className="flex min-h-105 items-center justify-center">
         <div className="text-center">
-          <div className="mx-auto size-10 animate-spin rounded-full border-4 border-[#DCE5DF] border-t-[#17382E]" />
+          <div className="mx-auto size-10 animate-spin rounded-full border-4 border-[#DCE5DF] border-t-forest" />
 
           <p className="mt-4 text-sm font-medium text-[#7D8981]">
             Loading owner application...
@@ -149,7 +149,7 @@ const OwnerApplicationDetail = () => {
   if (error && !application) {
     return (
       <div className="rounded-2xl border border-[#E4E9E4] bg-white px-6 py-14 text-center shadow-sm">
-        <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#EEF3EF] text-[#17382E]">
+        <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#EEF3EF] text-forest">
           <FileCheck2 size={26} />
         </div>
 
@@ -165,7 +165,7 @@ const OwnerApplicationDetail = () => {
           <button
             type="button"
             onClick={fetchApplication}
-            className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#17382E] px-4 text-sm font-semibold text-white transition hover:bg-[#214A3D]"
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-forest px-4 text-sm font-semibold text-white transition hover:bg-[#214A3D]"
           >
             <RefreshCw size={16} />
             Try again
@@ -219,7 +219,7 @@ const OwnerApplicationDetail = () => {
       <button
         type="button"
         onClick={() => navigate(-1)}
-        className="inline-flex items-center gap-2 text-sm font-semibold text-[#647168] transition hover:text-[#17382E]"
+        className="inline-flex items-center gap-2 text-sm font-semibold text-[#647168] transition hover:text-forest"
       >
         <ArrowLeft size={17} />
         Back
@@ -266,7 +266,7 @@ const OwnerApplicationDetail = () => {
           {/* Applicant information */}
           <section className="rounded-2xl border border-[#E4E9E4] bg-white shadow-sm">
             <div className="flex items-center gap-3 border-b border-[#EEF1EE] px-6 py-5">
-              <div className="grid size-10 place-items-center rounded-xl bg-[#EEF3EF] text-[#17382E]">
+              <div className="grid size-10 place-items-center rounded-xl bg-[#EEF3EF] text-forest">
                 <UserRound size={19} />
               </div>
 
@@ -329,8 +329,8 @@ const OwnerApplicationDetail = () => {
                 value={
                   application.createdAt
                     ? new Date(
-                        application.createdAt
-                      ).toLocaleString()
+                      application.createdAt
+                    ).toLocaleString()
                     : "—"
                 }
               />
@@ -340,7 +340,7 @@ const OwnerApplicationDetail = () => {
           {/* Application details */}
           <section className="rounded-2xl border border-[#E4E9E4] bg-white shadow-sm">
             <div className="flex items-center gap-3 border-b border-[#EEF1EE] px-6 py-5">
-              <div className="grid size-10 place-items-center rounded-xl bg-[#EEF3EF] text-[#17382E]">
+              <div className="grid size-10 place-items-center rounded-xl bg-[#EEF3EF] text-forest">
                 <FileCheck2 size={19} />
               </div>
 
@@ -470,7 +470,7 @@ const OwnerApplicationDetail = () => {
                 onClick={() =>
                   updateStatus("APPROVED")
                 }
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#17382E] text-sm font-semibold text-white transition hover:bg-[#214A3D] disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-forest text-sm font-semibold text-white transition hover:bg-[#214A3D] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Check size={17} />
                 {updating ? "Updating..." : "Approve application"}
@@ -502,7 +502,7 @@ const OwnerApplicationDetail = () => {
 
           <Link
             to="/admin/owner-applications"
-            className="mt-4 inline-flex w-full items-center justify-center text-sm font-semibold text-[#647168] transition hover:text-[#17382E]"
+            className="mt-4 inline-flex w-full items-center justify-center text-sm font-semibold text-[#647168] transition hover:text-forest"
           >
             Return to application list
           </Link>
@@ -563,7 +563,7 @@ const InfoItem = ({ label, value, icon }) => (
 
     <div className="mt-1.5 flex items-center gap-2 text-sm font-semibold text-[#33463C]">
       {icon}
-      <span className="break-words">{value}</span>
+      <span className="wrap-break-word">{value}</span>
     </div>
   </div>
 );

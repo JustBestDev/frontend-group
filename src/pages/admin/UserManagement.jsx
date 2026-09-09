@@ -160,9 +160,9 @@ const UserManagement = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-[420px] items-center justify-center">
+      <div className="flex min-h-105 items-center justify-center">
         <div className="text-center">
-          <div className="mx-auto size-10 animate-spin rounded-full border-4 border-[#DCE5DF] border-t-[#17382E]" />
+          <div className="mx-auto size-10 animate-spin rounded-full border-4 border-[#DCE5DF] border-t-forest" />
 
           <p className="mt-4 text-sm font-medium text-[#7D8981]">
             Loading users...
@@ -258,7 +258,7 @@ const UserManagement = () => {
               setSearchTerm(event.target.value)
             }
             placeholder="Search by username or email..."
-            className="h-10 w-full rounded-lg border border-[#E2E8E3] bg-[#F8FAF8] pl-10 pr-4 text-sm text-[#26352D] outline-none transition placeholder:text-[#A0AAA4] focus:border-[#A9BBA3] focus:bg-white focus:ring-4 focus:ring-[#A9BBA3]/15"
+            className="h-10 w-full rounded-lg border border-[#E2E8E3] bg-[#F8FAF8] pl-10 pr-4 text-sm text-[#26352D] outline-none transition placeholder:text-[#A0AAA4] focus:border-sage focus:bg-white focus:ring-4 focus:ring-[#A9BBA3]/15"
           />
         </div>
 
@@ -267,7 +267,7 @@ const UserManagement = () => {
           onChange={(event) =>
             setRoleFilter(event.target.value)
           }
-          className="h-10 rounded-lg border border-[#E2E8E3] bg-[#F8FAF8] px-3 text-sm font-medium text-[#536159] outline-none transition focus:border-[#A9BBA3] focus:bg-white focus:ring-4 focus:ring-[#A9BBA3]/15"
+          className="h-10 rounded-lg border border-[#E2E8E3] bg-[#F8FAF8] px-3 text-sm font-medium text-[#536159] outline-none transition focus:border-sage focus:bg-white focus:ring-4 focus:ring-[#A9BBA3]/15"
         >
           <option value="ALL">All roles</option>
           <option value="USER">User</option>
@@ -280,7 +280,7 @@ const UserManagement = () => {
           onChange={(event) =>
             setStatusFilter(event.target.value)
           }
-          className="h-10 rounded-lg border border-[#E2E8E3] bg-[#F8FAF8] px-3 text-sm font-medium text-[#536159] outline-none transition focus:border-[#A9BBA3] focus:bg-white focus:ring-4 focus:ring-[#A9BBA3]/15"
+          className="h-10 rounded-lg border border-[#E2E8E3] bg-[#F8FAF8] px-3 text-sm font-medium text-[#536159] outline-none transition focus:border-sage focus:bg-white focus:ring-4 focus:ring-[#A9BBA3]/15"
         >
           <option value="ALL">All statuses</option>
           <option value="ACTIVE">Active</option>
@@ -300,7 +300,7 @@ const UserManagement = () => {
 
       {filteredUsers.length === 0 ? (
         <div className="rounded-2xl border border-[#E4E9E4] bg-white px-6 py-14 text-center shadow-sm">
-          <div className="mx-auto grid size-12 place-items-center rounded-xl bg-[#EEF3EF] text-[#17382E]">
+          <div className="mx-auto grid size-12 place-items-center rounded-xl bg-[#EEF3EF] text-forest">
             <Users size={22} />
           </div>
 
@@ -315,7 +315,7 @@ const UserManagement = () => {
       ) : (
         <div className="overflow-hidden rounded-2xl border border-[#E4E9E4] bg-white shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[950px]">
+            <table className="w-full min-w-237.5">
               <thead className="bg-[#F7F9F7]">
                 <tr className="border-b border-[#E9EDE9]">
                   <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#8B968F]">
@@ -366,13 +366,13 @@ const UserManagement = () => {
                       {/* User */}
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="grid size-10 shrink-0 place-items-center rounded-full bg-[#EAF0EC] text-sm font-bold text-[#17382E]">
+                          <div className="grid size-10 shrink-0 place-items-center rounded-full bg-[#EAF0EC] text-sm font-bold text-forest">
                             {displayName
                               .charAt(0)
                               .toUpperCase()}
                           </div>
 
-                          <p className="max-w-[180px] truncate text-sm font-semibold text-[#26382F]">
+                          <p className="max-w-45 truncate text-sm font-semibold text-[#26382F]">
                             {displayName}
                           </p>
                         </div>
@@ -380,7 +380,7 @@ const UserManagement = () => {
 
                       {/* Email */}
                       <td className="px-4 py-4">
-                        <p className="max-w-[240px] truncate text-sm text-[#536159]">
+                        <p className="max-w-60 truncate text-sm text-[#536159]">
                           {user.email || "—"}
                         </p>
                       </td>
@@ -425,7 +425,7 @@ const UserManagement = () => {
                             onClick={() =>
                               navigate(`/admin/users/${userId}`)
                             }
-                            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-[#DDE4DE] bg-white px-3 text-xs font-semibold text-[#536159] transition hover:bg-[#F6F8F6] hover:text-[#17382E]"
+                            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-[#DDE4DE] bg-white px-3 text-xs font-semibold text-[#536159] transition hover:bg-[#F6F8F6] hover:text-forest"
                           >
                             <Eye size={14} />
                             View
@@ -444,7 +444,7 @@ const UserManagement = () => {
                                   onClick={() =>
                                     updateUserStatus(userId, "ACTIVE")
                                   }
-                                  className="inline-flex size-9 items-center justify-center rounded-lg bg-[#17382E] text-white transition hover:bg-[#214A3D] disabled:cursor-not-allowed disabled:opacity-50"
+                                  className="inline-flex size-9 items-center justify-center rounded-lg bg-forest text-white transition hover:bg-[#214A3D] disabled:cursor-not-allowed disabled:opacity-50"
                                   title="Activate user"
                                 >
                                   <UserCheck size={15} />

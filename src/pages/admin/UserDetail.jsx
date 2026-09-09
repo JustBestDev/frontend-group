@@ -44,7 +44,7 @@ const UserDetail = () => {
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
-          "Unable to retrieve user"
+        "Unable to retrieve user"
       );
     } finally {
       setLoading(false);
@@ -57,9 +57,9 @@ const UserDetail = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-[420px] items-center justify-center">
+      <div className="flex min-h-105 items-center justify-center">
         <div className="text-center">
-          <div className="mx-auto size-10 animate-spin rounded-full border-4 border-[#DCE5DF] border-t-[#17382E]" />
+          <div className="mx-auto size-10 animate-spin rounded-full border-4 border-[#DCE5DF] border-t-forest" />
 
           <p className="mt-4 text-sm font-medium text-[#7D8981]">
             Loading user...
@@ -72,7 +72,7 @@ const UserDetail = () => {
   if (error && !user) {
     return (
       <div className="rounded-2xl border border-[#E4E9E4] bg-white px-6 py-14 text-center shadow-sm">
-        <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#EEF3EF] text-[#17382E]">
+        <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#EEF3EF] text-forest">
           <UserRound size={26} />
         </div>
 
@@ -88,7 +88,7 @@ const UserDetail = () => {
           <button
             type="button"
             onClick={fetchUser}
-            className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#17382E] px-4 text-sm font-semibold text-white"
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-forest px-4 text-sm font-semibold text-white"
           >
             <RefreshCw size={16} />
             Try again
@@ -149,7 +149,7 @@ const UserDetail = () => {
       <button
         type="button"
         onClick={() => navigate(-1)}
-        className="inline-flex items-center gap-2 text-sm font-semibold text-[#647168] transition hover:text-[#17382E]"
+        className="inline-flex items-center gap-2 text-sm font-semibold text-[#647168] transition hover:text-forest"
       >
         <ArrowLeft size={17} />
         Back
@@ -164,7 +164,7 @@ const UserDetail = () => {
               className="size-16 rounded-2xl object-cover"
             />
           ) : (
-            <div className="grid size-16 place-items-center rounded-2xl bg-[#EAF0EC] text-xl font-bold text-[#17382E]">
+            <div className="grid size-16 place-items-center rounded-2xl bg-[#EAF0EC] text-xl font-bold text-forest">
               {fullName.charAt(0).toUpperCase()}
             </div>
           )}
@@ -208,7 +208,7 @@ const UserDetail = () => {
           {/* Account information */}
           <section className="rounded-2xl border border-[#E4E9E4] bg-white shadow-sm">
             <div className="flex items-center gap-3 border-b border-[#EEF1EE] px-6 py-5">
-              <div className="grid size-10 place-items-center rounded-xl bg-[#EEF3EF] text-[#17382E]">
+              <div className="grid size-10 place-items-center rounded-xl bg-[#EEF3EF] text-forest">
                 <UserRound size={19} />
               </div>
 
@@ -252,8 +252,8 @@ const UserDetail = () => {
                 value={
                   user.createdAt
                     ? new Date(
-                        user.createdAt
-                      ).toLocaleString()
+                      user.createdAt
+                    ).toLocaleString()
                     : "—"
                 }
                 icon={<CalendarDays size={15} />}
@@ -264,8 +264,8 @@ const UserDetail = () => {
                 value={
                   user.updatedAt
                     ? new Date(
-                        user.updatedAt
-                      ).toLocaleString()
+                      user.updatedAt
+                    ).toLocaleString()
                     : "—"
                 }
               />
@@ -275,7 +275,7 @@ const UserDetail = () => {
           {/* Profile */}
           <section className="rounded-2xl border border-[#E4E9E4] bg-white shadow-sm">
             <div className="flex items-center gap-3 border-b border-[#EEF1EE] px-6 py-5">
-              <div className="grid size-10 place-items-center rounded-xl bg-[#EEF3EF] text-[#17382E]">
+              <div className="grid size-10 place-items-center rounded-xl bg-[#EEF3EF] text-forest">
                 <UserRound size={19} />
               </div>
 
@@ -323,8 +323,8 @@ const UserDetail = () => {
                 value={
                   profile.birthdate
                     ? new Date(
-                        profile.birthdate
-                      ).toLocaleDateString()
+                      profile.birthdate
+                    ).toLocaleDateString()
                     : "—"
                 }
               />
@@ -390,7 +390,7 @@ const UserDetail = () => {
 
           <Link
             to="/admin/users"
-            className="mt-5 inline-flex w-full items-center justify-center text-sm font-semibold text-[#647168] transition hover:text-[#17382E]"
+            className="mt-5 inline-flex w-full items-center justify-center text-sm font-semibold text-[#647168] transition hover:text-forest"
           >
             Return to user list
           </Link>
@@ -408,7 +408,7 @@ const InfoItem = ({ label, value, icon }) => (
 
     <div className="mt-1.5 flex items-center gap-2 text-sm font-semibold text-[#33463C]">
       {icon}
-      <span className="break-words">{value}</span>
+      <span className="wrap-break-word">{value}</span>
     </div>
   </div>
 );
