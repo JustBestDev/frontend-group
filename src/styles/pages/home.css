@@ -491,34 +491,41 @@
 }
 
 .property-filter-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  overflow-x: auto;
-  padding-top: 15px;
+  display: grid;
+  gap: 12px;
+  padding-top: 18px;
 }
 
-.filter-label,
-.property-filter-toolbar > select,
+.property-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.property-filter-grid > select,
 .bedroom-filter {
   height: 43px;
-  flex-shrink: 0;
+  min-width: 0;
+  width: 100%;
   border: 1px solid #cfd7cd;
-  border-radius: 999px;
-  background: white;
+  border-radius: 12px;
+  background: #fbfcfa;
 }
 
 .filter-label {
   display: flex;
   align-items: center;
   gap: 7px;
-  padding: 0 16px;
-  color: #596859;
-  font-size: 13px;
-  font-weight: 800;
+  color: #17382e;
 }
 
-.property-filter-toolbar > select {
+.filter-label h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.property-filter-grid > select {
   padding: 0 34px 0 16px;
   color: #5e6d5e;
   cursor: pointer;
@@ -536,6 +543,8 @@
 }
 
 .bedroom-filter select {
+  min-width: 0;
+  width: 100%;
   height: 100%;
   padding: 0 32px 0 7px;
   color: #5e6d5e;
@@ -547,11 +556,31 @@
   font-size: 13px;
 }
 
+.property-filter-grid > select:hover,
+.bedroom-filter:hover {
+  border-color: #a9bba3;
+}
+
+.property-filter-grid > select:focus-visible,
+.bedroom-filter:focus-within {
+  border-color: #687b67;
+  box-shadow: 0 0 0 3px rgba(104, 123, 103, 0.14);
+}
+
+.property-filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 .clear-filter-button,
 .refresh-property-button {
   height: 43px;
-  flex-shrink: 0;
-  border-radius: 999px;
+  min-width: 104px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
   cursor: pointer;
   font: inherit;
   font-size: 13px;
@@ -566,12 +595,52 @@
 }
 
 .refresh-property-button {
-  display: flex;
-  align-items: center;
   gap: 7px;
   padding: 0 17px;
   color: white;
   border: 0;
-  background: #748a75;
+  background: #687b67;
+}
+
+.clear-filter-button:hover {
+  border-color: #d8b4af;
+  background: #fcece9;
+}
+
+.refresh-property-button:hover {
+  background: #17382e;
+}
+
+.clear-filter-button:focus-visible,
+.refresh-property-button:focus-visible {
+  outline: 3px solid rgba(104, 123, 103, 0.35);
+  outline-offset: 2px;
+}
+
+@media (max-width: 960px) {
+  .property-filter-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .property-search-section {
+    padding: 16px;
+  }
+
+  .property-filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .property-filter-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .clear-filter-button,
+  .refresh-property-button {
+    width: 100%;
+    min-width: 0;
+  }
 }
 
