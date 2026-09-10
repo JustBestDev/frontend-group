@@ -212,7 +212,7 @@ export default function CreateRoomDetail() {
           )}</div>
       </div>
     </section>
-    <div className="mx-auto grid w-full max-w-320 gap-3 sm:flex sm:justify-end">
+    <div className="mx-auto grid w-full max-w-7xl gap-3 sm:flex sm:justify-end">
       <Link
         className="inline-flex items-center justify-center rounded-xl border border-line px-5 py-3 font-bold transition hover:bg-sage-light focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sage-dark"
         to={`/owner/properties/${propertyId}`}
