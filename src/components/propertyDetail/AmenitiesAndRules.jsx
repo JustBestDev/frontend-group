@@ -1,7 +1,6 @@
 import { propertyOptionIcons } from "../../utils/propertyOptions.js";
 
 const AmenitiesAndRules = ({ property }) => {
-
   return (
     <div className="bg-white p-6 sm:p-8 rounded-2xl border border-[#e1e5dd] shadow-xs space-y-6">
       <div>
@@ -21,11 +20,11 @@ const AmenitiesAndRules = ({ property }) => {
           )}
         </div>
       </div>
-      {property.amenities?.length > 0 && (
-        <div className="pt-6 border-t border-[#f1eee4]">
-          <h3 className="font-serif text-lg font-bold text-[#1c1c16] mb-3">
-            Amenities
-          </h3>
+      <div className="pt-6 border-t border-[#f1eee4]">
+        <h3 className="font-serif text-lg font-bold text-[#1c1c16] mb-3">
+          Amenities
+        </h3>
+        {property.amenities?.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-[#505a54]">
             {property.amenities.map((amenity) => {
               const Icon = propertyOptionIcons[amenity.code];
@@ -40,17 +39,24 @@ const AmenitiesAndRules = ({ property }) => {
               );
             })}
           </div>
-        </div>
-      )}
+        ) : (
+          <p className="text-xs text-[#6f7a73]">
+            No specific amenities listed for this property.
+          </p>
+        )}
+      </div>
 
-      {property.houseRules?.length > 0 && (
-        <div className="pt-6 border-t border-[#f1eee4]">
-          <h3 className="font-serif text-lg font-bold text-[#1c1c16] mb-3">
-            House Rules
-          </h3>
+      <div className="pt-6 border-t border-[#f1eee4]">
+        <h3 className="font-serif text-lg font-bold text-[#1c1c16] mb-3">
+          House Rules
+        </h3>
+        {property.houseRules?.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-[#505a54]">
             {property.houseRules.map((rule) => {
               const Icon = propertyOptionIcons[rule.code];
+              const formattedValue = rule.value
+                ? `: ${rule.value.includes("-") ? rule.value.replace("-", " – ") : rule.value}`
+                : "";
               return (
                 <div
                   key={rule.id}
@@ -58,14 +64,18 @@ const AmenitiesAndRules = ({ property }) => {
                 >
                   {Icon && <Icon size={18} className="text-[#4f614d] shrink-0" aria-hidden="true" />}
                   <span>
-                    {rule.name}{rule.value ? `: ${rule.value}` : ""}
+                    {rule.name}{formattedValue}
                   </span>
                 </div>
               );
             })}
           </div>
-        </div>
-      )}
+        ) : (
+          <p className="text-xs text-[#6f7a73]">
+            No specific house rules specified by the owner.
+          </p>
+        )}
+      </div>
     </div>
   );
 };

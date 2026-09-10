@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import {
   CalendarDays,
   MoreHorizontal,
@@ -12,6 +12,7 @@ import {
   AlertCircle,
   ChevronDown,
   ChevronUp,
+  ExternalLink,
 } from "lucide-react";
 import useAuthStore from "../stores/authStore.js";
 import RentalRequestModal from "../components/rentalRequest/RentalRequestModal.jsx";
@@ -41,7 +42,7 @@ function CommunityPage() {
     setRentalRequests,
     posts, requestingPostId, joinFeedback, setJoinFeedback,
     membersByPost, rentalRequests, groupDataLoading,
-    handleRequestToJoin,
+    myRequestedPostIds, handleRequestToJoin,
   } = useCommunityPosts(userId);
   const {
     zodiacMode, setZodiacMode, zodiacMatches, userZodiac, zodiacLoading,
@@ -375,6 +376,22 @@ function CommunityPage() {
                   typeof post.compatibilityScore === "number" &&
                   compatibilityReasons.length > 0;
                 const isMatchExpanded = expandedMatchId === post.id;
+                const hasRequested = Boolean(
+                  userId &&
+                    (myRequestedPostIds.has(post.id) ||
+                      post.joinRequests?.some(
+                        (req) => Number(req.userId) === Number(userId),
+                      )),
+                );
+                const isAlreadyMember = Boolean(
+                  userId &&
+                    (post.isMember ||
+                      communityMembers.some(
+                        (member) =>
+                          Number(member.userId ?? member.user?.id) ===
+                          Number(userId),
+                      )),
+                );
 
                 return (
                   <article
@@ -457,20 +474,28 @@ function CommunityPage() {
 
                   {/* Property Preview (If Available) */}
                   {post.property && (
-                    <div className="flex flex-col md:flex-row gap-5 p-3.5 rounded-xl bg-[#fafbf8] border border-[#e1e5dd]">
+                    <Link
+                      to={`/properties/${post.propertyId || post.property.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex flex-col md:flex-row gap-5 p-3.5 rounded-xl bg-[#fafbf8] border border-[#e1e5dd] hover:border-[#748a75] hover:bg-[#f6f8f5] hover:shadow-xs transition-all cursor-pointer text-inherit no-underline"
+                    >
                       <div className="relative w-full md:w-70 h-47.5 rounded-lg overflow-hidden shrink-0 bg-[#e8ede5]">
                         <img
                           alt="Property"
-                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           src={post.property.images?.[0]?.imageUrl || fallbackImage}
                         />
                       </div>
 
-                      <div className="flex flex-col justify-center gap-2 py-1">
+                      <div className="flex flex-col justify-center gap-2 py-1 min-w-0 flex-1">
                         <div>
-                          <h3 className="text-[18px] font-bold text-[#475547] leading-tight font-serif">
-                            {post.property.title}
-                          </h3>
+                          <div className="flex items-center gap-2 justify-between">
+                            <h3 className="text-[18px] font-bold text-[#475547] group-hover:text-[#2f3d30] transition-colors leading-tight font-serif truncate">
+                              {post.property.title}
+                            </h3>
+                            <ExternalLink className="w-4 h-4 text-[#889188] opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                          </div>
                           <div className="text-[13px] text-[#889188] mt-1">
                             {post.property.address?.province}
                           </div>
@@ -495,7 +520,7 @@ function CommunityPage() {
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </Link>
                   )}
 
                   {/* Post Content Description */}
@@ -596,7 +621,7 @@ function CommunityPage() {
                       </button>
                     )}
                     {zodiacMode ? (
-                      post.isMember ? (
+                      isAlreadyMember ? (
                         <span className="rounded-full bg-[#eef3eb] px-4 py-2 text-[13px] font-bold text-[#546b55]">
                           Already a member
                         </span>
@@ -607,6 +632,14 @@ function CommunityPage() {
                           className="cursor-not-allowed rounded-xl bg-[#748a75] px-5 py-2 text-[13px] font-bold text-white opacity-60"
                         >
                           Group is full
+                        </button>
+                      ) : hasRequested ? (
+                        <button
+                          type="button"
+                          disabled
+                          className="cursor-not-allowed rounded-xl bg-[#e1e5dd] px-5 py-2 text-center text-[13px] font-bold text-[#879387] shadow-none border border-[#d2d7ce]"
+                        >
+                          You have already requested to join.
                         </button>
                       ) : (
                         <button
@@ -660,6 +693,26 @@ function CommunityPage() {
                           Request Rental as Group
                         </button>
                       )
+                    ) : isAlreadyMember ? (
+                      <span className="rounded-full bg-[#eef3eb] px-4 py-2 text-[13px] font-bold text-[#546b55]">
+                        Already a member
+                      </span>
+                    ) : post.status === "FULL" ? (
+                      <button
+                        type="button"
+                        disabled
+                        className="cursor-not-allowed rounded-xl bg-[#748a75] px-5 py-2 text-[13px] font-bold text-white opacity-60"
+                      >
+                        Group is full
+                      </button>
+                    ) : hasRequested ? (
+                      <button
+                        type="button"
+                        disabled
+                        className="cursor-not-allowed rounded-xl bg-[#e1e5dd] px-5 py-2 text-center text-[13px] font-bold text-[#879387] shadow-none border border-[#d2d7ce]"
+                      >
+                        You have already requested to join.
+                      </button>
                     ) : (
                       <button
                         type="button"

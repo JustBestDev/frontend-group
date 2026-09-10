@@ -8,6 +8,7 @@ export default function useCommunityPosts(userId) {
   const [membersByPost, setMembersByPost] = useState({});
   const [rentalRequests, setRentalRequests] = useState([]);
   const [groupDataLoading, setGroupDataLoading] = useState(true);
+  const [myRequestedPostIds, setMyRequestedPostIds] = useState(() => new Set());
   const fetchCommunity = useCallback(async () => {
     setGroupDataLoading(true);
     try {
@@ -90,11 +91,19 @@ export default function useCommunityPosts(userId) {
       await api.post(`/community-posts/${communityPostId}/join-requests`, {
         message: "",
       });
+      setMyRequestedPostIds((previousIds) =>
+        new Set(previousIds).add(communityPostId),
+      );
       setJoinFeedback({
         message: "Join request submitted successfully!",
         isError: false,
       });
     } catch (error) {
+      if (error.response?.data?.message?.toLowerCase().includes("already")) {
+        setMyRequestedPostIds((previousIds) =>
+          new Set(previousIds).add(communityPostId),
+        );
+      }
       setJoinFeedback({
         message:
           error.response?.data?.message ||
@@ -115,6 +124,7 @@ export default function useCommunityPosts(userId) {
     membersByPost,
     rentalRequests,
     groupDataLoading,
+    myRequestedPostIds,
     fetchCommunity,
     handleRequestToJoin,
   };
