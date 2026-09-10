@@ -5,6 +5,7 @@ import {
   getMyProfile,
   updateMyProfile,
 } from "../../services/profileService.js";
+import { getZodiacFromBirthdate } from "../../utils/zodiac.js";
 import "../../styles/components/edit-profile-modal.css";
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
@@ -104,6 +105,8 @@ const EditProfileModal = ({ isOpen, onClose }) => {
   );
 
   if (!isOpen) return null;
+
+  const zodiac = getZodiacFromBirthdate(form.birthdate);
 
   const closeModal = () => {
     if (!isSaving) onClose();
@@ -362,6 +365,21 @@ const EditProfileModal = ({ isOpen, onClose }) => {
                   disabled={isLoading || isSaving}
                 />
               </label>
+              <div className="edit-profile-zodiac">
+                <span>Zodiac sign</span>
+                <div className="edit-profile-zodiac-value" aria-live="polite">
+                  {zodiac ? (
+                    <>
+                      <span className="edit-profile-zodiac-symbol" aria-hidden="true">
+                        {zodiac.symbol}
+                      </span>
+                      <strong>{zodiac.name}</strong>
+                    </>
+                  ) : (
+                    <span>Not available</span>
+                  )}
+                </div>
+              </div>
               <label className="edit-profile-full-width">
                 <span>Current address</span>
                 <textarea
