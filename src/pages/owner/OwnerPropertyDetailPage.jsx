@@ -10,22 +10,12 @@ import {
   Save,
   Users,
 } from "lucide-react";
-import { useCallback, useEffect, useReducer, useState } from "react";
-import { Link, useLocation, useNavigate, useParams } from "react-router";
+import { useCallback, useReducer } from "react";
+import { Link, useLocation, useParams } from "react-router";
 import PropertyImageLightbox from "../../components/owner/PropertyImageLightbox.jsx";
 import PropertyOptionsFields from "../../components/owner/PropertyOptionsFields.jsx";
-import {
-  createPropertyAddressApi,
-  getOwnerPropertyApi,
-  updatePropertyAddressApi,
-  updatePropertyApi,
-} from "../../services/ownerApi.js";
-import {
-  hasValidQuietHours,
-  parseQuietHours,
-  propertyOptionIcons,
-  toHouseRulesPayload,
-} from "../../utils/propertyOptions.js";
+import useOwnerPropertyEditor from "../../hooks/useOwnerPropertyEditor.js";
+import { propertyOptionIcons } from "../../utils/propertyOptions.js";
 import { imagePreviewReducer } from "../../utils/imagePreview.js";
 import {
   ownerEditRoomPath,
@@ -36,37 +26,13 @@ const inputClass =
   "w-full rounded-xl border border-line bg-white px-4 py-3 text-ink outline-none focus:border-sage-dark focus:ring-3 focus:ring-sage-dark/10";
 const labelClass = "grid gap-1.5 text-sm font-semibold text-ink";
 
-const propertyFields = [
-  "title",
-  "description",
-  "propertyType",
-  "rentType",
-  "monthlyRent",
-  "deposit",
-  "availableDate",
-  "totalBedrooms",
-];
-
-const addressFields = [
-  "province",
-  "district",
-  "subDistrict",
-  "postcode",
-  "road",
-  "building",
-];
-
 const OwnerPropertyDetailPage = () => {
   const { propertyId } = useParams();
   const location = useLocation();
-  const navigate = useNavigate();
   const editing = location.pathname.endsWith("/edit");
 
-  const [property, setProperty] = useState(null);
-  const [form, setForm] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
+  const { addressFields, property, form, setForm, loading, saving, error, change, save } =
+    useOwnerPropertyEditor(propertyId);
   const [previewIndex, dispatchPreview] = useReducer(
     imagePreviewReducer,
     null,
@@ -84,111 +50,6 @@ const OwnerPropertyDetailPage = () => {
     () => dispatchPreview({ type: "previous", total: imageCount }),
     [imageCount],
   );
-
-  useEffect(() => {
-    let active = true;
-
-    getOwnerPropertyApi(propertyId)
-      .then(({ data }) => {
-        if (!active) return;
-
-        setProperty(data);
-        setForm({
-          ...data,
-          monthlyRent: Number(data.monthlyRent),
-          deposit: data.deposit == null ? "" : Number(data.deposit),
-          availableDate: data.availableDate
-            ? data.availableDate.slice(0, 10)
-            : "",
-          amenityIds: (data.amenities || []).map(({ id }) => id),
-          houseRules: (data.houseRules || []).map(({ id, code, value }) => ({
-            houseRuleId: id,
-            code,
-            ...(code === "QUIET_HOURS" ? parseQuietHours(value) : {}),
-          })),
-          ...Object.fromEntries(
-            addressFields.map((field) => [
-              field,
-              data.address?.[field] || "",
-            ]),
-          ),
-        });
-      })
-      .catch((requestError) => {
-        if (!active) return;
-
-        setError(
-          requestError.response?.data?.message || "Unable to load property",
-        );
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [propertyId]);
-
-  const change = (event) => {
-    setForm((current) => ({
-      ...current,
-      [event.target.name]: event.target.value,
-    }));
-  };
-
-  const save = async (event) => {
-    event.preventDefault();
-    setSaving(true);
-    setError("");
-
-    try {
-      if (!hasValidQuietHours(form.houseRules || [])) {
-        setError("Quiet hours must use the format 22:00-07:00");
-        return;
-      }
-
-      const details = Object.fromEntries(
-        propertyFields.map((field) => [field, form[field]]),
-      );
-
-      details.monthlyRent = Number(details.monthlyRent);
-      details.deposit = details.deposit === "" ? null : Number(details.deposit);
-      details.totalBedrooms =
-        details.totalBedrooms === "" || details.totalBedrooms == null
-          ? null
-          : Number(details.totalBedrooms);
-      details.availableDate = details.availableDate || null;
-      details.amenityIds = form.amenityIds || [];
-      details.houseRules = toHouseRulesPayload(form.houseRules || []);
-
-      const address = Object.fromEntries(
-        addressFields.map((field) => [field, form[field] || null]),
-      );
-      address.province = form.province;
-
-      const { data: updatedProperty } = await updatePropertyApi(
-        propertyId,
-        details,
-      );
-
-      let addressResponse;
-      if (property.address) {
-        addressResponse = await updatePropertyAddressApi(propertyId, address);
-      } else {
-        addressResponse = await createPropertyAddressApi(propertyId, address);
-      }
-
-      setProperty({ ...updatedProperty, address: addressResponse.data });
-      navigate(`/owner/properties/${propertyId}`);
-    } catch (requestError) {
-      setError(
-        requestError.response?.data?.message || "Unable to save property",
-      );
-    } finally {
-      setSaving(false);
-    }
-  };
 
   if (loading) {
     return (

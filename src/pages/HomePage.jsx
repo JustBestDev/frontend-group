@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import {
   BedDouble,
@@ -8,150 +7,17 @@ import {
   RefreshCw,
   Search,
 } from "lucide-react";
-import api from "../services/api.js";
+import usePropertySearch from "../hooks/usePropertySearch.js";
 
 const filterSelectClass =
   "h-11 min-w-0 flex-1 basis-44 rounded-xl border border-[#cfd7cd] bg-[#fbfcfa] px-4 text-[13px] text-[#5e6d5e] outline-none transition hover:border-sage focus:border-sage-dark focus:ring-3 focus:ring-sage-dark/15";
 
 const HomePage = () => {
-  const [properties, setProperties] = useState([]);
-  const [search, setSearch] = useState("");
-  const [propertyType, setPropertyType] = useState("ALL");
-  const [rentType, setRentType] = useState("ALL");
-  const [priceRange, setPriceRange] = useState("ALL");
-  const [bedrooms, setBedrooms] = useState("ALL");
-  const [province, setProvince] = useState("ALL");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  const fetchProperties = async () => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const response = await api.get("/properties");
-
-      const propertyData =
-        response.data.data?.properties ||
-        response.data.data ||
-        response.data.properties ||
-        [];
-
-      setProperties(Array.isArray(propertyData) ? propertyData : []);
-    } catch (requestError) {
-      setError(
-        requestError.response?.data?.message || "Unable to retrieve properties",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchProperties();
-  }, []);
-
-  const provinces = useMemo(() => {
-    return [
-      ...new Set(
-        properties
-          .map((property) => property.address?.province)
-          .filter(Boolean),
-      ),
-    ].sort();
-  }, [properties]);
-
-  const filteredProperties = useMemo(() => {
-    const searchText = search.trim().toLowerCase();
-
-    return properties.filter((property) => {
-      const title = (property.title || property.name || "").toLowerCase();
-
-      const location = [
-        property.address?.subDistrict,
-        property.address?.district,
-        property.address?.province,
-        property.address?.postcode,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-
-      const currentType = property.propertyType || property.type || "OTHER";
-      const currentRentType = property.rentType || "";
-      const currentProvince = property.address?.province || "";
-
-      const price = Number(property.monthlyRent ?? property.price ?? 0);
-
-      const roomCount = Number(
-        property.totalBedrooms ??
-        property.bedrooms ??
-        property.rooms?.length ??
-        0,
-      );
-
-      const matchesSearch =
-        !searchText ||
-        title.includes(searchText) ||
-        location.includes(searchText);
-
-      const matchesType =
-        propertyType === "ALL" || currentType === propertyType;
-
-      const matchesRentType =
-        rentType === "ALL" || currentRentType === rentType;
-
-      const matchesProvince =
-        province === "ALL" || currentProvince === province;
-
-      let matchesPrice = true;
-
-      if (priceRange === "UNDER_5000") {
-        matchesPrice = price < 5000;
-      }
-
-      if (priceRange === "5000_10000") {
-        matchesPrice = price >= 5000 && price <= 10000;
-      }
-
-      if (priceRange === "10000_20000") {
-        matchesPrice = price > 10000 && price <= 20000;
-      }
-
-      if (priceRange === "OVER_20000") {
-        matchesPrice = price > 20000;
-      }
-
-      const matchesBedrooms =
-        bedrooms === "ALL" || roomCount >= Number(bedrooms);
-
-      return (
-        matchesSearch &&
-        matchesType &&
-        matchesRentType &&
-        matchesPrice &&
-        matchesBedrooms &&
-        matchesProvince
-      );
-    });
-  }, [
-    properties,
-    search,
-    propertyType,
-    rentType,
-    priceRange,
-    bedrooms,
-    province,
-  ]);
-
-  const clearFilters = () => {
-    setSearch("");
-    setPropertyType("ALL");
-    setRentType("ALL");
-    setPriceRange("ALL");
-    setBedrooms("ALL");
-    setProvince("ALL");
-  };
+  const {
+    search, setSearch, propertyType, setPropertyType, rentType, setRentType,
+    priceRange, setPriceRange, bedrooms, setBedrooms, province, setProvince,
+    loading, error, provinces, filteredProperties, fetchProperties, clearFilters,
+  } = usePropertySearch();
 
   return (
     <main className="min-h-screen bg-[#f7f5ee] text-[#465346]">

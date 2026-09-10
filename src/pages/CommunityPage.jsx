@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import {
   CalendarDays,
@@ -15,7 +15,8 @@ import {
 } from "lucide-react";
 import useAuthStore from "../stores/authStore.js";
 import RentalRequestModal from "../components/rentalRequest/RentalRequestModal.jsx";
-import api, { getApiErrorMessage } from "../services/api.js";
+import useCommunityPosts from "../hooks/useCommunityPosts.js";
+import useZodiacMatches from "../hooks/useZodiacMatches.js";
 import { getCommunityReadiness, parsePostGender } from "../utils/communityRental.js";
 
 const fallbackImage =
@@ -36,138 +37,17 @@ function CommunityPage() {
   const [minBudget, setMinBudget] = useState("");
   const [maxBudget, setMaxBudget] = useState("");
   const [sortOrder, setSortOrder] = useState("NEWEST");
-  const [posts, setPosts] = useState(null);
-  const [requestingPostId, setRequestingPostId] = useState(null);
-  const [joinFeedback, setJoinFeedback] = useState(null);
-  const [membersByPost, setMembersByPost] = useState({});
-  const [rentalRequests, setRentalRequests] = useState([]);
-  const [groupDataLoading, setGroupDataLoading] = useState(true);
+  const {
+    setRentalRequests,
+    posts, requestingPostId, joinFeedback, setJoinFeedback,
+    membersByPost, rentalRequests, groupDataLoading,
+    handleRequestToJoin,
+  } = useCommunityPosts(userId);
+  const {
+    zodiacMode, setZodiacMode, zodiacMatches, userZodiac, zodiacLoading,
+    expandedMatchId, setExpandedMatchId, handleFindByZodiac,
+  } = useZodiacMatches(setJoinFeedback);
   const [selectedGroupPost, setSelectedGroupPost] = useState(null);
-  const [zodiacMode, setZodiacMode] = useState(false);
-  const [zodiacMatches, setZodiacMatches] = useState([]);
-  const [userZodiac, setUserZodiac] = useState(null);
-  const [zodiacLoading, setZodiacLoading] = useState(false);
-  const [expandedMatchId, setExpandedMatchId] = useState(null);
-
-  const fetchCommunity = useCallback(async () => {
-    setGroupDataLoading(true);
-    try {
-      const response = await api.get("/community-posts");
-      const nextPosts = Array.isArray(response.data) ? response.data : [];
-      setPosts(nextPosts);
-
-      const postsWithMembers = nextPosts.filter((post) => Boolean(post.id));
-      const creatorPosts = userId
-        ? postsWithMembers.filter(
-            (post) =>
-              Number(post.creatorId ?? post.creator?.id) === Number(userId) &&
-              Boolean(post.propertyId) &&
-              post.property?.rentType === "WHOLE_UNIT",
-          )
-        : [];
-
-      if (postsWithMembers.length === 0) {
-        setMembersByPost({});
-        setRentalRequests([]);
-        setGroupDataLoading(false);
-        return;
-      }
-
-      try {
-        const [memberEntries, requestResponse] = await Promise.all([
-          Promise.all(
-            postsWithMembers.map(async (post) => {
-              const membersResponse = await api.get(
-                `/community-posts/${post.id}/members`,
-              );
-              return [
-                post.id,
-                Array.isArray(membersResponse.data) ? membersResponse.data : [],
-              ];
-            }),
-          ),
-          creatorPosts.length > 0
-            ? api.get("/rental-requests/me")
-            : Promise.resolve({ data: [] }),
-        ]);
-        setMembersByPost(Object.fromEntries(memberEntries));
-        setRentalRequests(
-          Array.isArray(requestResponse.data.data)
-            ? requestResponse.data.data
-            : [],
-        );
-      } catch (error) {
-        setJoinFeedback({
-          message: getApiErrorMessage(
-            error,
-            "Unable to check group rental readiness",
-          ),
-          isError: true,
-        });
-      } finally {
-        setGroupDataLoading(false);
-      }
-    } catch (error) {
-      setPosts([]);
-      setGroupDataLoading(false);
-      setJoinFeedback({
-        message: getApiErrorMessage(error, "Unable to load community posts"),
-        isError: true,
-      });
-    }
-  }, [userId]);
-
-  useEffect(() => {
-    // Loading server state is the purpose of this effect.
-    // oxlint-disable-next-line react/set-state-in-effect
-    fetchCommunity();
-  }, [fetchCommunity]);
-
-  const handleRequestToJoin = async (communityPostId) => {
-    setRequestingPostId(communityPostId);
-    setJoinFeedback(null);
-
-    try {
-      await api.post(`/community-posts/${communityPostId}/join-requests`, {
-        message: "",
-      });
-      setJoinFeedback({
-        message: "Join request submitted successfully!",
-        isError: false,
-      });
-    } catch (error) {
-      setJoinFeedback({
-        message:
-          error.response?.data?.message ||
-          "Unable to submit your join request. Please try again.",
-        isError: true,
-      });
-    } finally {
-      setRequestingPostId(null);
-    }
-  };
-
-  const handleFindByZodiac = async () => {
-    setZodiacLoading(true);
-    setJoinFeedback(null);
-
-    try {
-      const response = await api.get("/community-posts/zodiac-matches");
-      setZodiacMatches(
-        Array.isArray(response.data?.matches) ? response.data.matches : [],
-      );
-      setUserZodiac(response.data?.userZodiac || null);
-      setExpandedMatchId(null);
-      setZodiacMode(true);
-    } catch (error) {
-      setJoinFeedback({
-        message: getApiErrorMessage(error, "Unable to find zodiac matches"),
-        isError: true,
-      });
-    } finally {
-      setZodiacLoading(false);
-    }
-  };
 
   const filteredPosts = (posts || [])
     .filter((post) => {
