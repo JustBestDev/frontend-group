@@ -8,7 +8,12 @@ import {
   markOwnerRentalRequestsViewedApi,
   reviewOwnerRentalRequestApi,
 } from "../../services/ownerApi.js";
-import { ownerRentalRequestPath } from "../../utils/ownerRoutes.js";
+import {
+  ownerPropertyPath,
+  ownerRentalRequestPath,
+  ownerRentalRequestRoomPath,
+  ownerUserProfilePath,
+} from "../../utils/ownerRoutes.js";
 
 const FILTERS = ["ALL", "PENDING", "ACCEPTED", "REJECTED"];
 const formatDate = (value, empty = "Not set") => value ? new Date(value).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : empty;
@@ -146,22 +151,56 @@ const Stat = ({ icon, label, value, tone }) => <article className="flex items-ce
 
 const RequestCard = ({ request, reviewingId, onReview }) => {
   const isGroup = Boolean(request.communityPostId);
+  const requesterName = request.requester?.username || `User #${request.requesterId}`;
+  const roomPath = ownerRentalRequestRoomPath(request);
   return (
     <article className="overflow-hidden rounded-2xl border border-line bg-white shadow-[0_6px_22px_rgba(50,66,54,.06)]">
       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line p-5 sm:p-6">
         <div className="flex min-w-0 items-center gap-3.5">
-          <span className="grid size-11 shrink-0 place-items-center rounded-full bg-sage-light font-serif text-lg font-bold text-sage-dark">{request.requester?.username?.charAt(0)?.toUpperCase() || "U"}</span>
+          <Link
+            to={ownerUserProfilePath(request.requester?.id || request.requesterId)}
+            aria-label={`View ${requesterName}'s profile`}
+            className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-full bg-sage-light font-serif text-lg font-bold text-sage-dark transition hover:bg-sage focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sage-dark"
+          >
+            {request.requester?.username?.charAt(0)?.toUpperCase() || "U"}
+          </Link>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="truncate font-serif text-xl font-bold">{request.requester?.username || `User #${request.requesterId}`}</h2>
+              <h2 className="min-w-0 font-serif text-xl font-bold">
+                <Link
+                  to={ownerUserProfilePath(request.requester?.id || request.requesterId)}
+                  className="cursor-pointer break-words text-ink underline-offset-4 transition hover:text-sage-dark hover:underline focus-visible:rounded focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sage-dark"
+                >
+                  {requesterName}
+                </Link>
+              </h2>
               <span className="rounded-full bg-cream px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-muted-copy">{isGroup ? "Group rental" : "Direct rental"}</span>
             </div><p className="mt-1 text-xs text-muted-copy">Request #{request.id} · Submitted {formatDate(request.createdAt)}</p>
           </div>
         </div>
         <span className={`owner-status status-${request.status.toLowerCase()}`}>{request.status}</span>
       </div>
-      <div className="flex justify-between p-5 sm:grid-cols-2 sm:p-6 lg:grid-cols-[1.25fr_1fr_1fr]">
-        <Detail icon={<Building2 size={19} />} label="Property" title={request.property?.title || `Property #${request.propertyId}`} text={request.room?.roomName ? `Room: ${request.room.roomName}` : "Whole property"} />
+      <div className="grid gap-5 p-5 sm:grid-cols-2 sm:p-6 lg:grid-cols-[1.25fr_1fr_1fr]">
+        <Detail
+          icon={<Building2 size={19} />}
+          label="Property"
+          title={
+            <Link
+              to={ownerPropertyPath(request.property?.id || request.propertyId)}
+              className="cursor-pointer break-words text-ink underline-offset-4 transition hover:text-sage-dark hover:underline focus-visible:rounded focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sage-dark"
+            >
+              {request.property?.title || `Property #${request.propertyId}`}
+            </Link>
+          }
+          text={roomPath ? (
+            <Link
+              to={roomPath}
+              className="cursor-pointer break-words text-muted-copy underline-offset-4 transition hover:text-sage-dark hover:underline focus-visible:rounded focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sage-dark"
+            >
+              Room: {request.room.roomName}
+            </Link>
+          ) : "Whole property"}
+        />
         <Detail icon={<CalendarDays size={19} />} label="Rental period" title={formatDate(request.startDate)} text={`to ${formatDate(request.endDate, "Ongoing")}`} />
         <Detail icon={<Users size={19} />} label="Application type" title={isGroup ? "Community group" : "Individual tenant"} text={request.communityPost?.title || (request.room ? "Individual room" : "Whole unit")} />
       </div>
@@ -190,7 +229,7 @@ const RequestCard = ({ request, reviewingId, onReview }) => {
 const Detail = ({ icon, label, title, text }) =>
   <div className="flex gap-3">
     <span className="mt-0.5 shrink-0 text-sage-dark">{icon}</span>
-    <div>
+    <div className="min-w-0">
       <p className="text-[11px] font-bold uppercase tracking-wider text-muted-copy">{label}</p>
       <p className="mt-1 font-semibold">{title}</p><p className="mt-1 text-sm text-muted-copy">{text}</p>
     </div>

@@ -80,13 +80,18 @@ const OwnerRentalDetailPage = () => {
         <ArrowLeft size={17} /> Back to Rentals
       </Link>
 
-      <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div>
+      <header className="mb-5 flex flex-col gap-3 border-b border-line pb-5 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
           <p className="owner-eyebrow">Rental #{rental.id}</p>
-          <h1 className="break-words">{rental.property?.title || `Property #${rental.propertyId}`}</h1>
-          <p>{target}</p>
+          <h1 className="mt-1 break-words font-serif text-2xl leading-tight text-ink">
+            {rental.property?.title || `Property #${rental.propertyId}`}
+          </h1>
+          <p className="mt-1 text-sm text-muted-copy">{target}</p>
         </div>
-        <span className={`owner-status status-${rental.status?.toLowerCase()} whitespace-nowrap`}>
+
+        <span
+          className={`owner-status status-${rental.status?.toLowerCase()} shrink-0 whitespace-nowrap`}
+        >
           {rental.status}
         </span>
       </header>
@@ -131,7 +136,9 @@ const OwnerRentalDetailPage = () => {
             </span>
             <div>
               <p className="text-xs font-semibold text-muted-copy">Tenants</p>
-              <h2 className="font-serif text-2xl">{rental.members?.length || 0}</h2>
+              <h2 className="font-serif text-2xl">
+                {rental.members?.length || 0}
+              </h2>
             </div>
           </div>
 
@@ -156,7 +163,9 @@ const OwnerRentalDetailPage = () => {
                 );
               })
             ) : (
-              <p className="text-sm text-muted-copy">No tenants are attached to this rental.</p>
+              <p className="text-sm text-muted-copy">
+                No tenants are attached to this rental.
+              </p>
             )}
           </div>
         </aside>

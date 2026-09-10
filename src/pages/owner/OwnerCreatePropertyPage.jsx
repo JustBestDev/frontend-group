@@ -174,20 +174,32 @@ const OwnerCreatePropertyPage = () => {
       <p className="mt-2 text-muted-copy">
         Add the details tenants need to discover your property.
       </p>
-      <ol className="my-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <ol
+        className="my-8 flex w-full"
+        aria-label="Property creation progress"
+      >
         {steps.map((label, index) => {
           const number = index + 1;
           return (
             <li
               key={label}
-              className={`flex items-center gap-3 border-b-2 pb-3 ${number <= step ? "border-sage-dark text-ink" : "border-line text-muted-copy"}`}
+              aria-current={number === step ? "step" : undefined}
+              className={`relative flex min-w-0 flex-1 flex-col items-center text-center ${number <= step ? "text-ink" : "text-muted-copy"}`}
             >
+              {index < steps.length - 1 && (
+                <span
+                  aria-hidden="true"
+                  className={`absolute left-[calc(50%+18px)] top-4 h-0.5 w-[calc(100%-36px)] ${number < step ? "bg-sage-dark" : "bg-line"}`}
+                />
+              )}
               <span
-                className={`grid size-9 place-items-center rounded-full ${number < step ? "bg-sage-dark text-white" : number === step ? "bg-forest text-white" : "bg-[#eeece4]"}`}
+                className={`relative z-10 grid size-9 shrink-0 place-items-center rounded-full border-2 text-sm font-bold ${number < step ? "border-forest bg-forest text-white" : number === step ? "border-forest bg-white text-forest" : "border-[#eeece4] bg-[#eeece4] text-muted-copy"}`}
               >
                 {number < step ? <Check size={18} /> : number}
               </span>
-              <strong className="text-sm">{label}</strong>
+              <strong className="mt-2 max-w-full text-[11px] leading-tight sm:text-sm">
+                {label}
+              </strong>
             </li>
           );
         })}
