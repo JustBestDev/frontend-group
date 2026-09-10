@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import AuthModal from "./auth/AuthModal.jsx";
 import OwnerApplicationModal from "./ownerApplication/OwnerApplicationModal.jsx";
 import useAuthStore from "../stores/authStore.js";
-import { getMyOwnerApplication } from "../services/ownerApplicationService.js";
+import useOwnerApplicationStatus from "../hooks/useOwnerApplicationStatus.js";
 import UserAvatar from "./UserAvatar.jsx";
 import EditProfileModal from "./profile/EditProfileModal.jsx";
+import useUnreadMessages from "../hooks/useUnreadMessages.js";
 
 import roomHubLogo from "../assets/roomhub-logo.svg";
 
@@ -14,32 +15,18 @@ const HeaderComponent = () => {
   const [isOwnerApplicationModalOpen, setIsOwnerApplicationModalOpen] =
     useState(false);
   const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
-  const [ownerApplication, setOwnerApplication] = useState(null);
-  const [applicationState, setApplicationState] = useState("idle");
   const navigate = useNavigate();
   const token = useAuthStore((state) => state.token);
   const currentUser = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const isAuthenticated = Boolean(token && currentUser);
+  const unreadMessageCount = useUnreadMessages(
+    token,
+    currentUser?.id || currentUser?.userId,
+  );
 
-  const loadOwnerApplication = useCallback(async () => {
-    if (!isAuthenticated || currentUser?.role !== "USER") return;
-    setApplicationState("loading");
-    try {
-      const application = await getMyOwnerApplication();
-      setOwnerApplication(application);
-      setApplicationState(application ? "ready" : "none");
-    } catch {
-      setOwnerApplication(null);
-      setApplicationState("error");
-    }
-  }, [isAuthenticated, currentUser?.role]);
-
-  useEffect(() => {
-    // Loading the authenticated user's server state is the purpose of this effect.
-    // oxlint-disable-next-line react/set-state-in-effect
-    loadOwnerApplication();
-  }, [loadOwnerApplication]);
+  const { ownerApplication, applicationState, loadOwnerApplication } =
+    useOwnerApplicationStatus(isAuthenticated, currentUser?.role);
 
   useEffect(() => {
     const shouldOpen =
@@ -104,10 +91,19 @@ const HeaderComponent = () => {
           )}
 
           <Link
-            className="font-semibold text-ink transition hover:text-terracotta"
+            className="inline-flex items-center gap-2 font-semibold text-ink transition hover:text-terracotta"
             to="/message"
           >
             Message
+            {unreadMessageCount > 0 && (
+              <span
+                className="inline-flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-extrabold leading-none text-white shadow-[0_0_0_3px_rgba(239,68,68,.12)]"
+                title={`${unreadMessageCount} unread messages`}
+                aria-label={`${unreadMessageCount} unread messages`}
+              >
+                {unreadMessageCount > 99 ? "99+" : unreadMessageCount}
+              </span>
+            )}
           </Link>
         </nav>
 
