@@ -34,11 +34,42 @@ export function getPropertyDetails(property, selectedRoomId) {
   // Extracted and computed property data
   const rooms = property.rooms || [];
   const isWholeUnit = property.rentType === "WHOLE_UNIT";
-  const availableRooms = rooms.filter(
-    (room) =>
-      (room.status || room.roomStatus || "").toUpperCase() === "AVAILABLE",
+  const activeRentalStatus = property.activeRental?.status?.toUpperCase();
+  const hasActiveRental = Boolean(
+    property.hasActiveRental || property.activeRental,
   );
+  const isReserved = Boolean(
+    property.isReserved || activeRentalStatus === "PENDING",
+  );
+  const isRented = Boolean(
+    property.isRented ||
+      property.propertyStatus?.toUpperCase() === "RENTED" ||
+      activeRentalStatus === "ACTIVE",
+  );
+  const isWholeUnitUnavailable = Boolean(
+    isWholeUnit &&
+      (property.propertyStatus?.toUpperCase() !== "AVAILABLE" ||
+        hasActiveRental ||
+        isReserved ||
+        isRented),
+  );
+  const wholeUnitStatus = !isWholeUnitUnavailable
+    ? "AVAILABLE"
+    : isReserved
+      ? "RESERVED"
+      : isRented
+        ? "RENTED"
+        : "UNAVAILABLE";
+  const availableRooms = isWholeUnitUnavailable
+    ? []
+    : rooms.filter(
+        (room) =>
+          (room.status || room.roomStatus || "").toUpperCase() === "AVAILABLE",
+      );
   const occupiedRoomsCount = rooms.length - availableRooms.length;
+  const isUnavailableForCommunity = isWholeUnit
+    ? isWholeUnitUnavailable
+    : rooms.length > 0 && availableRooms.length === 0;
 
   const address =
     property.address?.fullAddress ||
@@ -75,6 +106,12 @@ export function getPropertyDetails(property, selectedRoomId) {
   return {
     rooms,
     isWholeUnit,
+    hasActiveRental,
+    isReserved,
+    isRented,
+    isWholeUnitUnavailable,
+    isUnavailableForCommunity,
+    wholeUnitStatus,
     availableRooms,
     occupiedRoomsCount,
     address,

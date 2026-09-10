@@ -5,6 +5,7 @@ const RoomSection = ({
   propertyId,
   rooms,
   isWholeUnit,
+  wholeUnitStatus,
   availableRooms,
   occupiedRoomsCount,
   galleryImages,
@@ -29,11 +30,29 @@ const RoomSection = ({
             </p>
           </div>
           <div className="flex flex-wrap gap-2.5">
-            <div className="inline-flex items-center gap-2 bg-sage-light border border-[#cbe0c6] px-3.5 py-1.5 rounded-full text-xs font-bold text-[#294c25]">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#4f614d]" />
-              {availableRooms.length} Available
-            </div>
-            {occupiedRoomsCount > 0 && (
+            {isWholeUnit ? (
+              <div
+                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold border ${wholeUnitStatus === "AVAILABLE" ? "bg-sage-light border-[#cbe0c6] text-[#294c25]" : "bg-[#fde8e6] border-[#f4c7c3] text-danger"}`}
+              >
+                <span
+                  className={`w-2.5 h-2.5 rounded-full ${wholeUnitStatus === "AVAILABLE" ? "bg-[#4f614d]" : "bg-danger"}`}
+                />
+                Unit{" "}
+                {wholeUnitStatus === "AVAILABLE"
+                  ? "Available"
+                  : wholeUnitStatus === "RESERVED"
+                    ? "Reserved"
+                    : wholeUnitStatus === "RENTED"
+                      ? "Rented"
+                      : "Unavailable"}
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-2 bg-sage-light border border-[#cbe0c6] px-3.5 py-1.5 rounded-full text-xs font-bold text-[#294c25]">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#4f614d]" />
+                {availableRooms.length} Available
+              </div>
+            )}
+            {!isWholeUnit && occupiedRoomsCount > 0 && (
               <div className="inline-flex items-center gap-2 bg-[#f1f0ea] border border-[#e1ded5] px-3.5 py-1.5 rounded-full text-xs font-medium text-muted-copy">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#a8b0a7]" />
                 {occupiedRoomsCount} Occupied
@@ -74,6 +93,7 @@ const RoomSection = ({
               galleryImages={galleryImages}
               selectedRoomId={selectedRoomId}
               setSelectedRoomId={setSelectedRoomId}
+              wholeUnitStatus={wholeUnitStatus}
             />
           ))}
         </div>

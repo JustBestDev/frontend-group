@@ -50,6 +50,24 @@ const PropertyDetailPage = () => {
 
   const galleryImages = useMemo(() => getGalleryImages(property), [property]);
 
+  const propertyDetails = getPropertyDetails(property || {}, selectedRoomId);
+  const {
+    rooms,
+    isWholeUnit,
+    isReserved,
+    isRented,
+    isWholeUnitUnavailable,
+    isUnavailableForCommunity,
+    wholeUnitStatus,
+    availableRooms,
+    occupiedRoomsCount,
+    address,
+    ownerProfile,
+    ownerDisplayName,
+    selectedRoom,
+    displayPrice,
+  } = propertyDetails;
+
   const handleShare = () => setIsShareModalOpen(true);
 
   // Toggle Save
@@ -93,6 +111,14 @@ const PropertyDetailPage = () => {
   };
 
   const handleRequestToRent = () => {
+    if (isWholeUnitUnavailable) {
+      showToast(
+        isReserved
+          ? "This property is currently reserved"
+          : "This property is unavailable for rent",
+      );
+      return;
+    }
     if (!token || !user) {
       navigate("/login");
       return;
@@ -148,18 +174,6 @@ const PropertyDetailPage = () => {
     );
   }
 
-  const {
-    rooms,
-    isWholeUnit,
-    availableRooms,
-    occupiedRoomsCount,
-    address,
-    ownerProfile,
-    ownerDisplayName,
-    selectedRoom,
-    displayPrice,
-  } = getPropertyDetails(property, selectedRoomId);
-
   return (
     <div className="min-h-screen bg-[#f7f5ee] text-[#1c1c16] antialiased">
       {/* Toast Notification */}
@@ -195,12 +209,16 @@ const PropertyDetailPage = () => {
               address={address}
               isWholeUnit={isWholeUnit}
               rooms={rooms}
+              isReserved={isReserved}
+              isRented={isRented}
+              isWholeUnitUnavailable={isWholeUnitUnavailable}
             />
             <RoomSection
               property={property}
               propertyId={propertyId}
               rooms={rooms}
               isWholeUnit={isWholeUnit}
+              wholeUnitStatus={wholeUnitStatus}
               availableRooms={availableRooms}
               occupiedRoomsCount={occupiedRoomsCount}
               galleryImages={galleryImages}
@@ -218,6 +236,9 @@ const PropertyDetailPage = () => {
               property={property}
               propertyId={propertyId}
               isWholeUnit={isWholeUnit}
+              isReserved={isReserved}
+              isRented={isRented}
+              isWholeUnitUnavailable={isWholeUnitUnavailable}
               rooms={rooms}
               displayPrice={displayPrice}
               selectedRoom={selectedRoom}
@@ -255,6 +276,9 @@ const PropertyDetailPage = () => {
           galleryImages={galleryImages}
           address={address}
           displayPrice={displayPrice}
+          isUnavailableForCommunity={isUnavailableForCommunity}
+          isReserved={isReserved}
+          isRented={isRented}
           showToast={showToast}
           onClose={() => setIsShareModalOpen(false)}
         />

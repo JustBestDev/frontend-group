@@ -8,6 +8,9 @@ const SharePropertyModal = ({
   galleryImages,
   address,
   displayPrice,
+  isUnavailableForCommunity,
+  isReserved,
+  isRented,
   showToast,
   onClose,
 }) => {
@@ -38,6 +41,10 @@ const SharePropertyModal = ({
 
   // Share to RoomMate Community
   const handleShareToCommunity = async () => {
+    if (isUnavailableForCommunity) {
+      showToast("This property is unavailable and cannot be shared");
+      return;
+    }
     if (!postTitle.trim()) {
       showToast("Please enter a post title");
       return;
@@ -60,7 +67,10 @@ const SharePropertyModal = ({
       onClose();
     } catch (err) {
       console.error("Failed to save community share:", err);
-      showToast("Failed to share to Community. Please try again.");
+      showToast(
+        err.response?.data?.message ||
+          "Failed to share to Community. Please try again.",
+      );
     } finally {
       setIsSharingToCommunity(false);
     }
@@ -152,6 +162,16 @@ const SharePropertyModal = ({
             </span>
           </div>
 
+          {isUnavailableForCommunity && (
+            <div className="mb-5 rounded-xl border border-[#f4c7c3] bg-[#fde8e6] p-4 text-sm font-medium text-danger">
+              {isReserved
+                ? "This property is reserved and cannot be shared to the community."
+                : isRented
+                  ? "This property is rented and cannot be shared to the community."
+                  : "This property is unavailable and cannot be shared to the community."}
+            </div>
+          )}
+
           {/* Form Inputs for Community Post */}
           <div className="space-y-3.5 mb-5">
             {/* Title & Require Member Row */}
@@ -238,10 +258,12 @@ const SharePropertyModal = ({
           <button
             type="button"
             onClick={handleShareToCommunity}
-            disabled={isSharingToCommunity}
+            disabled={isSharingToCommunity || isUnavailableForCommunity}
             className="w-full py-3 sm:py-3.5 px-5 rounded-xl bg-[#4f614d] hover:bg-[#41513f] text-white text-sm font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs disabled:opacity-60"
           >
-            {isSharingToCommunity ? (
+            {isUnavailableForCommunity ? (
+              <span>Cannot Share Unavailable Property</span>
+            ) : isSharingToCommunity ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
                 <span>Saving to Database & Sharing...</span>

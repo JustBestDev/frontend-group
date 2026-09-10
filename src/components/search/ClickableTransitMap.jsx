@@ -658,7 +658,7 @@ const TRANSIT_MAP_HOTSPOTS = [
         name: "Tao poon",
         x: 35.73,
         y: 41.38,
-    },  
+    },
     {
         lineSearch: "Blue",
         code: "BL09",

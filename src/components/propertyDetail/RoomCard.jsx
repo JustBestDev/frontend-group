@@ -8,12 +8,25 @@ const RoomCard = ({
   galleryImages,
   selectedRoomId,
   setSelectedRoomId,
+  wholeUnitStatus,
 }) => {
   const roomId = room.id || room.roomId || index + 1;
-  const isAvailable =
-    (room.status || room.roomStatus || "").toUpperCase() ===
-    "AVAILABLE" ||
-    (!room.status && !room.roomStatus);
+  const reportedStatus = (
+    room.status ||
+    room.roomStatus ||
+    "AVAILABLE"
+  ).toUpperCase();
+  const effectiveStatus =
+    wholeUnitStatus && wholeUnitStatus !== "AVAILABLE"
+      ? wholeUnitStatus
+      : reportedStatus;
+  const isAvailable = effectiveStatus === "AVAILABLE";
+  const statusLabel =
+    effectiveStatus === "RESERVED"
+      ? "Reserved"
+      : effectiveStatus === "RENTED"
+        ? "Rented"
+        : "Unavailable";
   const roomPrice =
     room.monthlyRent || property.monthlyRent || 0;
   const roomImage =
@@ -47,7 +60,7 @@ const RoomCard = ({
           {!isAvailable && (
             <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
               <span className="text-[10px] font-bold text-white uppercase bg-black/60 px-2 py-0.5 rounded">
-                Occupied
+                {statusLabel}
               </span>
             </div>
           )}
@@ -67,7 +80,7 @@ const RoomCard = ({
               </span>
             ) : (
               <span className="bg-[#f1f0ea] text-muted-copy border border-[#e1ded5] px-2.5 py-0.5 rounded-full text-xs font-medium">
-                Occupied
+                {statusLabel}
               </span>
             )}
           </div>
