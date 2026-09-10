@@ -1,6 +1,14 @@
-import { Building2, CalendarDays, Check, ClipboardCheck, ClipboardList, Clock3, Loader2, RefreshCw, Search, Users, X } from "lucide-react";
+import { Building2, CalendarDays, ClipboardCheck, ClipboardList, Clock3, Loader2, RefreshCw, Search, Users, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import api, { getApiErrorMessage } from "../../services/api.js";
+import { Link } from "react-router";
+import RentalRequestActions from "../../components/owner/RentalRequestActions.jsx";
+import { getApiErrorMessage } from "../../services/api.js";
+import {
+  getOwnerRentalRequestsApi,
+  markOwnerRentalRequestsViewedApi,
+  reviewOwnerRentalRequestApi,
+} from "../../services/ownerApi.js";
+import { ownerRentalRequestPath } from "../../utils/ownerRoutes.js";
 
 const FILTERS = ["ALL", "PENDING", "ACCEPTED", "REJECTED"];
 const formatDate = (value, empty = "Not set") => value ? new Date(value).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : empty;
@@ -18,9 +26,9 @@ const OwnerRentalRequestsPage = () => {
     setLoading(true);
     setError("");
     try {
-      const response = await api.get("/rental-requests/owner");
-      setRequests(Array.isArray(response.data.data) ? response.data.data : []);
-      await api.patch("/rental-requests/owner/viewed");
+      const response = await getOwnerRentalRequestsApi();
+      setRequests(Array.isArray(response.data) ? response.data : []);
+      await markOwnerRentalRequestsViewedApi();
       window.dispatchEvent(new Event("owner-notifications:refresh"));
     } catch (requestError) {
       setError(getApiErrorMessage(requestError, "Unable to load rental requests"));
@@ -40,7 +48,7 @@ const OwnerRentalRequestsPage = () => {
     setError("");
     setSuccess("");
     try {
-      await api.patch(`/rental-requests/${requestId}`, { action });
+      await reviewOwnerRentalRequestApi(requestId, action);
       setSuccess(`Rental request ${action === "ACCEPT" ? "accepted" : "rejected"} successfully.`);
       await fetchRequests();
     } catch (requestError) {
@@ -137,7 +145,6 @@ const Stat = ({ icon, label, value, tone }) => <article className="flex items-ce
 </article>;
 
 const RequestCard = ({ request, reviewingId, onReview }) => {
-  const reviewing = reviewingId === request.id;
   const isGroup = Boolean(request.communityPostId);
   return (
     <article className="overflow-hidden rounded-2xl border border-line bg-white shadow-[0_6px_22px_rgba(50,66,54,.06)]">
@@ -160,21 +167,21 @@ const RequestCard = ({ request, reviewingId, onReview }) => {
       </div>
       <footer className="flex flex-wrap items-center justify-between gap-3 bg-[#faf9f4] px-5 py-4 sm:px-6">
         <p className="text-xs text-muted-copy">{request.reviewedAt ? `Reviewed on ${formatDate(request.reviewedAt)}` : "Review the rental details before making a decision."}</p>
-        {request.status === "PENDING" &&
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => onReview(request.id, "REJECT")}
-              disabled={reviewingId !== null}
-              className="inline-flex items-center gap-2 rounded-xl border border-danger px-4 py-2.5 text-sm font-bold text-danger transition hover:bg-[#fde8e6] disabled:opacity-50"><X size={17} /> Reject
-            </button>
-            <button
-              type="button"
-              onClick={() => onReview(request.id, "ACCEPT")}
-              disabled={reviewingId !== null}
-              className="inline-flex items-center gap-2 rounded-xl bg-sage-dark px-4 py-2.5 text-sm font-bold text-white transition hover:brightness-95 disabled:opacity-50">{reviewing ? <Loader2 className="animate-spin" size={17} /> : <Check size={17} />} Accept request
-            </button>
-          </div>}
+        <div className="flex flex-wrap gap-2">
+          <Link
+            to={ownerRentalRequestPath(request.id)}
+            className="inline-flex cursor-pointer items-center rounded-xl border border-sage-dark px-4 py-2.5 text-sm font-bold text-sage-dark transition hover:bg-sage-light focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sage-dark"
+          >
+            View details
+          </Link>
+          {request.status === "PENDING" && (
+            <RentalRequestActions
+              requestId={request.id}
+              reviewingId={reviewingId}
+              onReview={onReview}
+            />
+          )}
+        </div>
       </footer>
     </article>
   );

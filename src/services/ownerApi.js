@@ -50,6 +50,26 @@ export const getMyRentalsApi = async (params = {}) => {
     return res.data;
 };
 
+export const getRentalApi = async (rentalId) => {
+    const res = await api.get(`/rentals/${rentalId}`);
+    return res.data;
+};
+
+export const getOwnerRentalRequestsApi = async () => {
+    const res = await api.get("/rental-requests/owner");
+    return res.data;
+};
+
+export const markOwnerRentalRequestsViewedApi = async () => {
+    const res = await api.patch("/rental-requests/owner/viewed");
+    return res.data;
+};
+
+export const reviewOwnerRentalRequestApi = async (requestId, action) => {
+    const res = await api.patch(`/rental-requests/${requestId}`, { action });
+    return res.data;
+};
+
 export const createPropertyApi = async (propertyData) => {
     const res = await api.post("/properties", propertyData);
     return res.data;
