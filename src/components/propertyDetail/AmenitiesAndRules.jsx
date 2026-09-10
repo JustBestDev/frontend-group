@@ -40,7 +40,7 @@ const AmenitiesAndRules = ({ property }) => {
             })}
           </div>
         ) : (
-          <p className="text-xs text-[#6f7a73]">
+          <p className="text-xs text-muted-copy">
             No specific amenities listed for this property.
           </p>
         )}
@@ -71,7 +71,7 @@ const AmenitiesAndRules = ({ property }) => {
             })}
           </div>
         ) : (
-          <p className="text-xs text-[#6f7a73]">
+          <p className="text-xs text-muted-copy">
             No specific house rules specified by the owner.
           </p>
         )}

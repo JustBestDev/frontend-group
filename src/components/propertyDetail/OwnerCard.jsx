@@ -1,6 +1,7 @@
-import { ShieldCheck, Loader2, MessageCircle } from "lucide-react";
+import { Loader2, MessageCircle, ShieldCheck, UserRound } from "lucide-react";
 
 const OwnerCard = ({ ownerProfile, ownerDisplayName, handleContactOwner, isContactingOwner }) => {
+  const ownerAvatar = ownerProfile.profileImageUrl || ownerProfile.avatar;
 
   return (
     <div className="bg-white border border-[#e1e5dd] rounded-2xl p-6 shadow-xs space-y-4">
@@ -10,9 +11,9 @@ const OwnerCard = ({ ownerProfile, ownerDisplayName, handleContactOwner, isConta
 
       <div className="flex items-center gap-3.5">
         <div className="w-12 h-12 rounded-full bg-[#eedcd4] border border-[#e0c9bd] flex items-center justify-center font-bold text-lg text-[#835024] shrink-0">
-          {ownerProfile.avatar ? (
+          {ownerAvatar ? (
             <img
-              src={ownerProfile.avatar}
+              src={ownerAvatar}
               alt={ownerDisplayName}
               className="w-full h-full object-cover rounded-full"
             />
@@ -25,10 +26,17 @@ const OwnerCard = ({ ownerProfile, ownerDisplayName, handleContactOwner, isConta
           <h4 className="font-bold text-sm text-[#1c1c16]">
             {ownerDisplayName}
           </h4>
-          <div className="flex items-center gap-1 text-xs text-[#4f614d] font-semibold mt-0.5">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Verified Host</span>
-          </div>
+          {ownerProfile.isVerified ? (
+            <div className="flex items-center gap-1 text-xs text-[#4f614d] font-semibold mt-0.5">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Verified Host</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1 text-xs text-muted-copy font-medium mt-0.5">
+              <UserRound className="w-3.5 h-3.5" />
+              <span>Property Host</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -36,6 +44,17 @@ const OwnerCard = ({ ownerProfile, ownerDisplayName, handleContactOwner, isConta
         <p>• Usually responds within an hour</p>
         <p>• Schedule room viewing at least 1 day in advance</p>
       </div>
+
+      {ownerProfile.bio ? (
+        <div className="p-3 bg-[#f7f5ee] rounded-xl text-xs text-[#414753] leading-relaxed">
+          <p className="line-clamp-3">{ownerProfile.bio}</p>
+        </div>
+      ) : (
+        <div className="p-3 bg-[#f7f5ee] rounded-xl text-xs text-muted-copy space-y-1">
+          <p>• Message host directly to check availability</p>
+          <p>• Schedule a room viewing before making a deposit</p>
+        </div>
+      )}
 
       <button
         type="button"
