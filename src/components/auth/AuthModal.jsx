@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   Building2,
+  CalendarDays,
   Eye,
   EyeOff,
   Home,
@@ -31,6 +32,7 @@ const AuthModal = ({ isOpen, onClose }) => {
     email: "",
     password: "",
     confirmPassword: "",
+    birthdate: "",
   });
 
   const [error, setError] = useState("");
@@ -82,6 +84,7 @@ const AuthModal = ({ isOpen, onClose }) => {
       email: formData.email,
       password: formData.password,
       confirmPassword: formData.confirmPassword,
+      birthdate: formData.birthdate || undefined,
     });
 
     if (accountPurpose === "CUSTOMER") {
@@ -274,6 +277,23 @@ const AuthModal = ({ isOpen, onClose }) => {
                     required
                   />
                 </div>
+
+                <div className="auth-modal-input">
+                  <CalendarDays size={19} />
+
+                  <input
+                    type="date"
+                    name="birthdate"
+                    value={formData.birthdate}
+                    onChange={handleChange}
+                    max={new Date().toISOString().split("T")[0]}
+                    aria-label="Date of birth"
+                  />
+                </div>
+
+                <p className="auth-modal-field-hint">
+                  Optional — used to calculate your zodiac sign for roommate matching.
+                </p>
               </>
             )}
 
