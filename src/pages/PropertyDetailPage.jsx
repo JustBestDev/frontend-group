@@ -786,11 +786,12 @@ const PropertyDetailPage = () => {
                   )}
                 </div>
               </div>
-              {property.amenities?.length > 0 && (
-                <div className="pt-6 border-t border-[#f1eee4]">
-                  <h3 className="font-serif text-lg font-bold text-[#1c1c16] mb-3">
-                    Amenities
-                  </h3>
+              {/* Amenities */}
+              <div className="pt-6 border-t border-[#f1eee4]">
+                <h3 className="font-serif text-lg font-bold text-[#1c1c16] mb-3">
+                  Amenities
+                </h3>
+                {property.amenities?.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-[#505a54]">
                     {property.amenities.map((amenity) => {
                       const Icon = propertyOptionIcons[amenity.code];
@@ -805,17 +806,25 @@ const PropertyDetailPage = () => {
                       );
                     })}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <p className="text-xs text-[#6f7a73]">
+                    No specific amenities listed for this property.
+                  </p>
+                )}
+              </div>
 
-              {property.houseRules?.length > 0 && (
-                <div className="pt-6 border-t border-[#f1eee4]">
-                  <h3 className="font-serif text-lg font-bold text-[#1c1c16] mb-3">
-                    House Rules
-                  </h3>
+              {/* House Rules */}
+              <div className="pt-6 border-t border-[#f1eee4]">
+                <h3 className="font-serif text-lg font-bold text-[#1c1c16] mb-3">
+                  House Rules
+                </h3>
+                {property.houseRules?.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-[#505a54]">
                     {property.houseRules.map((rule) => {
                       const Icon = propertyOptionIcons[rule.code];
+                      const formattedValue = rule.value
+                        ? `: ${rule.value.includes("-") ? rule.value.replace("-", " – ") : rule.value}`
+                        : "";
                       return (
                         <div
                           key={rule.id}
@@ -823,14 +832,18 @@ const PropertyDetailPage = () => {
                         >
                           {Icon && <Icon size={18} className="text-[#4f614d] shrink-0" aria-hidden="true" />}
                           <span>
-                            {rule.name}{rule.value ? `: ${rule.value}` : ""}
+                            {rule.name}{formattedValue}
                           </span>
                         </div>
                       );
                     })}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <p className="text-xs text-[#6f7a73]">
+                    No specific house rules specified by the owner.
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
