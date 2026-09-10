@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, NavLink, useNavigate } from "react-router";
 import AuthModal from "./auth/AuthModal.jsx";
 import OwnerApplicationModal from "./ownerApplication/OwnerApplicationModal.jsx";
 import useAuthStore from "../stores/authStore.js";
@@ -9,6 +9,13 @@ import EditProfileModal from "./profile/EditProfileModal.jsx";
 import useUnreadMessages from "../hooks/useUnreadMessages.js";
 
 import roomHubLogo from "../assets/roomhub-logo.svg";
+
+const publicNavClass = ({ isActive }) =>
+  `inline-flex min-h-11 items-center border-b-2 text-[13px] font-semibold transition sm:text-sm ${
+    isActive
+      ? "border-forest text-forest"
+      : "border-transparent text-ink hover:border-sage hover:text-forest"
+  }`;
 
 const HeaderComponent = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -54,36 +61,36 @@ const HeaderComponent = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-20 grid min-h-18 grid-cols-[1fr_auto_1fr] items-center border-b border-line bg-surface/95 px-5 backdrop-blur md:px-12">
-        <Link to="/properties">
+      <header className="sticky top-0 z-20 grid grid-cols-[1fr_auto] items-center border-b border-[#e8e5dd] bg-[#fcfaf5]/96 px-4 py-2 backdrop-blur sm:min-h-18 sm:grid-cols-[1fr_auto_1fr] sm:px-6 sm:py-0 lg:px-12">
+        <Link className="col-start-1 row-start-1 justify-self-start" to="/properties">
           <img
             src={roomHubLogo}
             alt="RoomHub"
-            className="h-10 w-auto"
+            className="h-auto w-24 sm:w-32"
           />
         </Link>
 
         <nav
-          className="flex items-center gap-8 justify-self-center"
+          className="col-span-2 row-start-2 flex min-w-0 items-center justify-center gap-5 justify-self-stretch sm:col-span-1 sm:col-start-2 sm:row-start-1 sm:gap-8 sm:justify-self-center"
           aria-label="Main navigation"
         >
-          <Link
-            className="font-semibold text-ink transition hover:text-terracotta"
+          <NavLink
+            className={publicNavClass}
             to="/properties"
           >
-            Home
-          </Link>
+            Find a place
+          </NavLink>
 
-          <Link
-            className="font-semibold text-ink transition hover:text-terracotta"
+          <NavLink
+            className={publicNavClass}
             to="/community"
           >
             Community
-          </Link>
+          </NavLink>
 
 
-          <Link
-            className="inline-flex items-center gap-2 font-semibold text-ink transition hover:text-terracotta"
+          <NavLink
+            className={({ isActive }) => `${publicNavClass({ isActive })} gap-2`}
             to="/message"
           >
             Message
@@ -96,11 +103,11 @@ const HeaderComponent = () => {
                 {unreadMessageCount > 99 ? "99+" : unreadMessageCount}
               </span>
             )}
-          </Link>
+          </NavLink>
         </nav>
 
         <nav
-          className="flex items-center gap-3 justify-self-end md:gap-6"
+          className="col-start-2 row-start-1 flex min-w-0 items-center gap-2 justify-self-end sm:col-start-3 sm:gap-3 lg:gap-6"
           aria-label="Account navigation"
         >
           {currentUser?.role === "ADMIN" && (
@@ -122,7 +129,7 @@ const HeaderComponent = () => {
           {currentUser?.role === "USER" && applicationState === "none" && (
             <button
               type="button"
-              className="public-login-button"
+              className="public-login-button whitespace-nowrap !px-3 !py-2 text-xs sm:!px-4 sm:text-sm"
               onClick={() => setIsOwnerApplicationModalOpen(true)}
             >
               List a property
@@ -132,7 +139,7 @@ const HeaderComponent = () => {
           {currentUser?.role === "USER" &&
             applicationState === "ready" &&
             ownerApplication?.status === "APPROVED" && (
-              <Link className="public-login-button" to="/owner">
+              <Link className="public-login-button whitespace-nowrap !px-3 !py-2 text-xs sm:!px-4 sm:text-sm" to="/owner">
                 Owner Portal
               </Link>
             )}
@@ -142,7 +149,7 @@ const HeaderComponent = () => {
             ownerApplication?.status !== "APPROVED" && (
               <button
                 type="button"
-                className={`owner-application-header-status status-${ownerApplication.status
+                className={`owner-application-header-status max-w-35 truncate status-${ownerApplication.status
                   .toLowerCase()
                   .replaceAll("_", "-")}`}
                 onClick={() => setIsOwnerApplicationModalOpen(true)}
@@ -159,7 +166,7 @@ const HeaderComponent = () => {
           {currentUser?.role === "USER" && applicationState === "error" && (
             <button
               type="button"
-              className="owner-application-header-error"
+              className="owner-application-header-error max-w-35 truncate"
               onClick={loadOwnerApplication}
             >
               Application status unavailable · Retry
@@ -175,7 +182,7 @@ const HeaderComponent = () => {
           ) : (
             <button
               type="button"
-              className="rounded-xl bg-terracotta px-5 py-2.5 font-bold text-white transition hover:brightness-95"
+              className="min-h-11 rounded-xl bg-terracotta px-4 py-2 text-sm font-bold text-white transition hover:brightness-95 sm:px-5"
               onClick={() => setIsAuthModalOpen(true)}
             >
               Log in
