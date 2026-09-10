@@ -212,11 +212,19 @@ export default function CreateRoomDetail() {
           )}</div>
       </div>
     </section>
-    <div className="room-section flex justify-between gap-4 border-t border-line pt-6">
-      <Link className="cancel-button flex items-center" to={`/owner/properties/${propertyId}`}>Cancel</Link>
+    <div className="mx-auto grid w-full max-w-320 gap-3 sm:flex sm:justify-end">
+      <Link
+        className="inline-flex items-center justify-center rounded-xl border border-line px-5 py-3 font-bold transition hover:bg-sage-light focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sage-dark"
+        to={`/owner/properties/${propertyId}`}
+      >
+        Cancel
+      </Link>
       <button
-        className="submit-button"
-        disabled={submitting}>{submitting ? "Adding room..." : "Add Room"}
+        type="submit"
+        className="inline-flex cursor-pointer items-center justify-center rounded-xl bg-terracotta px-5 py-3 font-bold text-white transition hover:brightness-95 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-terracotta disabled:cursor-not-allowed disabled:opacity-50"
+        disabled={submitting}
+      >
+        {submitting ? "Adding room..." : "Add Room"}
       </button>
     </div>
   </div>
