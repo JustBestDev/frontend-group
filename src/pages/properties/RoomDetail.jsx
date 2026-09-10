@@ -82,6 +82,14 @@ export default function RoomDetail({ owner = false }) {
   };
 
   const handleRentalRequest = () => {
+    if (room?.status !== "AVAILABLE") {
+      showToast(
+        room?.status === "RESERVED"
+          ? "This room is currently reserved"
+          : "This room is unavailable for rent",
+      );
+      return;
+    }
     if (!token || !user) {
       navigate("/login");
       return;
@@ -441,13 +449,15 @@ export default function RoomDetail({ owner = false }) {
                   onClick={handleRentalRequest}
                   disabled={room.status !== "AVAILABLE"}
                   className={`w-full py-3.5 px-4 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer active:scale-98 ${room.status !== "AVAILABLE"
-                    ? "bg-sage-light text-[#294c25] border border-[#b8deb0] cursor-default"
+                    ? "bg-[#f1f0ea] text-[#889188] border border-[#e1ded5] cursor-not-allowed"
                     : "bg-[#4f614d] text-white hover:bg-[#41513f]"
                     }`}
                 >
                   {room.status === "AVAILABLE"
                     ? "Request to Rent This Room"
-                    : "Room Unavailable"}
+                    : room.status === "RESERVED"
+                      ? "Room Reserved"
+                      : "Room Unavailable"}
                 </button>
 
                 <button

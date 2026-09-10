@@ -5,6 +5,9 @@ const BookingSidebar = ({
   property,
   propertyId,
   isWholeUnit,
+  isReserved,
+  isRented,
+  isWholeUnitUnavailable,
   rooms,
   displayPrice,
   selectedRoom,
@@ -92,9 +95,20 @@ const BookingSidebar = ({
           <button
             type="button"
             onClick={handleRequestToRent}
-            className="w-full py-3 px-4 rounded-xl bg-[#4f614d] text-white text-sm font-bold hover:bg-[#41513f] transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer active:scale-98"
+            disabled={isWholeUnitUnavailable}
+            className={`w-full py-3 px-4 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-xs ${
+              isWholeUnitUnavailable
+                ? "bg-[#f1f0ea] text-[#889188] cursor-not-allowed"
+                : "bg-[#4f614d] text-white hover:bg-[#41513f] cursor-pointer active:scale-98"
+            }`}
           >
-            Request to Rent
+            {isReserved
+              ? "Currently Reserved"
+              : isRented
+                ? "Currently Rented"
+                : isWholeUnitUnavailable
+                  ? "Unavailable"
+                  : "Request to Rent"}
           </button>
         ) : selectedRoom && (
           <Link
@@ -110,10 +124,17 @@ const BookingSidebar = ({
           <button
             type="button"
             onClick={handleShare}
-            className="w-full py-3 px-4 rounded-xl border border-[#4f614d] text-[#4f614d] bg-white hover:bg-sage-light/40 text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
+            disabled={isWholeUnitUnavailable}
+            className={`w-full py-3 px-4 rounded-xl border text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+              isWholeUnitUnavailable
+                ? "border-[#e1ded5] bg-[#f1f0ea] text-[#889188] cursor-not-allowed"
+                : "border-[#4f614d] text-[#4f614d] bg-white hover:bg-sage-light/40 cursor-pointer"
+            }`}
           >
             <Users className="w-4 h-4" />
-            Find Roommates / Share
+            {isWholeUnitUnavailable
+              ? "Cannot Share Unavailable Property"
+              : "Find Roommates / Share"}
           </button>
         )}
 

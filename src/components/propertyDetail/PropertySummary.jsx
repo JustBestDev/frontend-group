@@ -1,6 +1,15 @@
 import { Building2, BedDouble, Bath, MapPin } from "lucide-react";
 
-const PropertySummary = ({ property, propertyId, address, isWholeUnit, rooms }) => {
+const PropertySummary = ({
+  property,
+  propertyId,
+  address,
+  isWholeUnit,
+  rooms,
+  isReserved,
+  isRented,
+  isWholeUnitUnavailable,
+}) => {
 
   return (
     <div className="bg-white p-6 sm:p-8 rounded-2xl border border-[#e1e5dd] shadow-xs">
@@ -13,6 +22,23 @@ const PropertySummary = ({ property, propertyId, address, isWholeUnit, rooms }) 
             ? property.rentType.replaceAll("_", " ")
             : "ROOM SHARE"}
         </span>
+        {isWholeUnit && (
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-bold ${
+              isWholeUnitUnavailable
+                ? "bg-[#fde8e6] text-danger border border-[#f4c7c3]"
+                : "bg-sage-light text-[#294c25] border border-[#b8deb0]"
+            }`}
+          >
+            {isReserved
+              ? "Reserved"
+              : isRented
+                ? "Rented"
+                : isWholeUnitUnavailable
+                  ? "Unavailable"
+                  : "Available"}
+          </span>
+        )}
         <span className="text-xs text-[#889188] ml-auto">
           Listing #{propertyId}
         </span>
