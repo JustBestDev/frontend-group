@@ -161,7 +161,7 @@ const OwnerCreatePropertyPage = () => {
       <p className="mt-2 text-muted-copy">
         Add the details tenants need to discover your property.
       </p>
-      <ol className="my-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <ol className="my-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
         {steps.map((label, index) => {
           const number = index + 1;
           return (
@@ -189,6 +189,14 @@ const OwnerCreatePropertyPage = () => {
           <div className="rounded-2xl border border-line bg-surface p-5 shadow-sm md:p-7">
             {step === 1 && (
               <div className="grid gap-5 md:grid-cols-2">
+                <div className="md:col-span-2">
+                  <h2 className="font-serif text-2xl text-ink">
+                    Property details
+                  </h2>
+                  <p className="mt-1 text-sm font-normal text-muted-copy">
+                    Tell tenants the essentials about your property.
+                  </p>
+                </div>
                 <label className={fieldClass}>
                   Title
                   <input
