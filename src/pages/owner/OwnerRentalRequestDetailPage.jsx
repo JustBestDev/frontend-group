@@ -109,19 +109,36 @@ const OwnerRentalRequestDetailPage = () => {
         <ArrowLeft size={17} /> Back to Rental Requests
       </Link>
 
-      <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div>
+      <header className="mb-5 flex flex-col gap-3 border-b border-line pb-5 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
           <p className="owner-eyebrow">Request #{request.id}</p>
-          <h1 className="break-all">{request.requester?.username || `User #${request.requesterId}`}</h1>
-          <p>Submitted {formatDate(request.createdAt)}</p>
+
+          <h1 className="mt-1 break-words font-serif text-2xl leading-tight text-ink">
+            {request.requester?.username || `User #${request.requesterId}`}
+          </h1>
+
+          <p className="mt-1 text-sm text-muted-copy">
+            Submitted {formatDate(request.createdAt)}
+          </p>
         </div>
-        <span className={`owner-status status-${request.status.toLowerCase()} whitespace-nowrap`}>
+
+        <span
+          className={`owner-status status-${request.status?.toLowerCase()} shrink-0 whitespace-nowrap`}
+        >
           {request.status}
         </span>
       </header>
 
-      {error && <p className="owner-alert mb-4" role="alert">{error}</p>}
-      {success && <p className="owner-success mb-4" role="status">{success}</p>}
+      {error && (
+        <p className="owner-alert mb-4" role="alert">
+          {error}
+        </p>
+      )}
+      {success && (
+        <p className="owner-success mb-4" role="status">
+          {success}
+        </p>
+      )}
 
       <article className="rounded-2xl border border-line bg-white p-6 shadow-[0_6px_22px_rgba(50,66,54,.06)]">
         <h2 className="font-serif text-2xl">Request details</h2>
@@ -129,7 +146,9 @@ const OwnerRentalRequestDetailPage = () => {
           <Detail
             icon={<Users size={20} />}
             label="Requester"
-            title={request.requester?.username || `User #${request.requesterId}`}
+            title={
+              request.requester?.username || `User #${request.requesterId}`
+            }
             text={isGroup ? "Community group" : "Individual tenant"}
           />
           <Detail
