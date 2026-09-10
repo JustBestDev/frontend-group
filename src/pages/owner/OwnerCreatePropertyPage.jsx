@@ -6,15 +6,11 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 import GoogleMapPicker from "../../components/owner/GoogleMapPicker.jsx";
-import {
-  createPropertyAddressApi,
-  createPropertyApi,
-  uploadPropertyImagesApi,
-} from "../../services/ownerApi.js";
+import PropertyOptionsFields from "../../components/owner/PropertyOptionsFields.jsx";
+import useCreateProperty from "../../hooks/useCreateProperty.js";
+import { isTodayOrLater } from "../../utils/date.js";
 
 const steps = ["Property details", "Address", "Photos"];
 const inputClass =
@@ -22,117 +18,12 @@ const inputClass =
 const fieldClass = "grid gap-1.5 text-sm font-semibold text-ink";
 
 const OwnerCreatePropertyPage = () => {
-  const navigate = useNavigate();
-  const [step, setStep] = useState(1);
-  const [propertyId, setPropertyId] = useState(null);
-  const [images, setImages] = useState([]);
-  const [pageError, setPageError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [addressCreated, setAddressCreated] = useState(false);
-  const [imagesUploaded, setImagesUploaded] = useState(false);
   const {
-    register,
-    handleSubmit,
-    setValue,
-    trigger,
-    formState: { errors },
-  } = useForm({
-    defaultValues: {
-      propertyType: "CONDO",
-      rentType: "WHOLE_UNIT",
-    },
-  });
-  const previews = useMemo(
-    () => images.map((file) => ({ file, url: URL.createObjectURL(file) })),
-    [images],
-  );
-  useEffect(
-    () => () => previews.forEach(({ url }) => URL.revokeObjectURL(url)),
-    [previews],
-  );
-  const applyMapAddress = useCallback(
-    (address) =>
-      Object.entries(address).forEach(([key, value]) =>
-        setValue(key, value, { shouldValidate: true }),
-      ),
-    [setValue],
-  );
-
-  const addImages = (files) => {
-    const selected = Array.from(files).filter((file) =>
-      file.type.startsWith("image/"),
-    );
-    if (images.length + selected.length > 5)
-      return setPageError("A property can have no more than 5 images");
-    const next = [...images, ...selected];
-    const oversized = next.find((file) => file.size > 5 * 1024 * 1024);
-    if (oversized) return setPageError(`${oversized.name} exceeds 5 MB`);
-    setPageError("");
-    setImages(next);
-  };
-
-  const nextStep = async () => {
-    const groups =
-      step === 1
-        ? ["title", "description", "propertyType", "rentType", "monthlyRent", "totalBedrooms"]
-        : ["province"];
-    if (step < 3 && !(await trigger(groups))) return;
-    if (step === 3 && images.length === 0)
-      return setPageError("Add at least one property image");
-    setPageError("");
-    setStep((current) => Math.min(3, current + 1));
-  };
-
-  const onSubmit = async (data) => {
-
-    setSubmitting(true);
-    setPageError("");
-    try {
-      let id = propertyId;
-      if (!id) {
-        const response = await createPropertyApi({
-          title: data.title,
-          description: data.description,
-          propertyType: data.propertyType,
-          rentType: data.rentType,
-          monthlyRent: Number(data.monthlyRent),
-          deposit: data.deposit ? Number(data.deposit) : null,
-          availableDate: data.availableDate || null,
-          totalBedrooms: data.totalBedrooms ? Number(data.totalBedrooms) : null,
-        });
-        id = response.data.id;
-        setPropertyId(id);
-      }
-      if (!addressCreated) {
-        await createPropertyAddressApi(id, {
-          province: data.province,
-          district: data.district || null,
-          subDistrict: data.subDistrict || null,
-          postcode: data.postcode || null,
-          road: data.road || null,
-          building: data.building || null,
-          latitude:
-            data.latitude === "" || data.latitude == null
-              ? null
-              : Number(data.latitude),
-          longitude:
-            data.longitude === "" || data.longitude == null
-              ? null
-              : Number(data.longitude),
-        });
-        setAddressCreated(true);
-      }
-      if (!imagesUploaded) {
-        await uploadPropertyImagesApi(id, images);
-        setImagesUploaded(true);
-      }
-      navigate("/owner/properties");
-    } catch (error) {
-      setPageError(error.response?.data?.message || error.message);
-    } finally {
-      setSubmitting(false);
-    }
-  };
+    amenityIds, setAmenityIds, houseRules, setHouseRules,
+    today, step, setStep, setImages, pageError, submitting,
+    register, handleSubmit, errors, previews, applyMapAddress,
+    addImages, nextStep, onSubmit,
+  } = useCreateProperty();
 
   return (
     <section className="mx-auto w-full max-w-7xl pb-10">
@@ -149,20 +40,32 @@ const OwnerCreatePropertyPage = () => {
       <p className="mt-2 text-muted-copy">
         Add the details tenants need to discover your property.
       </p>
-      <ol className="my-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <ol
+        className="my-8 flex w-full"
+        aria-label="Property creation progress"
+      >
         {steps.map((label, index) => {
           const number = index + 1;
           return (
             <li
               key={label}
-              className={`flex items-center gap-3 border-b-2 pb-3 ${number <= step ? "border-sage-dark text-ink" : "border-line text-muted-copy"}`}
+              aria-current={number === step ? "step" : undefined}
+              className={`relative flex min-w-0 flex-1 flex-col items-center text-center ${number <= step ? "text-ink" : "text-muted-copy"}`}
             >
+              {index < steps.length - 1 && (
+                <span
+                  aria-hidden="true"
+                  className={`absolute left-[calc(50%+18px)] top-4 h-0.5 w-[calc(100%-36px)] ${number < step ? "bg-sage-dark" : "bg-line"}`}
+                />
+              )}
               <span
-                className={`grid size-9 place-items-center rounded-full ${number < step ? "bg-sage-dark text-white" : number === step ? "bg-forest text-white" : "bg-[#eeece4]"}`}
+                className={`relative z-10 grid size-9 shrink-0 place-items-center rounded-full border-2 text-sm font-bold ${number < step ? "border-forest bg-forest text-white" : number === step ? "border-forest bg-white text-forest" : "border-[#eeece4] bg-[#eeece4] text-muted-copy"}`}
               >
                 {number < step ? <Check size={18} /> : number}
               </span>
-              <strong className="text-sm">{label}</strong>
+              <strong className="mt-2 max-w-full text-[11px] leading-tight sm:text-sm">
+                {label}
+              </strong>
             </li>
           );
         })}
@@ -177,6 +80,14 @@ const OwnerCreatePropertyPage = () => {
           <div className="rounded-2xl border border-line bg-surface p-5 shadow-sm md:p-7">
             {step === 1 && (
               <div className="grid gap-5 md:grid-cols-2">
+                <div className="md:col-span-2">
+                  <h2 className="font-serif text-2xl text-ink">
+                    Property details
+                  </h2>
+                  <p className="mt-1 text-sm font-normal text-muted-copy">
+                    Tell tenants the essentials about your property.
+                  </p>
+                </div>
                 <label className={fieldClass}>
                   Title
                   <input
@@ -238,9 +149,19 @@ const OwnerCreatePropertyPage = () => {
                   Available date
                   <input
                     type="date"
+                    min={today}
                     className={inputClass}
-                    {...register("availableDate")}
+                    {...register("availableDate", {
+                      validate: (value) =>
+                        isTodayOrLater(value, today) ||
+                        "Available date cannot be before today",
+                    })}
                   />
+                  {errors.availableDate && (
+                    <small className="text-danger">
+                      {errors.availableDate.message}
+                    </small>
+                  )}
                 </label>
                 <label className={fieldClass}>
                   Total bedrooms
@@ -255,6 +176,12 @@ const OwnerCreatePropertyPage = () => {
                   />
                   {errors.totalBedrooms && <small className="text-danger">{errors.totalBedrooms.message}</small>}
                 </label>
+                <PropertyOptionsFields
+                  amenityIds={amenityIds}
+                  houseRules={houseRules}
+                  onAmenityIdsChange={setAmenityIds}
+                  onHouseRulesChange={setHouseRules}
+                />
               </div>
             )}
             {step === 2 && (

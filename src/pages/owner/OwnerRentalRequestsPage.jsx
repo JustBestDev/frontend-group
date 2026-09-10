@@ -1,6 +1,19 @@
-import { Building2, CalendarDays, Check, ClipboardCheck, ClipboardList, Clock3, Loader2, RefreshCw, Search, Users, X } from "lucide-react";
+import { Building2, CalendarDays, ClipboardCheck, ClipboardList, Clock3, Loader2, RefreshCw, Search, Users, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import api, { getApiErrorMessage } from "../../services/api.js";
+import { Link } from "react-router";
+import RentalRequestActions from "../../components/owner/RentalRequestActions.jsx";
+import { getApiErrorMessage } from "../../services/api.js";
+import {
+  getOwnerRentalRequestsApi,
+  markOwnerRentalRequestsViewedApi,
+  reviewOwnerRentalRequestApi,
+} from "../../services/ownerApi.js";
+import {
+  ownerPropertyPath,
+  ownerRentalRequestPath,
+  ownerRentalRequestRoomPath,
+  ownerUserProfilePath,
+} from "../../utils/ownerRoutes.js";
 
 const FILTERS = ["ALL", "PENDING", "ACCEPTED", "REJECTED"];
 const formatDate = (value, empty = "Not set") => value ? new Date(value).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : empty;
@@ -18,9 +31,9 @@ const OwnerRentalRequestsPage = () => {
     setLoading(true);
     setError("");
     try {
-      const response = await api.get("/rental-requests/owner");
-      setRequests(Array.isArray(response.data.data) ? response.data.data : []);
-      await api.patch("/rental-requests/owner/viewed");
+      const response = await getOwnerRentalRequestsApi();
+      setRequests(Array.isArray(response.data) ? response.data : []);
+      await markOwnerRentalRequestsViewedApi();
       window.dispatchEvent(new Event("owner-notifications:refresh"));
     } catch (requestError) {
       setError(getApiErrorMessage(requestError, "Unable to load rental requests"));
@@ -40,7 +53,7 @@ const OwnerRentalRequestsPage = () => {
     setError("");
     setSuccess("");
     try {
-      await api.patch(`/rental-requests/${requestId}`, { action });
+      await reviewOwnerRentalRequestApi(requestId, action);
       setSuccess(`Rental request ${action === "ACCEPT" ? "accepted" : "rejected"} successfully.`);
       await fetchRequests();
     } catch (requestError) {
@@ -137,44 +150,77 @@ const Stat = ({ icon, label, value, tone }) => <article className="flex items-ce
 </article>;
 
 const RequestCard = ({ request, reviewingId, onReview }) => {
-  const reviewing = reviewingId === request.id;
   const isGroup = Boolean(request.communityPostId);
+  const requesterName = request.requester?.username || `User #${request.requesterId}`;
+  const roomPath = ownerRentalRequestRoomPath(request);
   return (
     <article className="overflow-hidden rounded-2xl border border-line bg-white shadow-[0_6px_22px_rgba(50,66,54,.06)]">
       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line p-5 sm:p-6">
         <div className="flex min-w-0 items-center gap-3.5">
-          <span className="grid size-11 shrink-0 place-items-center rounded-full bg-sage-light font-serif text-lg font-bold text-sage-dark">{request.requester?.username?.charAt(0)?.toUpperCase() || "U"}</span>
+          <Link
+            to={ownerUserProfilePath(request.requester?.id || request.requesterId)}
+            aria-label={`View ${requesterName}'s profile`}
+            className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-full bg-sage-light font-serif text-lg font-bold text-sage-dark transition hover:bg-sage focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sage-dark"
+          >
+            {request.requester?.username?.charAt(0)?.toUpperCase() || "U"}
+          </Link>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="truncate font-serif text-xl font-bold">{request.requester?.username || `User #${request.requesterId}`}</h2>
+              <h2 className="min-w-0 font-serif text-xl font-bold">
+                <Link
+                  to={ownerUserProfilePath(request.requester?.id || request.requesterId)}
+                  className="cursor-pointer break-words text-ink underline-offset-4 transition hover:text-sage-dark hover:underline focus-visible:rounded focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sage-dark"
+                >
+                  {requesterName}
+                </Link>
+              </h2>
               <span className="rounded-full bg-cream px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-muted-copy">{isGroup ? "Group rental" : "Direct rental"}</span>
             </div><p className="mt-1 text-xs text-muted-copy">Request #{request.id} · Submitted {formatDate(request.createdAt)}</p>
           </div>
         </div>
         <span className={`owner-status status-${request.status.toLowerCase()}`}>{request.status}</span>
       </div>
-      <div className="flex justify-between p-5 sm:grid-cols-2 sm:p-6 lg:grid-cols-[1.25fr_1fr_1fr]">
-        <Detail icon={<Building2 size={19} />} label="Property" title={request.property?.title || `Property #${request.propertyId}`} text={request.room?.roomName ? `Room: ${request.room.roomName}` : "Whole property"} />
+      <div className="grid gap-5 p-5 sm:grid-cols-2 sm:p-6 lg:grid-cols-[1.25fr_1fr_1fr]">
+        <Detail
+          icon={<Building2 size={19} />}
+          label="Property"
+          title={
+            <Link
+              to={ownerPropertyPath(request.property?.id || request.propertyId)}
+              className="cursor-pointer break-words text-ink underline-offset-4 transition hover:text-sage-dark hover:underline focus-visible:rounded focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sage-dark"
+            >
+              {request.property?.title || `Property #${request.propertyId}`}
+            </Link>
+          }
+          text={roomPath ? (
+            <Link
+              to={roomPath}
+              className="cursor-pointer break-words text-muted-copy underline-offset-4 transition hover:text-sage-dark hover:underline focus-visible:rounded focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sage-dark"
+            >
+              Room: {request.room.roomName}
+            </Link>
+          ) : "Whole property"}
+        />
         <Detail icon={<CalendarDays size={19} />} label="Rental period" title={formatDate(request.startDate)} text={`to ${formatDate(request.endDate, "Ongoing")}`} />
         <Detail icon={<Users size={19} />} label="Application type" title={isGroup ? "Community group" : "Individual tenant"} text={request.communityPost?.title || (request.room ? "Individual room" : "Whole unit")} />
       </div>
       <footer className="flex flex-wrap items-center justify-between gap-3 bg-[#faf9f4] px-5 py-4 sm:px-6">
         <p className="text-xs text-muted-copy">{request.reviewedAt ? `Reviewed on ${formatDate(request.reviewedAt)}` : "Review the rental details before making a decision."}</p>
-        {request.status === "PENDING" &&
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => onReview(request.id, "REJECT")}
-              disabled={reviewingId !== null}
-              className="inline-flex items-center gap-2 rounded-xl border border-danger px-4 py-2.5 text-sm font-bold text-danger transition hover:bg-[#fde8e6] disabled:opacity-50"><X size={17} /> Reject
-            </button>
-            <button
-              type="button"
-              onClick={() => onReview(request.id, "ACCEPT")}
-              disabled={reviewingId !== null}
-              className="inline-flex items-center gap-2 rounded-xl bg-sage-dark px-4 py-2.5 text-sm font-bold text-white transition hover:brightness-95 disabled:opacity-50">{reviewing ? <Loader2 className="animate-spin" size={17} /> : <Check size={17} />} Accept request
-            </button>
-          </div>}
+        <div className="flex flex-wrap gap-2">
+          <Link
+            to={ownerRentalRequestPath(request.id)}
+            className="inline-flex cursor-pointer items-center rounded-xl border border-sage-dark px-4 py-2.5 text-sm font-bold text-sage-dark transition hover:bg-sage-light focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sage-dark"
+          >
+            View details
+          </Link>
+          {request.status === "PENDING" && (
+            <RentalRequestActions
+              requestId={request.id}
+              reviewingId={reviewingId}
+              onReview={onReview}
+            />
+          )}
+        </div>
       </footer>
     </article>
   );
@@ -183,7 +229,7 @@ const RequestCard = ({ request, reviewingId, onReview }) => {
 const Detail = ({ icon, label, title, text }) =>
   <div className="flex gap-3">
     <span className="mt-0.5 shrink-0 text-sage-dark">{icon}</span>
-    <div>
+    <div className="min-w-0">
       <p className="text-[11px] font-bold uppercase tracking-wider text-muted-copy">{label}</p>
       <p className="mt-1 font-semibold">{title}</p><p className="mt-1 text-sm text-muted-copy">{text}</p>
     </div>

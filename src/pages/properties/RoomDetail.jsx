@@ -1,12 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useLocation, useNavigate, useParams } from "react-router";
 import {
+  ArrowLeft,
   BadgeDollarSign,
   Building2,
   Check,
   ChevronRight,
   Home,
   Info,
+  Loader2,
+  MessageCircle,
+  Pencil,
   Share2,
   ShieldCheck,
   Sparkles,
@@ -14,32 +18,46 @@ import {
   SquareX,
   UserRound,
 } from "lucide-react";
-import api from "../../services/api";
+import api, { getApiErrorMessage } from "../../services/api";
+import { getMyPropertiesApi } from "../../services/ownerApi.js";
 import RentalRequestModal from "../../components/rentalRequest/RentalRequestModal.jsx";
 import useAuthStore from "../../stores/authStore.js";
+import OwnerCard from "../../components/propertyDetail/OwnerCard.jsx";
+import {
+  findOwnerRoom,
+  ownerEditRoomPath,
+} from "../../utils/ownerRoutes.js";
 
-export default function RoomDetail() {
+export default function RoomDetail({ owner = false }) {
   const { propertyId, roomId } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const { token, user } = useAuthStore();
   const [toastMessage, setToastMessage] = useState("");
   const [isRentalRequestOpen, setIsRentalRequestOpen] = useState(false);
+  const [isContactingOwner, setIsContactingOwner] = useState(false);
   const [room, setRoom] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
   const fetchRoom = useCallback(async () => {
     try {
+      if (owner) {
+        const response = await getMyPropertiesApi();
+        const ownerRoom = findOwnerRoom(response.data || [], propertyId, roomId);
+        if (!ownerRoom) throw new Error("Room not found");
+        setRoom(ownerRoom);
+        return;
+      }
+
       const response = await api.get(`/rooms/${roomId}`);
       setRoom(response.data);
     } catch (requestError) {
-      setError(requestError.response?.data?.message ||
-        "Unable to load room details"
-      );
+      setError(getApiErrorMessage(requestError, "Unable to load room details"));
     } finally {
       setIsLoading(false);
     }
-  }, [roomId]);
+  }, [owner, propertyId, roomId]);
 
   useEffect(() => {
     // Loading server state is the purpose of this effect.
@@ -71,11 +89,91 @@ export default function RoomDetail() {
     setIsRentalRequestOpen(true);
   };
 
+  const handleContactOwner = async () => {
+    if (!token || !user) {
+      navigate("/login");
+      return;
+    }
+
+    const resolvedPropertyId =
+      propertyId || room?.propertyId || room?.property?.id;
+    let ownerId =
+      room?.property?.ownerId ||
+      room?.property?.owner?.id ||
+      room?.ownerId;
+
+    setIsContactingOwner(true);
+    try {
+      if (!ownerId && resolvedPropertyId) {
+        const propRes = await api.get(`/properties/${resolvedPropertyId}`);
+        const propData =
+          propRes.data.data?.property ||
+          propRes.data.data ||
+          propRes.data.property;
+        ownerId =
+          propData?.owner?.id || propData?.ownerId || propData?.user?.id;
+      }
+
+      if (!ownerId || !resolvedPropertyId) {
+        showToast("Unable to find the property host");
+        return;
+      }
+
+      const response = await api.post("/conversations", {
+        propertyId: Number(resolvedPropertyId),
+        memberId: Number(ownerId),
+      });
+      const conversation =
+        response.data.conversation || response.data.data?.conversation;
+      const conversationId =
+        conversation?.id || conversation?.conversationId;
+
+      if (!conversationId) throw new Error("Conversation was not returned");
+      navigate("/Message", { state: { conversationId } });
+    } catch (requestError) {
+      showToast(
+        requestError.response?.data?.message || "Unable to contact the host",
+      );
+    } finally {
+      setIsContactingOwner(false);
+    }
+  };
+
   if (isLoading) {
-    return <div className="">Loading ...</div>;
+    return owner ? (
+      <div className="owner-loading flex items-center justify-center p-8">
+        <div className="w-8 h-8 border-3 border-sage-dark border-t-transparent rounded-full animate-spin" />
+      </div>
+    ) : (
+      <main className="min-h-screen bg-[#f7f5ee] flex items-center justify-center p-6">
+        <div className="flex flex-col items-center gap-3 bg-white p-8 rounded-2xl border border-[#e1e5dd] shadow-xs">
+          <div className="w-9 h-9 border-3 border-[#4f614d] border-t-transparent rounded-full animate-spin" />
+          <p className="text-muted-copy text-sm font-medium">
+            Loading room details...
+          </p>
+        </div>
+      </main>
+    );
   }
 
   if (error || !room) {
+    if (owner) {
+      return (
+        <section className="mx-auto w-full max-w-330">
+          <Link
+            to={location.state?.backTo || `/owner/properties/${propertyId}`}
+            className="mb-5 inline-flex items-center gap-2 text-sm font-bold text-sage-dark"
+          >
+            <ArrowLeft size={17} />
+            {location.state?.backLabel || "Back to Property"}
+          </Link>
+          <p className="owner-alert" role="alert">
+            {error || "Room not found"}
+          </p>
+        </section>
+      );
+    }
+
     return (
       <main className="grid min-h-screen place-content-center bg-[#f7f5ee] p-6 text-center">
         <p className="rounded-xl bg-[#fde8e6] px-5 py-4 text-danger" role="alert">
@@ -85,8 +183,16 @@ export default function RoomDetail() {
     );
   }
 
+  const host = room?.property?.owner;
+  const hostProfile = host?.profile || {};
+  const hostDisplayName =
+    hostProfile.displayName ||
+    hostProfile.fullName ||
+    [hostProfile.firstName, hostProfile.lastName].filter(Boolean).join(" ") ||
+    host?.username ||
+    "Property Host";
   return (
-    <main className="min-h-screen bg-[#f7f5ee] text-[#1c1c16] antialiased py-6 md:py-8 px-4 sm:px-6 lg:px-8">
+    <main className={owner ? "owner-resource-page mx-auto w-full max-w-330 text-[#1c1c16] antialiased" : "min-h-screen bg-[#f7f5ee] text-[#1c1c16] antialiased py-6 md:py-8 px-4 sm:px-6 lg:px-8"}>
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-[#1c1c16] text-white px-4 py-3 rounded-xl shadow-lg animate-fade-in text-sm font-medium">
@@ -98,7 +204,16 @@ export default function RoomDetail() {
       <div className="max-w-7xl mx-auto">
         {/* Top Breadcrumb & Share Actions */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <nav className="flex items-center gap-2 text-xs sm:text-sm text-muted-copy overflow-x-auto">
+          {owner ? (
+            <Link
+              to={location.state?.backTo || `/owner/properties/${propertyId}`}
+              className="inline-flex items-center gap-2 text-sm font-bold text-sage-dark transition hover:text-ink"
+            >
+              <ArrowLeft size={17} />
+              {location.state?.backLabel || "Back to Property"}
+            </Link>
+          ) : (
+            <nav className="flex items-center gap-2 text-xs sm:text-sm text-muted-copy overflow-x-auto">
             <Link
               to="/"
               className="hover:text-[#4f614d] flex items-center gap-1 transition-colors shrink-0"
@@ -128,9 +243,18 @@ export default function RoomDetail() {
             <span className="text-[#1c1c16] font-medium truncate max-w-50 sm:max-w-[320px]">
               {roomId ? `Room #${roomId}` : "Room Detail (ROOM A2)"}
             </span>
-          </nav>
+            </nav>
+          )}
 
-          <div className="flex items-center gap-2">
+          {owner ? (
+            <Link
+              to={ownerEditRoomPath(propertyId, roomId)}
+              className="inline-flex items-center gap-2 rounded-xl border border-sage-dark bg-white px-4 py-2.5 text-sm font-bold text-sage-dark transition hover:bg-sage-light"
+            >
+              <Pencil size={16} /> Edit room
+            </Link>
+          ) : (
+            <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={handleShare}
@@ -140,7 +264,8 @@ export default function RoomDetail() {
               <Share2 className="w-4 h-4" />
               <span className="hidden sm:inline">Share</span>
             </button>
-          </div>
+            </div>
+          )}
         </div>
 
         {/* 2-Column Layout */}
@@ -183,7 +308,7 @@ export default function RoomDetail() {
               </div>
 
               <div>
-                <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#1c1c16] tracking-tight">
+                <h1 className="wrap-break-word font-serif text-2xl sm:text-3xl font-bold text-[#1c1c16] tracking-tight">
                   {room.roomName}
                 </h1>
               </div>
@@ -251,6 +376,30 @@ export default function RoomDetail() {
 
           {/* Right Column: Booking Card (4 cols) */}
           <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
+            {owner ? (
+              <div className="rounded-2xl border border-line bg-white p-6 shadow-xs">
+                <h3 className="font-serif text-2xl font-bold text-ink">
+                  Room management
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-muted-copy">
+                  Review this room or update its listing details.
+                </p>
+                <div className="mt-5 grid gap-3">
+                  <Link
+                    to={ownerEditRoomPath(propertyId, roomId)}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-sage-dark px-4 py-3 text-sm font-bold text-white transition hover:brightness-95"
+                  >
+                    <Pencil size={16} /> Edit room
+                  </Link>
+                  <Link
+                    to={`/owner/properties/${propertyId}`}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-line px-4 py-3 text-sm font-bold text-sage-dark transition hover:bg-sage-light"
+                  >
+                    <Building2 size={16} /> View property
+                  </Link>
+                </div>
+              </div>
+            ) : (
             <div className="bg-white border border-[#e1e5dd] rounded-2xl p-6 sm:p-7 shadow-xs space-y-6">
               <div>
                 <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#1c1c16] mb-1">
@@ -286,7 +435,7 @@ export default function RoomDetail() {
               </div>
 
               {/* Action Buttons */}
-              <div className="space-y-3 pt-1">
+              <div className="space-y-2.5 pt-1">
                 <button
                   type="button"
                   onClick={handleRentalRequest}
@@ -299,6 +448,24 @@ export default function RoomDetail() {
                   {room.status === "AVAILABLE"
                     ? "Request to Rent This Room"
                     : "Room Unavailable"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleContactOwner}
+                  disabled={isContactingOwner}
+                  className="w-full py-3 px-4 rounded-xl border border-[#4f614d] text-[#4f614d] bg-white hover:bg-sage-light/40 text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                >
+                  {isContactingOwner ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <MessageCircle className="w-4 h-4" />
+                  )}
+                  <span>
+                    {isContactingOwner
+                      ? "Opening conversation..."
+                      : "Contact Host"}
+                  </span>
                 </button>
 
                 {propertyId && (
@@ -316,14 +483,25 @@ export default function RoomDetail() {
               {/* Safety notice */}
               <div className="flex items-center gap-2 text-xs text-muted-copy pt-2 border-t border-[#f1eee4]">
                 <ShieldCheck className="w-4 h-4 text-[#4f614d] shrink-0" />
-                <span>Verified roommate listing & protected deposit</span>
+                <span>Always inspect the property before transferring any deposit</span>
               </div>
             </div>
+            )}
+
+            {/* Listed by Owner Card */}
+            {!owner && host && (
+              <OwnerCard
+                ownerProfile={hostProfile}
+                ownerDisplayName={hostDisplayName}
+                handleContactOwner={handleContactOwner}
+                isContactingOwner={isContactingOwner}
+              />
+            )}
           </div>
         </div>
       </div>
 
-      {isRentalRequestOpen && (
+      {!owner && isRentalRequestOpen && (
         <RentalRequestModal
           propertyId={propertyId}
           roomId={room.id || roomId}

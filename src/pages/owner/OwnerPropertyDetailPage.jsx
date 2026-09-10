@@ -10,137 +10,46 @@ import {
   Save,
   Users,
 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate, useParams } from "react-router";
+import { useCallback, useReducer } from "react";
+import { Link, useLocation, useParams } from "react-router";
+import PropertyImageLightbox from "../../components/owner/PropertyImageLightbox.jsx";
+import PropertyOptionsFields from "../../components/owner/PropertyOptionsFields.jsx";
+import useOwnerPropertyEditor from "../../hooks/useOwnerPropertyEditor.js";
+import { propertyOptionIcons } from "../../utils/propertyOptions.js";
+import { imagePreviewReducer } from "../../utils/imagePreview.js";
 import {
-  createPropertyAddressApi,
-  getOwnerPropertyApi,
-  updatePropertyAddressApi,
-  updatePropertyApi,
-} from "../../services/ownerApi.js";
+  ownerEditRoomPath,
+  ownerRoomPath,
+} from "../../utils/ownerRoutes.js";
 
 const inputClass =
   "w-full rounded-xl border border-line bg-white px-4 py-3 text-ink outline-none focus:border-sage-dark focus:ring-3 focus:ring-sage-dark/10";
 const labelClass = "grid gap-1.5 text-sm font-semibold text-ink";
 
-const propertyFields = [
-  "title",
-  "description",
-  "propertyType",
-  "rentType",
-  "monthlyRent",
-  "deposit",
-  "availableDate",
-  "totalBedrooms",
-];
-
-const addressFields = [
-  "province",
-  "district",
-  "subDistrict",
-  "postcode",
-  "road",
-  "building",
-];
-
 const OwnerPropertyDetailPage = () => {
   const { propertyId } = useParams();
   const location = useLocation();
-  const navigate = useNavigate();
   const editing = location.pathname.endsWith("/edit");
 
-  const [property, setProperty] = useState(null);
-  const [form, setForm] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    let active = true;
-
-    getOwnerPropertyApi(propertyId)
-      .then(({ data }) => {
-        if (!active) return;
-
-        setProperty(data);
-        setForm({
-          ...data,
-          monthlyRent: Number(data.monthlyRent),
-          deposit: data.deposit == null ? "" : Number(data.deposit),
-          availableDate: data.availableDate
-            ? data.availableDate.slice(0, 10)
-            : "",
-          ...Object.fromEntries(
-            addressFields.map((field) => [
-              field,
-              data.address?.[field] || "",
-            ]),
-          ),
-        });
-      })
-      .catch((requestError) => {
-        if (!active) return;
-
-        setError(
-          requestError.response?.data?.message || "Unable to load property",
-        );
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [propertyId]);
-
-  const change = (event) => {
-    setForm((current) => ({
-      ...current,
-      [event.target.name]: event.target.value,
-    }));
-  };
-
-  const save = async (event) => {
-    event.preventDefault();
-    setSaving(true);
-    setError("");
-
-    try {
-      const details = Object.fromEntries(
-        propertyFields.map((field) => [field, form[field]]),
-      );
-
-      details.monthlyRent = Number(details.monthlyRent);
-      details.deposit = details.deposit === "" ? null : Number(details.deposit);
-      details.totalBedrooms =
-        details.totalBedrooms === "" || details.totalBedrooms == null
-          ? null
-          : Number(details.totalBedrooms);
-      details.availableDate = details.availableDate || null;
-
-      const address = Object.fromEntries(
-        addressFields.map((field) => [field, form[field] || null]),
-      );
-      address.province = form.province;
-
-      await updatePropertyApi(propertyId, details);
-
-      if (property.address) {
-        await updatePropertyAddressApi(propertyId, address);
-      } else {
-        await createPropertyAddressApi(propertyId, address);
-      }
-
-      navigate(`/owner/properties/${propertyId}`);
-    } catch (requestError) {
-      setError(
-        requestError.response?.data?.message || "Unable to save property",
-      );
-    } finally {
-      setSaving(false);
-    }
-  };
+  const { addressFields, property, form, setForm, loading, saving, error, change, save } =
+    useOwnerPropertyEditor(propertyId);
+  const [previewIndex, dispatchPreview] = useReducer(
+    imagePreviewReducer,
+    null,
+  );
+  const imageCount = property?.images?.length || 0;
+  const closePreview = useCallback(
+    () => dispatchPreview({ type: "close" }),
+    [],
+  );
+  const nextPreview = useCallback(
+    () => dispatchPreview({ type: "next", total: imageCount }),
+    [imageCount],
+  );
+  const previousPreview = useCallback(
+    () => dispatchPreview({ type: "previous", total: imageCount }),
+    [imageCount],
+  );
 
   if (loading) {
     return (
@@ -160,6 +69,7 @@ const OwnerPropertyDetailPage = () => {
 
   const cover =
     property.images?.find((image) => image.isCover) || property.images?.[0];
+  const coverIndex = cover ? property.images.indexOf(cover) : -1;
 
   if (!editing) {
     const summaryItems = [
@@ -228,20 +138,27 @@ const OwnerPropertyDetailPage = () => {
 
         <div className="relative overflow-hidden rounded-3xl bg-sage-light shadow-[0_18px_50px_rgba(50,66,54,.12)]">
           {cover ? (
-            <img
-              src={cover.imageUrl}
-              alt={property.title}
-              className="h-72 w-full object-cover sm:h-96 lg:h-112"
-            />
+            <button
+              type="button"
+              onClick={() => dispatchPreview({ type: "open", index: coverIndex })}
+              aria-label={`Open ${property.title} image preview`}
+              className="block w-full cursor-zoom-in focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-white"
+            >
+              <img
+                src={cover.imageUrl}
+                alt={`${property.title} cover`}
+                className="h-72 w-full object-cover sm:h-96 lg:h-112"
+              />
+            </button>
           ) : (
             <div className="grid h-72 place-items-center text-sage-dark sm:h-96">
               <Building2 size={64} />
             </div>
           )}
 
-          <div className="absolute inset-x-0 bottom-0 h-2/5 bg-linear-to-t from-black/65 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-linear-to-t from-black/65 to-transparent" />
 
-          <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-4 p-6 text-white md:p-8">
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-4 p-6 text-white md:p-8">
             <div>
               <p className="mb-2 text-xs font-extrabold uppercase tracking-[.18em] text-white/75">
                 {property.propertyType?.replaceAll("_", " ")}
@@ -255,6 +172,12 @@ const OwnerPropertyDetailPage = () => {
               {property.publishStatus}
             </span>
           </div>
+
+          {imageCount > 1 && (
+            <span className="pointer-events-none absolute right-4 top-4 rounded-full bg-black/65 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-sm">
+              View all {imageCount} photos
+            </span>
+          )}
         </div>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(300px,.7fr)]">
@@ -280,6 +203,43 @@ const OwnerPropertyDetailPage = () => {
                 </div>
               ))}
             </div>
+
+            {property.amenities?.length > 0 && (
+              <div className="mt-7 border-t border-line pt-6">
+                <h3 className="font-serif text-xl text-ink">Amenities</h3>
+                <ul className="mt-3 flex flex-wrap gap-2">
+                  {property.amenities.map((amenity) => {
+                    const Icon = propertyOptionIcons[amenity.code];
+                    return (
+                      <li
+                        key={amenity.id}
+                        className="inline-flex items-center gap-2 rounded-full bg-sage-light px-3 py-1.5 text-sm font-semibold text-sage-dark"
+                      >
+                        {Icon && <Icon size={18} className="shrink-0" aria-hidden="true" />}
+                        {amenity.name}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+
+            {property.houseRules?.length > 0 && (
+              <div className="mt-7 border-t border-line pt-6">
+                <h3 className="font-serif text-xl text-ink">House Rules</h3>
+                <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {property.houseRules.map((rule) => {
+                    const Icon = propertyOptionIcons[rule.code];
+                    return (
+                      <li key={rule.id} className="flex items-center gap-2 rounded-xl bg-cream p-3 text-sm text-ink">
+                        {Icon && <Icon size={18} className="shrink-0 text-sage-dark" aria-hidden="true" />}
+                        <span>{rule.name}{rule.value ? `: ${rule.value}` : ""}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
           </article>
 
           <aside className="rounded-2xl border border-line bg-white p-6 shadow-[0_8px_25px_rgba(50,66,54,.05)]">
@@ -387,13 +347,25 @@ const OwnerPropertyDetailPage = () => {
                       </span>
                     </div>
 
-                    <Link
-                      to={`rooms/${room.id}/edit`}
-                      className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-sage-dark px-4 py-2.5 text-sm font-bold text-sage-dark transition hover:bg-sage-light"
-                    >
-                      <Pencil size={15} />
-                      Edit room
-                    </Link>
+                    <div className="mt-4 grid grid-cols-2 gap-2">
+                      <Link
+                        to={ownerRoomPath(property.id, room.id)}
+                        state={{
+                          backTo: `/owner/properties/${property.id}`,
+                          backLabel: "Back to Property",
+                        }}
+                        className="inline-flex cursor-pointer items-center justify-center rounded-xl bg-sage-dark px-4 py-2.5 text-sm font-bold text-white transition hover:brightness-95 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sage-dark"
+                      >
+                        View room
+                      </Link>
+                      <Link
+                        to={ownerEditRoomPath(property.id, room.id)}
+                        className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-sage-dark px-4 py-2.5 text-sm font-bold text-sage-dark transition hover:bg-sage-light focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sage-dark"
+                      >
+                        <Pencil size={15} />
+                        Edit room
+                      </Link>
+                    </div>
                   </div>
                 </article>
               ))}
@@ -417,6 +389,16 @@ const OwnerPropertyDetailPage = () => {
             </p>
           )}
         </section>
+        {previewIndex != null && (
+          <PropertyImageLightbox
+            images={property.images}
+            index={previewIndex}
+            propertyTitle={property.title}
+            onClose={closePreview}
+            onNext={nextPreview}
+            onPrevious={previousPreview}
+          />
+        )}
       </section>
     );
   }
@@ -548,6 +530,17 @@ const OwnerPropertyDetailPage = () => {
             className={inputClass}
           />
         </label>
+
+        <PropertyOptionsFields
+          amenityIds={form.amenityIds || []}
+          houseRules={form.houseRules || []}
+          onAmenityIdsChange={(amenityIds) =>
+            setForm((current) => ({ ...current, amenityIds }))
+          }
+          onHouseRulesChange={(houseRules) =>
+            setForm((current) => ({ ...current, houseRules }))
+          }
+        />
 
         <h2 className="mt-3 font-serif text-2xl md:col-span-2">Address</h2>
 

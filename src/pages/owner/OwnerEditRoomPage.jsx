@@ -1,5 +1,6 @@
 import { ArrowLeft, Camera, Save } from "lucide-react";
 import { useEffect, useState } from "react";
+import useImagePreview from "../../hooks/useImagePreview.js";
 import { Link, useNavigate, useParams } from "react-router";
 import { getRoomApi, replaceRoomImageApi, updateRoomApi } from "../../services/ownerApi.js";
 
@@ -15,9 +16,8 @@ export default function OwnerEditRoomPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [imageFile, setImageFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState("");
+  const previewUrl = useImagePreview(imageFile);
 
-  useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl); }, [previewUrl]);
 
   useEffect(() => {
     let active = true;
@@ -38,9 +38,7 @@ export default function OwnerEditRoomPage() {
       return setError("Choose a JPEG, PNG, WebP, or GIF image");
     }
     if (file.size > 5 * 1024 * 1024) return setError("Room image must not exceed 5 MB");
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
     setImageFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
     setError("");
   };
   const submit = async (event) => {
@@ -68,7 +66,7 @@ export default function OwnerEditRoomPage() {
           {previewUrl || room.images?.[0]?.imageUrl ? <img src={previewUrl || room.images[0].imageUrl} alt="Room preview" className="h-64 w-full object-cover object-center md:h-80"/> : <div className="grid h-64 place-items-center text-muted-copy md:h-80">No room photo</div>}
           <label className="absolute bottom-4 right-4 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-ink shadow-lg transition hover:bg-sage-light"><Camera size={17}/>{imageFile ? "Choose another" : "Change photo"}<input type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" onChange={changeImage}/></label>
         </div>
-        <div className="mt-2 flex items-center justify-between gap-3 text-xs text-muted-copy"><span>One image · JPEG, PNG, WebP, or GIF · Maximum 5 MB</span>{imageFile && <button type="button" onClick={() => { URL.revokeObjectURL(previewUrl); setPreviewUrl(""); setImageFile(null); }} className="font-bold text-danger">Use current photo</button>}</div>
+        <div className="mt-2 flex items-center justify-between gap-3 text-xs text-muted-copy"><span>One image · JPEG, PNG, WebP, or GIF · Maximum 5 MB</span>{imageFile && <button type="button" onClick={() => { setImageFile(null); }} className="font-bold text-danger">Use current photo</button>}</div>
       </div>
       <label className={labelClass}>Room title<input required maxLength="100" name="roomName" value={form.roomName} onChange={change} className={inputClass}/></label>
       <label className={labelClass}>Monthly rent<input required min="0" step="0.01" type="number" name="monthlyRent" value={form.monthlyRent} onChange={change} className={inputClass}/></label>

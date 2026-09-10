@@ -20,6 +20,16 @@ export const getOwnerPropertyApi = async (propertyId) => {
     return res.data;
 };
 
+export const getAmenitiesApi = async () => {
+    const res = await api.get("/amenities");
+    return res.data;
+};
+
+export const getHouseRulesApi = async () => {
+    const res = await api.get("/house-rules");
+    return res.data;
+};
+
 export const updatePropertyApi = async (propertyId, propertyData) => {
     const res = await api.patch(`/properties/${propertyId}`, propertyData);
     return res.data;
@@ -37,6 +47,26 @@ export const deletePropertyApi = async (propertyId) => {
 
 export const getMyRentalsApi = async (params = {}) => {
     const res = await api.get("/rentals/me", { params });
+    return res.data;
+};
+
+export const getRentalApi = async (rentalId) => {
+    const res = await api.get(`/rentals/${rentalId}`);
+    return res.data;
+};
+
+export const getOwnerRentalRequestsApi = async () => {
+    const res = await api.get("/rental-requests/owner");
+    return res.data;
+};
+
+export const markOwnerRentalRequestsViewedApi = async () => {
+    const res = await api.patch("/rental-requests/owner/viewed");
+    return res.data;
+};
+
+export const reviewOwnerRentalRequestApi = async (requestId, action) => {
+    const res = await api.patch(`/rental-requests/${requestId}`, { action });
     return res.data;
 };
 

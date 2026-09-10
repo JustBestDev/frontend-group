@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useState } from "react";
 import {
   Building2,
   Check,
@@ -9,7 +8,7 @@ import {
   X,
 } from "lucide-react";
 import { useNavigate } from "react-router";
-import api from "../../services/api";
+import usePropertyApprovals from "../../hooks/usePropertyApprovals.js";
 import RejectReasonModal from "../../components/admin/RejectReasonModal";
 import roomHubIcon from "../../assets/roomhub-icon.svg";
 
@@ -17,143 +16,24 @@ const PropertyApprovals = () => {
 
   const navigate = useNavigate();
 
-  const [properties, setProperties] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [updatingId, setUpdatingId] = useState(null);
-  const [error, setError] = useState("");
-  const [rejectingId, setRejectingId] = useState(null);
-
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ALL");
-
-  const fetchProperties = async () => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const response = await api.get("/admin/properties");
-      setProperties(response.data.data ?? []);
-      await api.patch("/admin/properties/viewed");
-      window.dispatchEvent(new Event("notifications:refresh"));
-    } catch (requestError) {
-      setError(
-        requestError.response?.data?.message ||
-        "Unable to retrieve properties"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    // Loading server state is the purpose of this effect.
-    // oxlint-disable-next-line react/set-state-in-effect
-    fetchProperties();
-  }, []);
-
-  const updatePublishStatus = async (
-    propertyId,
-    publishStatus,
-    rejectReason
-  ) => {
-    const action =
-      publishStatus === "APPROVED" ? "approve" : "reject";
-
-    const confirmed =
-      publishStatus === "REJECTED" ||
-      window.confirm(
-        `Are you sure you want to ${action} this property?`
-      );
-
-    if (!confirmed) return;
-
-    setUpdatingId(propertyId);
-    setError("");
-
-    try {
-      await api.patch(
-        `/admin/properties/${propertyId}/publish-status`,
-        publishStatus === "REJECTED"
-          ? { publishStatus, rejectReason }
-          : { publishStatus }
-      );
-
-      setProperties((currentProperties) =>
-        currentProperties.map((property) =>
-          (property.id || property.propertyId) === propertyId
-            ? {
-              ...property,
-              publishStatus,
-              ...(rejectReason ? { rejectReason } : {}),
-            }
-            : property
-        )
-      );
-
-      if (publishStatus === "REJECTED") {
-        setRejectingId(null);
-      }
-    } catch (requestError) {
-      setError(
-        requestError.response?.data?.message ||
-        "Unable to update property status"
-      );
-    } finally {
-      setUpdatingId(null);
-    }
-  };
-
-  const filteredProperties = useMemo(() => {
-    const keyword = searchTerm.trim().toLowerCase();
-
-    return properties.filter((property) => {
-      const owner = property.owner || property.user || {};
-
-      const address =
-        property.address?.fullAddress ||
-        property.address?.district ||
-        property.location ||
-        property.city ||
-        "";
-
-      const propertyName =
-        property.title || property.name || "";
-
-      const ownerName =
-        owner.username ||
-        owner.email ||
-        property.ownerName ||
-        "";
-
-      const publishStatus =
-        property.publishStatus || "PENDING";
-
-      const matchesSearch =
-        !keyword ||
-        propertyName.toLowerCase().includes(keyword) ||
-        ownerName.toLowerCase().includes(keyword) ||
-        address.toLowerCase().includes(keyword);
-
-      const matchesStatus =
-        statusFilter === "ALL" ||
-        publishStatus === statusFilter;
-
-      return matchesSearch && matchesStatus;
-    });
-  }, [properties, searchTerm, statusFilter]);
-
-  const pendingCount = properties.filter(
-    (property) =>
-      (property.publishStatus || "PENDING") === "PENDING"
-  ).length;
-
-  const approvedCount = properties.filter(
-    (property) => property.publishStatus === "APPROVED"
-  ).length;
-
-  const rejectedCount = properties.filter(
-    (property) => property.publishStatus === "REJECTED"
-  ).length;
+  const {
+    setError,
+    loading,
+    updatingId,
+    error,
+    rejectingId,
+    setRejectingId,
+    searchTerm,
+    setSearchTerm,
+    statusFilter,
+    setStatusFilter,
+    fetchProperties,
+    updatePublishStatus,
+    filteredProperties,
+    pendingCount,
+    approvedCount,
+    rejectedCount,
+  } = usePropertyApprovals();
 
   const getStatusClass = (status) => {
     if (status === "APPROVED") {
@@ -169,9 +49,9 @@ const PropertyApprovals = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-[420px] items-center justify-center">
+      <div className="flex min-h-105 items-center justify-center">
         <div className="text-center">
-          <div className="mx-auto size-10 animate-spin rounded-full border-4 border-[#DCE5DF] border-t-[#17382E]" />
+          <div className="mx-auto size-10 animate-spin rounded-full border-4 border-[#DCE5DF] border-t-forest" />
 
           <p className="mt-4 text-sm font-medium text-[#7D8981]">
             Loading properties...
@@ -252,7 +132,7 @@ const PropertyApprovals = () => {
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
             placeholder="Search by property, owner or location..."
-            className="h-10 w-full rounded-lg border border-[#E2E8E3] bg-[#F8FAF8] pl-10 pr-4 text-sm text-[#26352D] outline-none transition placeholder:text-[#A0AAA4] focus:border-[#A9BBA3] focus:bg-white focus:ring-4 focus:ring-[#A9BBA3]/15"
+            className="h-10 w-full rounded-lg border border-[#E2E8E3] bg-[#F8FAF8] pl-10 pr-4 text-sm text-[#26352D] outline-none transition placeholder:text-[#A0AAA4] focus:border-sage focus:bg-white focus:ring-4 focus:ring-[#A9BBA3]/15"
           />
         </div>
 
@@ -261,7 +141,7 @@ const PropertyApprovals = () => {
           onChange={(event) =>
             setStatusFilter(event.target.value)
           }
-          className="h-10 rounded-lg border border-[#E2E8E3] bg-[#F8FAF8] px-3 text-sm font-medium text-[#536159] outline-none transition focus:border-[#A9BBA3] focus:bg-white focus:ring-4 focus:ring-[#A9BBA3]/15"
+          className="h-10 rounded-lg border border-[#E2E8E3] bg-[#F8FAF8] px-3 text-sm font-medium text-[#536159] outline-none transition focus:border-sage focus:bg-white focus:ring-4 focus:ring-[#A9BBA3]/15"
         >
           <option value="ALL">All statuses</option>
           <option value="PENDING">Pending</option>
@@ -282,7 +162,7 @@ const PropertyApprovals = () => {
       {/* Table */}
       {filteredProperties.length === 0 ? (
         <div className="rounded-2xl border border-[#E4E9E4] bg-white px-6 py-14 text-center shadow-sm">
-          <div className="mx-auto grid size-12 place-items-center rounded-xl bg-[#EEF3EF] text-[#17382E]">
+          <div className="mx-auto grid size-12 place-items-center rounded-xl bg-[#EEF3EF] text-forest">
             <Building2 size={22} />
           </div>
 
@@ -297,7 +177,7 @@ const PropertyApprovals = () => {
       ) : (
         <div className="overflow-hidden rounded-2xl border border-[#E4E9E4] bg-white shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px]">
+            <table className="w-full min-w-225">
               <thead className="bg-[#F7F9F7]">
                 <tr className="border-b border-[#E9EDE9]">
                   <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#8B968F]">
@@ -381,14 +261,14 @@ const PropertyApprovals = () => {
                           </div>
 
                           <div className="min-w-0">
-                            <p className="max-w-[260px] truncate text-sm font-semibold text-[#26382F]">
+                            <p className="max-w-65 truncate text-sm font-semibold text-[#26382F]">
                               {propertyName}
                             </p>
 
                             <div className="mt-1 flex items-center gap-1.5 text-xs text-[#8A968E]">
                               <MapPin size={13} className="shrink-0" />
 
-                              <span className="max-w-[250px] truncate">
+                              <span className="max-w-62.5 truncate">
                                 {address}
                               </span>
                             </div>
@@ -404,7 +284,7 @@ const PropertyApprovals = () => {
 
                       {/* Owner */}
                       <td className="px-4 py-4">
-                        <p className="max-w-[170px] truncate text-sm font-medium text-[#394B42]">
+                        <p className="max-w-42.5 truncate text-sm font-medium text-[#394B42]">
                           {owner.username ||
                             owner.email ||
                             property.ownerName ||
@@ -446,7 +326,7 @@ const PropertyApprovals = () => {
                             onClick={() =>
                               navigate(`/admin/properties/${propertyId}`)
                             }
-                            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-[#DDE4DE] bg-white px-3 text-xs font-semibold text-[#536159] transition hover:bg-[#F6F8F6] hover:text-[#17382E]"
+                            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-[#DDE4DE] bg-white px-3 text-xs font-semibold text-[#536159] transition hover:bg-[#F6F8F6] hover:text-forest"
                           >
                             <Eye size={14} />
                             View
@@ -461,7 +341,7 @@ const PropertyApprovals = () => {
                                 onClick={() =>
                                   updatePublishStatus(propertyId, "APPROVED")
                                 }
-                                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-[#17382E] px-3 text-xs font-semibold text-white transition hover:bg-[#214A3D] disabled:cursor-not-allowed disabled:opacity-50"
+                                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-forest px-3 text-xs font-semibold text-white transition hover:bg-[#214A3D] disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                 <Check size={14} />
                                 Approve
