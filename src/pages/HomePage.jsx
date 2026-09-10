@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import {
   BedDouble,
@@ -24,6 +24,38 @@ const HomePage = () => {
   } = usePropertySearch();
   const [isSearchMenuOpen, setIsSearchMenuOpen] = useState(false);
   const [isTransitModalOpen, setIsTransitModalOpen] = useState(false);
+  const searchWrapperRef = useRef(null);
+
+  useEffect(() => {
+    const handlePointerDown = (event) => {
+      if (
+        searchWrapperRef.current &&
+        !searchWrapperRef.current.contains(event.target)
+      ) {
+        setIsSearchMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setIsSearchMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   const handleApplyStations = (stationKeys) => {
     setSelectedStations(stationKeys);
@@ -47,7 +79,10 @@ const HomePage = () => {
 
       <section className="mx-auto -mt-10.75 w-[calc(100%-40px)] max-w-295 pb-17.5">
         <div className="rounded-[18px] border border-[#e0e5dd] bg-white p-4 shadow-[0_15px_45px_rgba(68,83,68,0.12)] sm:p-5">
-          <div className="property-search-wrapper">
+          <div
+            ref={searchWrapperRef}
+            className="property-search-wrapper"
+          >
             <div className="flex items-center gap-3 rounded-[14px] border border-[#cfd8cc] bg-[#fbfcfa] px-4.5 text-[#839083] transition focus-within:border-[#829583] focus-within:ring-4 focus-within:ring-[#829583]/15">
               <Search size={21} aria-hidden="true" />
 

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   ChevronDown,
   ChevronUp,
+  ClipboardList,
   LayoutDashboard,
   LogOut,
   UserRound,
@@ -79,6 +80,16 @@ const UserAvatar = ({ user, onLogout, onEditProfile }) => {
             <UserRound size={17} aria-hidden="true" />
             Edit profile
           </button>
+          {user?.role === "USER" && (
+            <Link
+              to="/rental-requests"
+              role="menuitem"
+              onClick={() => setIsOpen(false)}
+            >
+              <ClipboardList size={17} aria-hidden="true" />
+              Rental Requests
+            </Link>
+          )}
           {hasOwnerRoutes && (
             <>
               <Link
