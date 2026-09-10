@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useLocation, useNavigate, useParams } from "react-router";
 import {
+  ArrowLeft,
   BadgeDollarSign,
   Building2,
   Check,
   ChevronRight,
   Home,
   Info,
+  Pencil,
   Share2,
   ShieldCheck,
   Sparkles,
@@ -14,12 +16,18 @@ import {
   SquareX,
   UserRound,
 } from "lucide-react";
-import api from "../../services/api";
+import api, { getApiErrorMessage } from "../../services/api";
+import { getMyPropertiesApi } from "../../services/ownerApi.js";
 import RentalRequestModal from "../../components/rentalRequest/RentalRequestModal.jsx";
 import useAuthStore from "../../stores/authStore.js";
+import {
+  findOwnerRoom,
+  ownerEditRoomPath,
+} from "../../utils/ownerRoutes.js";
 
-export default function RoomDetail() {
+export default function RoomDetail({ owner = false }) {
   const { propertyId, roomId } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const { token, user } = useAuthStore();
   const [toastMessage, setToastMessage] = useState("");
@@ -30,16 +38,22 @@ export default function RoomDetail() {
 
   const fetchRoom = useCallback(async () => {
     try {
+      if (owner) {
+        const response = await getMyPropertiesApi();
+        const ownerRoom = findOwnerRoom(response.data || [], propertyId, roomId);
+        if (!ownerRoom) throw new Error("Room not found");
+        setRoom(ownerRoom);
+        return;
+      }
+
       const response = await api.get(`/rooms/${roomId}`);
       setRoom(response.data);
     } catch (requestError) {
-      setError(requestError.response?.data?.message ||
-        "Unable to load room details"
-      );
+      setError(getApiErrorMessage(requestError, "Unable to load room details"));
     } finally {
       setIsLoading(false);
     }
-  }, [roomId]);
+  }, [owner, propertyId, roomId]);
 
   useEffect(() => {
     // Loading server state is the purpose of this effect.
@@ -98,7 +112,16 @@ export default function RoomDetail() {
       <div className="max-w-7xl mx-auto">
         {/* Top Breadcrumb & Share Actions */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <nav className="flex items-center gap-2 text-xs sm:text-sm text-muted-copy overflow-x-auto">
+          {owner ? (
+            <Link
+              to={location.state?.backTo || `/owner/properties/${propertyId}`}
+              className="inline-flex items-center gap-2 text-sm font-bold text-sage-dark transition hover:text-ink"
+            >
+              <ArrowLeft size={17} />
+              {location.state?.backLabel || "Back to Property"}
+            </Link>
+          ) : (
+            <nav className="flex items-center gap-2 text-xs sm:text-sm text-muted-copy overflow-x-auto">
             <Link
               to="/"
               className="hover:text-[#4f614d] flex items-center gap-1 transition-colors shrink-0"
@@ -128,9 +151,18 @@ export default function RoomDetail() {
             <span className="text-[#1c1c16] font-medium truncate max-w-50 sm:max-w-[320px]">
               {roomId ? `Room #${roomId}` : "Room Detail (ROOM A2)"}
             </span>
-          </nav>
+            </nav>
+          )}
 
-          <div className="flex items-center gap-2">
+          {owner ? (
+            <Link
+              to={ownerEditRoomPath(propertyId, roomId)}
+              className="inline-flex items-center gap-2 rounded-xl border border-sage-dark bg-white px-4 py-2.5 text-sm font-bold text-sage-dark transition hover:bg-sage-light"
+            >
+              <Pencil size={16} /> Edit room
+            </Link>
+          ) : (
+            <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={handleShare}
@@ -140,7 +172,8 @@ export default function RoomDetail() {
               <Share2 className="w-4 h-4" />
               <span className="hidden sm:inline">Share</span>
             </button>
-          </div>
+            </div>
+          )}
         </div>
 
         {/* 2-Column Layout */}
@@ -251,6 +284,30 @@ export default function RoomDetail() {
 
           {/* Right Column: Booking Card (4 cols) */}
           <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
+            {owner ? (
+              <div className="rounded-2xl border border-line bg-white p-6 shadow-xs">
+                <h3 className="font-serif text-2xl font-bold text-ink">
+                  Room management
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-muted-copy">
+                  Review this room or update its listing details.
+                </p>
+                <div className="mt-5 grid gap-3">
+                  <Link
+                    to={ownerEditRoomPath(propertyId, roomId)}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-sage-dark px-4 py-3 text-sm font-bold text-white transition hover:brightness-95"
+                  >
+                    <Pencil size={16} /> Edit room
+                  </Link>
+                  <Link
+                    to={`/owner/properties/${propertyId}`}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-line px-4 py-3 text-sm font-bold text-sage-dark transition hover:bg-sage-light"
+                  >
+                    <Building2 size={16} /> View property
+                  </Link>
+                </div>
+              </div>
+            ) : (
             <div className="bg-white border border-[#e1e5dd] rounded-2xl p-6 sm:p-7 shadow-xs space-y-6">
               <div>
                 <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#1c1c16] mb-1">
@@ -319,11 +376,12 @@ export default function RoomDetail() {
                 <span>Verified roommate listing & protected deposit</span>
               </div>
             </div>
+            )}
           </div>
         </div>
       </div>
 
-      {isRentalRequestOpen && (
+      {!owner && isRentalRequestOpen && (
         <RentalRequestModal
           propertyId={propertyId}
           roomId={room.id || roomId}

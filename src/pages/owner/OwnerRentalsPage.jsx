@@ -1,6 +1,8 @@
 ﻿import { CalendarDays, ReceiptText } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Link } from "react-router";
 import useOwnerStore from "../../stores/ownerStore.js";
+import { ownerRentalPath } from "../../utils/ownerRoutes.js";
 
 const formatDate = (value) => value ? new Date(value).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "Ongoing";
 const OwnerRentalsPage = () => {
@@ -73,8 +75,15 @@ const OwnerRentalsPage = () => {
               {rentals.map((rental) =>
                 <tr key={rental.id}>
                   <td>
-                    <strong>{rental.property?.title || `Property #${rental.propertyId}`}</strong>
-                    <small>{rental.room?.roomName || "Whole property"}</small>
+                    <Link
+                      to={ownerRentalPath(rental.id)}
+                      className="group/rental block rounded-sm outline-none focus-visible:ring-3 focus-visible:ring-sage-dark/25"
+                    >
+                      <strong className="transition group-hover/rental:text-sage-dark group-hover/rental:underline">
+                        {rental.property?.title || `Property #${rental.propertyId}`}
+                      </strong>
+                      <small>{rental.room?.roomName || "Whole property"}</small>
+                    </Link>
                   </td>
                   <td>
                     {formatDate(rental.startDate)}{formatDate(rental.endDate)}

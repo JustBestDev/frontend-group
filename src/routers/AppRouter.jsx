@@ -28,6 +28,8 @@ import CommunityPage from "../pages/CommunityPage.jsx";
 import MemberRequestPage from "../pages/MemberRequestPage.jsx";
 import RentalRequestsPage from "../pages/RentalRequestsPage.jsx";
 import OwnerRentalRequestsPage from "../pages/owner/OwnerRentalRequestsPage.jsx";
+import OwnerRentalDetailPage from "../pages/owner/OwnerRentalDetailPage.jsx";
+import OwnerRentalRequestDetailPage from "../pages/owner/OwnerRentalRequestDetailPage.jsx";
 import UserDetail from "../pages/admin/UserDetail.jsx";
 
 const createGuestRouter = () => createBrowserRouter([
@@ -120,10 +122,13 @@ const createOwnerRouter = () => createBrowserRouter([
       { path: "properties/:propertyId", Component: OwnerPropertyDetailPage },
       { path: "properties/:propertyId/edit", Component: OwnerPropertyDetailPage },
       { path: "properties/:propertyId/rooms/new", Component: CreateRoomDetail },
+      { path: "properties/:propertyId/rooms/:roomId", element: <RoomDetail owner /> },
       { path: "properties/:propertyId/rooms/:roomId/edit", Component: OwnerEditRoomPage },
       { path: "rooms", Component: OwnerRoomsPage },
       { path: "rentals", Component: OwnerRentalsPage },
+      { path: "rentals/:rentalId", Component: OwnerRentalDetailPage },
       { path: "rental-requests", Component: OwnerRentalRequestsPage },
+      { path: "rental-requests/:requestId", Component: OwnerRentalRequestDetailPage },
       { path: "messages", Component: ConversationList },
       { path: "profile", Component: OwnerProfilePage },
     ],

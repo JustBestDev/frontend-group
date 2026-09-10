@@ -1,6 +1,8 @@
 ﻿import { BedDouble, Building2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router";
 import useOwnerStore from "../../stores/ownerStore.js";
+import { ownerRoomPath } from "../../utils/ownerRoutes.js";
 
 const OwnerRoomsPage = () => {
   const { properties, isLoading, error, getMyProperties } = useOwnerStore();
@@ -64,7 +66,18 @@ const OwnerRoomsPage = () => {
             <tbody>
               {rooms.map((room) =>
                 <tr key={room.id}>
-                  <td><strong>{room.roomName}</strong><small>{room.description || "No description"}</small></td>
+                  <td>
+                    <Link
+                      to={ownerRoomPath(room.propertyId, room.id)}
+                      state={{ backTo: "/owner/rooms", backLabel: "Back to Rooms" }}
+                      className="group/room block rounded-sm outline-none focus-visible:ring-3 focus-visible:ring-sage-dark/25"
+                    >
+                      <strong className="transition group-hover/room:text-sage-dark group-hover/room:underline">
+                        {room.roomName}
+                      </strong>
+                      <small>{room.description || "No description"}</small>
+                    </Link>
+                  </td>
                   <td>{room.propertyTitle}</td>
                   <td>{room.capacity || "โ€”"}</td>
                   <td>เธฟ{Number(room.monthlyRent || 0).toLocaleString()}</td>

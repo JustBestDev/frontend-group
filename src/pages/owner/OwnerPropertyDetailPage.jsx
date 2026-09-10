@@ -25,6 +25,10 @@ import {
   propertyOptionIcons,
   toHouseRulesPayload,
 } from "../../utils/propertyOptions.js";
+import {
+  ownerEditRoomPath,
+  ownerRoomPath,
+} from "../../utils/ownerRoutes.js";
 
 const inputClass =
   "w-full rounded-xl border border-line bg-white px-4 py-3 text-ink outline-none focus:border-sage-dark focus:ring-3 focus:ring-sage-dark/10";
@@ -449,13 +453,25 @@ const OwnerPropertyDetailPage = () => {
                       </span>
                     </div>
 
-                    <Link
-                      to={`rooms/${room.id}/edit`}
-                      className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-sage-dark px-4 py-2.5 text-sm font-bold text-sage-dark transition hover:bg-sage-light"
-                    >
-                      <Pencil size={15} />
-                      Edit room
-                    </Link>
+                    <div className="mt-4 grid grid-cols-2 gap-2">
+                      <Link
+                        to={ownerRoomPath(property.id, room.id)}
+                        state={{
+                          backTo: `/owner/properties/${property.id}`,
+                          backLabel: "Back to Property",
+                        }}
+                        className="inline-flex items-center justify-center rounded-xl bg-sage-dark px-4 py-2.5 text-sm font-bold text-white transition hover:brightness-95 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sage-dark"
+                      >
+                        View room
+                      </Link>
+                      <Link
+                        to={ownerEditRoomPath(property.id, room.id)}
+                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-sage-dark px-4 py-2.5 text-sm font-bold text-sage-dark transition hover:bg-sage-light focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sage-dark"
+                      >
+                        <Pencil size={15} />
+                        Edit room
+                      </Link>
+                    </div>
                   </div>
                 </article>
               ))}
