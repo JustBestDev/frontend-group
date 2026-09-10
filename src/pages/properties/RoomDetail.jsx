@@ -147,7 +147,7 @@ export default function RoomDetail({ owner = false }) {
       <main className="min-h-screen bg-[#f7f5ee] flex items-center justify-center p-6">
         <div className="flex flex-col items-center gap-3 bg-white p-8 rounded-2xl border border-[#e1e5dd] shadow-xs">
           <div className="w-9 h-9 border-3 border-[#4f614d] border-t-transparent rounded-full animate-spin" />
-          <p className="text-[#6f7a73] text-sm font-medium">
+          <p className="text-muted-copy text-sm font-medium">
             Loading room details...
           </p>
         </div>
@@ -309,7 +309,7 @@ export default function RoomDetail({ owner = false }) {
               </div>
 
               <div>
-                <h1 className="break-words font-serif text-2xl sm:text-3xl font-bold text-[#1c1c16] tracking-tight">
+                <h1 className="wrap-break-word font-serif text-2xl sm:text-3xl font-bold text-[#1c1c16] tracking-tight">
                   {room.roomName}
                 </h1>
               </div>
@@ -455,7 +455,7 @@ export default function RoomDetail({ owner = false }) {
                   type="button"
                   onClick={handleContactOwner}
                   disabled={isContactingOwner}
-                  className="w-full py-3 px-4 rounded-xl border border-[#4f614d] text-[#4f614d] bg-white hover:bg-[#e6ede3]/40 text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                  className="w-full py-3 px-4 rounded-xl border border-[#4f614d] text-[#4f614d] bg-white hover:bg-sage-light/40 text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
                 >
                   {isContactingOwner ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -492,7 +492,7 @@ export default function RoomDetail({ owner = false }) {
             {/* Listed by Owner Card */}
             {!owner && host && (
               <div className="bg-white border border-[#e1e5dd] rounded-2xl p-6 shadow-xs space-y-4">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#6f7a73]">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-copy">
                   Property Host
                 </span>
 
@@ -520,7 +520,7 @@ export default function RoomDetail({ owner = false }) {
                   </div>
                 </div>
 
-                <div className="p-3 bg-[#f7f5ee] rounded-xl text-xs text-[#6f7a73] space-y-1">
+                <div className="p-3 bg-[#f7f5ee] rounded-xl text-xs text-muted-copy space-y-1">
                   <p>• Usually responds within an hour</p>
                   <p>• Schedule room viewing at least 1 day in advance</p>
                 </div>

@@ -255,7 +255,7 @@ const PropertyDetailPage = () => {
       <main className="min-h-screen bg-[#f7f5ee] flex items-center justify-center p-6">
         <div className="flex flex-col items-center gap-3 bg-white p-8 rounded-2xl border border-[#e1e5dd] shadow-xs">
           <div className="w-9 h-9 border-3 border-[#4f614d] border-t-transparent rounded-full animate-spin" />
-          <p className="text-[#6f7a73] text-sm font-medium">
+          <p className="text-muted-copy text-sm font-medium">
             Loading property details...
           </p>
         </div>
@@ -273,7 +273,7 @@ const PropertyDetailPage = () => {
           <h1 className="font-serif text-2xl font-bold text-[#1c1c16] mb-2">
             Property Unavailable
           </h1>
-          <p className="text-sm text-[#6f7a73] mb-6">
+          <p className="text-sm text-muted-copy mb-6">
             {error ||
               "This property may have been removed or is currently unavailable."}
           </p>
@@ -353,7 +353,7 @@ const PropertyDetailPage = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
         {/* Top Breadcrumb & Share Actions */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <nav className="flex items-center gap-2 text-xs sm:text-sm text-[#6f7a73] overflow-x-auto">
+          <nav className="flex items-center gap-2 text-xs sm:text-sm text-muted-copy overflow-x-auto">
             <Link
               to="/"
               className="hover:text-[#4f614d] flex items-center gap-1 transition-colors shrink-0"
@@ -369,7 +369,7 @@ const PropertyDetailPage = () => {
               All Properties
             </Link>
             <ChevronRight className="w-3.5 h-3.5 text-[#a8b0a7] shrink-0" />
-            <span className="text-[#1c1c16] font-medium truncate max-w-[200px] sm:max-w-[320px]">
+            <span className="text-[#1c1c16] font-medium truncate max-w-50 sm:max-w-[320px]">
               {property.title || property.name || "Property Details"}
             </span>
           </nav>
@@ -380,7 +380,7 @@ const PropertyDetailPage = () => {
               onClick={handleToggleSave}
               className={`p-2.5 rounded-full border transition-all cursor-pointer shadow-xs flex items-center gap-1.5 text-xs font-semibold ${isSaved
                 ? "bg-[#eedcd4] border-[#d8b8a8] text-[#835024]"
-                : "bg-white border-[#e1e5dd] text-[#6f7a73] hover:text-[#835024] hover:bg-[#faf7f2]"
+                : "bg-white border-[#e1e5dd] text-muted-copy hover:text-[#835024] hover:bg-[#faf7f2]"
                 }`}
               title={isSaved ? "Saved" : "Save Property"}
             >
@@ -396,7 +396,7 @@ const PropertyDetailPage = () => {
             <button
               type="button"
               onClick={handleShare}
-              className="p-2.5 rounded-full bg-white border border-[#e1e5dd] text-[#6f7a73] hover:text-[#4f614d] hover:bg-[#faf7f2] transition-all cursor-pointer shadow-xs flex items-center gap-1.5 text-xs font-semibold"
+              className="p-2.5 rounded-full bg-white border border-[#e1e5dd] text-muted-copy hover:text-[#4f614d] hover:bg-[#faf7f2] transition-all cursor-pointer shadow-xs flex items-center gap-1.5 text-xs font-semibold"
               title="Share Listing"
             >
               <Share2 className="w-4 h-4" />
@@ -407,10 +407,10 @@ const PropertyDetailPage = () => {
 
         {/* Modern Image Gallery (4-column Stitch Layout) */}
         <section className="relative rounded-2xl overflow-hidden bg-[#e5e2d9] border border-[#e1e5dd] shadow-sm mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-2 md:h-[420px] p-2">
+          <div className="grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-2 md:h-105 p-2">
             {/* Main Featured Image */}
             <div
-              className="md:col-span-2 md:row-span-2 relative h-[280px] md:h-full rounded-xl overflow-hidden cursor-pointer group"
+              className="md:col-span-2 md:row-span-2 relative h-70 md:h-full rounded-xl overflow-hidden cursor-pointer group"
               onClick={() => {
                 setActivePhotoIndex(0);
                 setIsPhotoModalOpen(true);
@@ -510,7 +510,7 @@ const PropertyDetailPage = () => {
             <button
               type="button"
               onClick={() => setIsPhotoModalOpen(true)}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#4f614d] bg-[#e6ede3] px-3.5 py-2 rounded-xl"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#4f614d] bg-sage-light px-3.5 py-2 rounded-xl"
             >
               <Camera className="w-3.5 h-3.5" />
               View All Photos ({galleryImages.length})
@@ -525,10 +525,10 @@ const PropertyDetailPage = () => {
             {/* Title, Address & Price Header */}
             <div className="bg-white p-6 sm:p-8 rounded-2xl border border-[#e1e5dd] shadow-xs">
               <div className="flex flex-wrap items-center gap-2 mb-3">
-                <span className="px-3 py-1 rounded-full bg-[#e6ede3] text-[#294c25] text-xs font-bold uppercase tracking-wider">
+                <span className="px-3 py-1 rounded-full bg-sage-light text-[#294c25] text-xs font-bold uppercase tracking-wider">
                   {property.propertyType || "CONDO"}
                 </span>
-                <span className="px-3 py-1 rounded-full bg-[#f1f0ea] text-[#6f7a73] text-xs font-semibold">
+                <span className="px-3 py-1 rounded-full bg-[#f1f0ea] text-muted-copy text-xs font-semibold">
                   {property.rentType
                     ? property.rentType.replaceAll("_", " ")
                     : "ROOM SHARE"}
@@ -544,14 +544,14 @@ const PropertyDetailPage = () => {
                   "Quality Living Space Ready to Move In"}
               </h1>
 
-              <p className="flex items-center gap-2 text-sm sm:text-[15px] text-[#6f7a73] mb-6">
+              <p className="flex items-center gap-2 text-sm sm:text-[15px] text-muted-copy mb-6">
                 <MapPin className="w-4 h-4 text-[#4f614d] shrink-0" />
                 <span>{address}</span>
               </p>
 
               {/* Quick Specs Chips */}
               <div className="flex flex-wrap items-center gap-3 sm:gap-6 pt-5 border-t border-[#f1eee4] text-sm text-[#414753]">
-                <div className="flex items-center gap-2 bg-[#f7f4ea] px-3.5 py-1.5 rounded-xl border border-[#e4e4d9]">
+                <div className="flex items-center gap-2 bg-[#f7f4ea] px-3.5 py-1.5 rounded-xl border border-line">
                   <Building2 className="w-4 h-4 text-[#4f614d]" />
                   <span className="font-medium">
                     {property.size || property.area
@@ -560,7 +560,7 @@ const PropertyDetailPage = () => {
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2 bg-[#f7f4ea] px-3.5 py-1.5 rounded-xl border border-[#e4e4d9]">
+                <div className="flex items-center gap-2 bg-[#f7f4ea] px-3.5 py-1.5 rounded-xl border border-line">
                   <BedDouble className="w-4 h-4 text-[#4f614d]" />
                   <span className="font-medium">
                     {isWholeUnit
@@ -571,7 +571,7 @@ const PropertyDetailPage = () => {
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2 bg-[#f7f4ea] px-3.5 py-1.5 rounded-xl border border-[#e4e4d9]">
+                <div className="flex items-center gap-2 bg-[#f7f4ea] px-3.5 py-1.5 rounded-xl border border-line">
                   <Bath className="w-4 h-4 text-[#4f614d]" />
                   <span className="font-medium">
                     {property.bathrooms
@@ -589,7 +589,7 @@ const PropertyDetailPage = () => {
                     ? Number(property.monthlyRent).toLocaleString()
                     : "Contact for Price"}
                 </span>
-                <span className="text-sm text-[#6f7a73]">
+                <span className="text-sm text-muted-copy">
                   / month ({isWholeUnit ? "Entire unit" : "Starting room price"})
                 </span>
               </div>
@@ -604,19 +604,19 @@ const PropertyDetailPage = () => {
                       <h2 className="font-serif text-xl font-bold text-[#1c1c16]">
                         {isWholeUnit ? "Rooms in this property" : "Unit Room Status"}
                       </h2>
-                      <p className="text-xs text-[#6f7a73] mt-0.5">
+                      <p className="text-xs text-muted-copy mt-0.5">
                         {isWholeUnit
                           ? `This property has ${rooms.length} ${rooms.length === 1 ? "room" : "rooms"}.`
                           : `This unit has ${rooms.length || 1} bedrooms available for individual rental.`}
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2.5">
-                      <div className="inline-flex items-center gap-2 bg-[#e6ede3] border border-[#cbe0c6] px-3.5 py-1.5 rounded-full text-xs font-bold text-[#294c25]">
+                      <div className="inline-flex items-center gap-2 bg-sage-light border border-[#cbe0c6] px-3.5 py-1.5 rounded-full text-xs font-bold text-[#294c25]">
                         <span className="w-2.5 h-2.5 rounded-full bg-[#4f614d]" />
                         {availableRooms.length} Available
                       </div>
                       {occupiedRoomsCount > 0 && (
-                        <div className="inline-flex items-center gap-2 bg-[#f1f0ea] border border-[#e1ded5] px-3.5 py-1.5 rounded-full text-xs font-medium text-[#6f7a73]">
+                        <div className="inline-flex items-center gap-2 bg-[#f1f0ea] border border-[#e1ded5] px-3.5 py-1.5 rounded-full text-xs font-medium text-muted-copy">
                           <span className="w-2.5 h-2.5 rounded-full bg-[#a8b0a7]" />
                           {occupiedRoomsCount} Occupied
                         </div>
@@ -633,24 +633,24 @@ const PropertyDetailPage = () => {
                         {isWholeUnit ? "Rooms" : "Select a Bedroom"}
                       </h2>
 
-                      <p className="text-xs sm:text-sm text-[#6f7a73] mt-0.5">
+                      <p className="text-xs sm:text-sm text-muted-copy mt-0.5">
                         {isWholeUnit
                           ? "View the rooms included in this property."
                           : "Choose a room to view pricing, specifications, and amenities."}
                       </p>
                     </div>
-                    <span className="text-xs font-semibold text-[#4f614d] bg-[#e6ede3] px-3 py-1 rounded-lg">
+                    <span className="text-xs font-semibold text-[#4f614d] bg-sage-light px-3 py-1 rounded-lg">
                       {rooms.length} {rooms.length === 1 ? "Room" : "Rooms"} Total
                     </span>
                   </div>
 
                   {rooms.length === 0 ? (
                     <div className="p-8 text-center bg-[#f7f5ee] rounded-xl border border-dashed border-[#dcd8cc]">
-                      <DoorOpen className="w-8 h-8 text-[#6f7a73] mx-auto mb-2" />
+                      <DoorOpen className="w-8 h-8 text-muted-copy mx-auto mb-2" />
                       <p className="text-sm font-medium text-[#1c1c16]">
                         No rooms are currently available for this property.
                       </p>
-                      <p className="text-xs text-[#6f7a73] mt-1">
+                      <p className="text-xs text-muted-copy mt-1">
                         Contact the host directly to inquire about lease terms and
                         booking.
                       </p>
@@ -681,7 +681,7 @@ const PropertyDetailPage = () => {
                             className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-5 rounded-xl border transition-all cursor-pointer gap-4 ${isCardSelected
                               ? "border-[#4f614d] bg-[#f8faf7] shadow-sm ring-1 ring-[#4f614d]"
                               : isAvailable
-                                ? "border-[#e1e5dd] bg-white hover:border-[#a9bba3] hover:shadow-xs"
+                                ? "border-[#e1e5dd] bg-white hover:border-sage hover:shadow-xs"
                                 : "border-[#e1e5dd] bg-[#fcfbf9] opacity-75"
                               }`}
                           >
@@ -712,11 +712,11 @@ const PropertyDetailPage = () => {
                                       `Bedroom ${index + 1}`}
                                   </h3>
                                   {isAvailable ? (
-                                    <span className="bg-[#e6ede3] text-[#294c25] border border-[#b8deb0] px-2.5 py-0.5 rounded-full text-xs font-bold">
+                                    <span className="bg-sage-light text-[#294c25] border border-[#b8deb0] px-2.5 py-0.5 rounded-full text-xs font-bold">
                                       Available
                                     </span>
                                   ) : (
-                                    <span className="bg-[#f1f0ea] text-[#6f7a73] border border-[#e1ded5] px-2.5 py-0.5 rounded-full text-xs font-medium">
+                                    <span className="bg-[#f1f0ea] text-muted-copy border border-[#e1ded5] px-2.5 py-0.5 rounded-full text-xs font-medium">
                                       Occupied
                                     </span>
                                   )}
@@ -726,13 +726,13 @@ const PropertyDetailPage = () => {
                                   <span className="font-serif text-lg font-bold text-[#4f614d]">
                                     ฿{Number(roomPrice).toLocaleString()}
                                   </span>
-                                  <span className="text-xs text-[#6f7a73]">
+                                  <span className="text-xs text-muted-copy">
                                     / month
                                   </span>
                                 </div>
 
                                 {/* Features Tags */}
-                                <div className="flex flex-wrap gap-2 text-xs text-[#6f7a73]">
+                                <div className="flex flex-wrap gap-2 text-xs text-muted-copy">
                                   <span className="bg-[#f1eee4] px-2 py-0.5 rounded">
                                     {room.capacity
                                       ? `Capacity: ${room.capacity}`
@@ -777,7 +777,7 @@ const PropertyDetailPage = () => {
                   {property.description ? (
                     <p>{property.description}</p>
                   ) : (
-                    <p className="text-[#6f7a73]">
+                    <p className="text-muted-copy">
                       Move-in ready space featuring ample natural light,
                       functional layout, and convenient access to local transit
                       and amenities. Ideal for students and professionals
@@ -807,7 +807,7 @@ const PropertyDetailPage = () => {
                     })}
                   </div>
                 ) : (
-                  <p className="text-xs text-[#6f7a73]">
+                  <p className="text-xs text-muted-copy">
                     No specific amenities listed for this property.
                   </p>
                 )}
@@ -839,7 +839,7 @@ const PropertyDetailPage = () => {
                     })}
                   </div>
                 ) : (
-                  <p className="text-xs text-[#6f7a73]">
+                  <p className="text-xs text-muted-copy">
                     No specific house rules specified by the owner.
                   </p>
                 )}
@@ -856,13 +856,13 @@ const PropertyDetailPage = () => {
                   Interested in this property?
                 </h3>
                 <div className="flex items-baseline gap-1.5 mt-2">
-                  <span className="text-xs text-[#6f7a73]">
+                  <span className="text-xs text-muted-copy">
                     {isWholeUnit ? "Property rate:" : "Selected room rate:"}
                   </span>
                   <span className="font-serif text-2xl font-bold text-[#4f614d]">
                     ฿{Number(displayPrice).toLocaleString()}
                   </span>
-                  <span className="text-xs text-[#6f7a73]">/ month</span>
+                  <span className="text-xs text-muted-copy">/ month</span>
                 </div>
               </div>
 
@@ -900,17 +900,17 @@ const PropertyDetailPage = () => {
               {/* Lease Breakdown Summary */}
               <div className="bg-[#f7f5ee] p-4 rounded-xl space-y-2.5 text-xs text-[#414753] border border-[#ece8dc]">
                 <div className="flex justify-between items-center">
-                  <span className="text-[#6f7a73]">Security Deposit</span>
+                  <span className="text-muted-copy">Security Deposit</span>
                   <span className="font-bold text-[#1c1c16]">1 - 2 Months</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#6f7a73]">Minimum Lease</span>
+                  <span className="text-muted-copy">Minimum Lease</span>
                   <span className="font-bold text-[#1c1c16]">
                     6 - 12 Months
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#6f7a73]">
+                  <span className="text-muted-copy">
                     Utilities (Water / Power)
                   </span>
                   <span className="font-bold text-[#1c1c16]">
@@ -943,7 +943,7 @@ const PropertyDetailPage = () => {
                   <button
                     type="button"
                     onClick={handleShare}
-                    className="w-full py-3 px-4 rounded-xl border border-[#4f614d] text-[#4f614d] bg-white hover:bg-[#e6ede3]/40 text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full py-3 px-4 rounded-xl border border-[#4f614d] text-[#4f614d] bg-white hover:bg-light/40 text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Users className="w-4 h-4" />
                     Find Roommates / Share
@@ -954,7 +954,7 @@ const PropertyDetailPage = () => {
                   type="button"
                   onClick={handleContactOwner}
                   disabled={isContactingOwner}
-                  className="w-full py-3 px-4 rounded-xl border border-[#4f614d] text-[#4f614d] bg-white hover:bg-[#e6ede3]/40 text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                  className="w-full py-3 px-4 rounded-xl border border-[#4f614d] text-[#4f614d] bg-white hover:bg-light/40 text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
                 >
                   {isContactingOwner ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageCircle className="w-4 h-4" />}
                   <span>{isContactingOwner ? "Opening conversation..." : "Contact Host"}</span>
@@ -964,7 +964,7 @@ const PropertyDetailPage = () => {
 
             {/* Listed by Owner Card */}
             <div className="bg-white border border-[#e1e5dd] rounded-2xl p-6 shadow-xs space-y-4">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#6f7a73]">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-copy">
                 Property Host
               </span>
 
@@ -992,7 +992,7 @@ const PropertyDetailPage = () => {
                 </div>
               </div>
 
-              <div className="p-3 bg-[#f7f5ee] rounded-xl text-xs text-[#6f7a73] space-y-1">
+              <div className="p-3 bg-[#f7f5ee] rounded-xl text-xs text-muted-copy space-y-1">
                 <p>• Usually responds within an hour</p>
                 <p>• Schedule room viewing at least 1 day in advance</p>
               </div>
@@ -1121,14 +1121,14 @@ const PropertyDetailPage = () => {
                 <h3 className="text-xl sm:text-2xl font-bold text-[#1c1c16] font-serif">
                   Share Listing
                 </h3>
-                <p className="text-xs sm:text-sm text-[#6f7a73] mt-1">
+                <p className="text-xs sm:text-sm text-muted-copy mt-1">
                   Choose where you'd like to share this property listing
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsShareModalOpen(false)}
-                className="p-2 rounded-full text-[#6f7a73] hover:text-[#1c1c16] hover:bg-[#f0f2ee] transition-colors cursor-pointer"
+                className="p-2 rounded-full text-muted-copy hover:text-[#1c1c16] hover:bg-[#f0f2ee] transition-colors cursor-pointer"
                 title="Close"
               >
                 <X className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -1148,7 +1148,7 @@ const PropertyDetailPage = () => {
                     property?.name ||
                     `Property #${propertyId}`}
                 </h4>
-                <p className="text-xs sm:text-sm text-[#6f7a73] truncate flex items-center gap-1.5 mt-1">
+                <p className="text-xs sm:text-sm text-muted-copy truncate flex items-center gap-1.5 mt-1">
                   <MapPin className="w-3.5 h-3.5 text-[#4f614d] shrink-0" />
                   <span>{address}</span>
                 </p>
@@ -1161,23 +1161,23 @@ const PropertyDetailPage = () => {
             </div>
 
             {/* Option 1: Share to Community (Saves to database) */}
-            <div className="mb-6 p-5 sm:p-6 rounded-2xl border-2 border-[#e6ede3] bg-[#fbfdfa]">
+            <div className="mb-6 p-5 sm:p-6 rounded-2xl border-2 border-sage-light bg-[#fbfdfa]">
               <div className="flex items-start sm:items-center justify-between gap-3 mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-[#e6ede3] text-[#294c25] flex items-center justify-center shrink-0 shadow-xs">
+                  <div className="w-11 h-11 rounded-xl bg-sage-light text-[#294c25] flex items-center justify-center shrink-0 shadow-xs">
                     <Users className="w-5 h-5" />
                   </div>
                   <div>
                     <h4 className="text-base sm:text-lg font-bold text-[#1c1c16]">
                       Share to RoomMate Community
                     </h4>
-                    <p className="text-xs sm:text-sm text-[#6f7a73] mt-0.5">
+                    <p className="text-xs sm:text-sm text-muted-copy mt-0.5">
                       Save listing to database & publish on the Community
                       roommate feed
                     </p>
                   </div>
                 </div>
-                <span className="hidden sm:inline-flex text-xs uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-[#e6ede3] text-[#294c25] shrink-0">
+                <span className="hidden sm:inline-flex text-xs uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-sage-light text-[#294c25] shrink-0">
                   Internal Feed
                 </span>
               </div>
@@ -1189,7 +1189,7 @@ const PropertyDetailPage = () => {
                   <div className="sm:col-span-2">
                     <label className="block text-xs font-bold text-[#1c1c16] mb-1.5">
                       Post Title / หัวข้อโพสต์{" "}
-                      <span className="text-[#b95858]">*</span>
+                      <span className="text-danger">*</span>
                     </label>
                     <input
                       type="text"
@@ -1217,7 +1217,7 @@ const PropertyDetailPage = () => {
                         }
                         className="w-full text-xs sm:text-sm px-3.5 py-2.5 bg-white border border-[#e1e5dd] rounded-xl text-[#1c1c16] focus:outline-none focus:ring-1.5 focus:ring-[#4f614d] focus:border-[#4f614d] transition-all"
                       />
-                      <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-[#6f7a73] pointer-events-none">
+                      <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-muted-copy pointer-events-none">
                         person
                       </span>
                     </div>
@@ -1288,7 +1288,7 @@ const PropertyDetailPage = () => {
 
             {/* Copy Direct Link */}
             <div>
-              <label className="block text-xs sm:text-sm font-bold uppercase tracking-wider text-[#6f7a73] mb-2">
+              <label className="block text-xs sm:text-sm font-bold uppercase tracking-wider text-muted-copy mb-2">
                 Copy Listing Link
               </label>
               <div className="flex items-center gap-2.5">
@@ -1296,7 +1296,7 @@ const PropertyDetailPage = () => {
                   type="text"
                   readOnly
                   value={window.location.href}
-                  className="flex-1 text-xs sm:text-sm px-4 py-2.5 sm:py-3 bg-[#f7f5ee] border border-[#e1e5dd] rounded-xl text-[#6f7a73] select-all truncate focus:outline-none font-mono"
+                  className="flex-1 text-xs sm:text-sm px-4 py-2.5 sm:py-3 bg-[#f7f5ee] border border-[#e1e5dd] rounded-xl text-muted-copy select-all truncate focus:outline-none font-mono"
                 />
                 <button
                   type="button"
