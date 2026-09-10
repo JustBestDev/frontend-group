@@ -485,6 +485,7 @@ export default function RoomDetail({ owner = false }) {
               <div className="flex items-center gap-2 text-xs text-muted-copy pt-2 border-t border-[#f1eee4]">
                 <ShieldCheck className="w-4 h-4 text-[#4f614d] shrink-0" />
                 <span>Verified roommate listing & protected deposit</span>
+                <span>Always inspect the property before transferring any deposit</span>
               </div>
             </div>
             )}
@@ -517,6 +518,17 @@ export default function RoomDetail({ owner = false }) {
                       <ShieldCheck className="w-3.5 h-3.5" />
                       <span>Verified Host</span>
                     </div>
+                    {hostProfile?.isVerified ? (
+                      <div className="flex items-center gap-1 text-xs text-[#4f614d] font-semibold mt-0.5">
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>Verified Host</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 text-xs text-muted-copy font-medium mt-0.5">
+                        <UserRound className="w-3.5 h-3.5" />
+                        <span>Property Host</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -524,6 +536,16 @@ export default function RoomDetail({ owner = false }) {
                   <p>• Usually responds within an hour</p>
                   <p>• Schedule room viewing at least 1 day in advance</p>
                 </div>
+                {hostProfile?.bio ? (
+                  <div className="p-3 bg-[#f7f5ee] rounded-xl text-xs text-[#414753] leading-relaxed">
+                    <p className="line-clamp-3">{hostProfile.bio}</p>
+                  </div>
+                ) : (
+                  <div className="p-3 bg-[#f7f5ee] rounded-xl text-xs text-muted-copy space-y-1">
+                    <p>• Message host directly to check availability</p>
+                    <p>• Schedule a room viewing before making a deposit</p>
+                  </div>
+                )}
 
                 <button
                   type="button"
