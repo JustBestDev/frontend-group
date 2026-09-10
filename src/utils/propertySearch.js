@@ -1,5 +1,16 @@
-export function filterProperties(properties, { search, propertyType, rentType, priceRange, bedrooms, province }) {
+export function filterProperties(properties, {
+  search,
+  propertyType,
+  rentType,
+  priceRange,
+  bedrooms,
+  province,
+  selectedStations = [],
+}) {
   const searchText = search.trim().toLowerCase();
+  const selectedStationCodes = selectedStations.map((stationKey) =>
+    stationKey.split(":").at(-1).toUpperCase(),
+  );
 
   return properties.filter((property) => {
     const title = (property.title || property.name || "").toLowerCase();
@@ -17,6 +28,10 @@ export function filterProperties(properties, { search, propertyType, rentType, p
     const currentType = property.propertyType || property.type || "OTHER";
     const currentRentType = property.rentType || "";
     const currentProvince = property.address?.province || "";
+    const stationName = (property.address?.nearestStationName || "").toLowerCase();
+    const stationCode = String(
+      property.address?.nearestStationCode || "",
+    ).toUpperCase();
 
     const price = Number(property.monthlyRent ?? property.price ?? 0);
 
@@ -30,7 +45,9 @@ export function filterProperties(properties, { search, propertyType, rentType, p
     const matchesSearch =
       !searchText ||
       title.includes(searchText) ||
-      location.includes(searchText);
+      location.includes(searchText) ||
+      stationName.includes(searchText) ||
+      stationCode.toLowerCase().includes(searchText);
 
     const matchesType =
       propertyType === "ALL" || currentType === propertyType;
@@ -62,13 +79,18 @@ export function filterProperties(properties, { search, propertyType, rentType, p
     const matchesBedrooms =
       bedrooms === "ALL" || roomCount >= Number(bedrooms);
 
+    const matchesStation =
+      selectedStationCodes.length === 0 ||
+      selectedStationCodes.includes(stationCode);
+
     return (
       matchesSearch &&
       matchesType &&
       matchesRentType &&
       matchesPrice &&
       matchesBedrooms &&
-      matchesProvince
+      matchesProvince &&
+      matchesStation
     );
   });
 }

@@ -1,0 +1,824 @@
+/* ========================================
+   Transit map modal
+======================================== */
+
+/* Backdrop */
+
+.transit-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+
+  background: rgba(20, 35, 28, 0.72);
+  backdrop-filter: blur(5px);
+}
+
+/* Modal container */
+
+.transit-modal {
+  display: flex;
+  flex-direction: column;
+
+  width: min(1250px, 96vw);
+  height: min(820px, 92vh);
+  overflow: hidden;
+
+  background: #fffdf8;
+  border: 1px solid #e4e4d9;
+  border-radius: 24px;
+  box-shadow: 0 25px 80px
+    rgba(23, 56, 46, 0.3);
+}
+
+/* ========================================
+   Header
+======================================== */
+
+.transit-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+
+  flex-shrink: 0;
+  padding: 22px 28px;
+
+  color: #ffffff;
+  background: #17382e;
+}
+
+.transit-modal-header h2 {
+  margin: 0 0 5px;
+
+  color: #ffffff;
+  font-family: "Playfair Display", serif;
+  font-size: 28px;
+  line-height: 1.25;
+}
+
+.transit-modal-header p {
+  margin: 0;
+
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 14px;
+}
+
+.transit-modal-header button {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+
+  width: 42px;
+  height: 42px;
+  padding: 0;
+
+  color: #ffffff;
+
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.transit-modal-header button:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* ========================================
+   Station search input
+======================================== */
+
+.transit-modal-search {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 12px;
+
+  margin: 20px 24px 0;
+  padding: 0 18px;
+
+  background: #ffffff;
+  border: 1px solid #a9bba3;
+  border-radius: 999px;
+}
+
+.transit-modal-search:focus-within {
+  border-color: #687b67;
+  box-shadow: 0 0 0 3px
+    rgba(104, 123, 103, 0.14);
+}
+
+.transit-modal-search svg {
+  flex-shrink: 0;
+  color: #687b67;
+}
+
+.transit-modal-search input {
+  width: 100%;
+  height: 50px;
+  padding: 0;
+
+  color: #29342d;
+  font-family: inherit;
+  font-size: 15px;
+
+  background: transparent;
+  border: 0;
+  outline: none;
+}
+
+.transit-modal-search input::placeholder {
+  color: #9aa39c;
+}
+
+/* ========================================
+   Main two-column layout
+======================================== */
+
+.transit-modal-body {
+  display: grid;
+  grid-template-columns: 350px minmax(0, 1fr);
+
+  flex: 1;
+  min-height: 0;
+  margin-top: 18px;
+  overflow: hidden;
+
+  border-top: 1px solid #e4e4d9;
+}
+
+/* ========================================
+   Left panel: lines and stations
+======================================== */
+
+.transit-line-panel {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 22px;
+
+  background: #f8f5ec;
+  border-right: 1px solid #e4e4d9;
+
+  scrollbar-width: thin;
+  scrollbar-color: #a9bba3 #f8f5ec;
+}
+
+.transit-line-panel::-webkit-scrollbar {
+  width: 8px;
+}
+
+.transit-line-panel::-webkit-scrollbar-track {
+  background: #f8f5ec;
+}
+
+.transit-line-panel::-webkit-scrollbar-thumb {
+  background: #a9bba3;
+  border: 2px solid #f8f5ec;
+  border-radius: 999px;
+}
+
+.transit-line-panel > h3 {
+  margin: 0 0 16px;
+
+  color: #29342d;
+  font-size: 16px;
+}
+
+.transit-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.transit-line {
+  overflow: hidden;
+
+  background: #ffffff;
+  border: 1px solid #e4e4d9;
+  border-radius: 12px;
+}
+
+.transit-line-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  width: 100%;
+  padding: 13px;
+
+  color: #29342d;
+  font-family: inherit;
+  text-align: left;
+
+  background: #ffffff;
+  border: 0;
+  cursor: pointer;
+}
+
+.transit-line-button:hover {
+  background: #eef3eb;
+}
+
+.transit-line-code {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  min-width: 40px;
+  height: 25px;
+  padding: 0 7px;
+
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+
+  border-radius: 7px;
+}
+
+.transit-line-name {
+  flex: 1;
+
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.transit-station-list {
+  display: flex;
+  flex-direction: column;
+
+  padding: 4px 8px 10px;
+}
+
+.transit-station-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  width: 100%;
+  padding: 9px 8px;
+
+  color: #4d5c52;
+  font-family: inherit;
+  text-align: left;
+
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.transit-station-button:hover {
+  background: #e6ede3;
+}
+
+.transit-station-button.selected {
+  color: #17382e;
+  background: #e6ede3;
+}
+
+.transit-station-button > span:last-child {
+  display: flex;
+  gap: 7px;
+
+  font-size: 13px;
+}
+
+.transit-station-button strong {
+  color: #29342d;
+}
+
+.transit-station-dot {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+
+  width: 19px;
+  height: 19px;
+
+  color: #ffffff;
+  background: #ffffff;
+  border: 2px solid;
+  border-radius: 50%;
+}
+
+.transit-station-button.selected
+  .transit-station-dot {
+  color: #17382e;
+  background: #a9bba3;
+}
+
+/* ========================================
+   Right panel
+======================================== */
+
+.transit-map-panel {
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 22px 24px;
+
+  background: #fffdf8;
+
+  scrollbar-width: thin;
+  scrollbar-color: #a9bba3 #f8f5ec;
+}
+
+.transit-map-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  margin-bottom: 18px;
+}
+
+.transit-map-heading > div {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.transit-map-heading h3,
+.transit-map-heading p {
+  margin: 0;
+}
+
+.transit-map-heading h3 {
+  color: #29342d;
+  font-size: 17px;
+}
+
+.transit-map-heading p {
+  margin-top: 2px;
+
+  color: #6f7a73;
+  font-size: 13px;
+}
+
+.transit-map-heading > span {
+  flex-shrink: 0;
+  padding: 7px 12px;
+
+  color: #687b67;
+  font-size: 12px;
+  font-weight: 700;
+
+  background: #e6ede3;
+  border-radius: 999px;
+}
+
+/* ========================================
+   Clickable map
+======================================== */
+
+.clickable-transit-map {
+  position: relative;
+
+  width: 100%;
+}
+
+/*
+  This element is the viewport.
+  It can scroll in every direction.
+*/
+
+.transit-map-scroll-area {
+  width: 100%;
+  height: 470px;
+  overflow: auto;
+
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+
+  background: #ffffff;
+  border: 1px solid #e4e4d9;
+  border-radius: 18px;
+
+  scrollbar-width: thin;
+  scrollbar-color: #a9bba3 #f8f5ec;
+}
+
+.transit-map-scroll-area.dragging {
+  cursor: grabbing;
+}
+
+.transit-map-scroll-area::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.transit-map-scroll-area::-webkit-scrollbar-track {
+  background: #f8f5ec;
+}
+
+.transit-map-scroll-area::-webkit-scrollbar-thumb {
+  background: #a9bba3;
+  border: 2px solid #f8f5ec;
+  border-radius: 999px;
+}
+
+.transit-map-scroll-area::-webkit-scrollbar-corner {
+  background: #f8f5ec;
+}
+
+/*
+  Canvas gets a real width and height from React.
+  This allows scrollbars to work after zooming.
+*/
+
+.transit-interactive-canvas {
+  position: relative;
+  flex-shrink: 0;
+
+  min-width: 100%;
+  min-height: 100%;
+
+  transition:
+    width 0.2s ease,
+    height 0.2s ease;
+}
+
+.transit-interactive-image {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* ========================================
+   Clickable station hotspots
+======================================== */
+
+.transit-map-hotspot {
+  position: absolute;
+  z-index: 5;
+
+  display: grid;
+  place-items: center;
+
+  width: 26px;
+  height: 26px;
+  padding: 0;
+
+  color: #29342d;
+
+  transform: translate(-50%, -50%);
+
+  background: rgba(255, 255, 255, 0.94);
+  border: 2px solid var(--station-color);
+  border-radius: 50%;
+  cursor: pointer;
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.transit-map-hotspot:hover {
+  z-index: 10;
+
+  transform:
+    translate(-50%, -50%)
+    scale(1.35);
+
+  box-shadow: 0 3px 12px
+    rgba(23, 56, 46, 0.35);
+}
+
+.transit-map-hotspot.selected {
+  color: #ffffff;
+  background: var(--station-color);
+
+  box-shadow:
+    0 0 0 4px
+      rgba(255, 255, 255, 0.9),
+    0 0 0 7px
+      var(--station-color);
+}
+
+.transit-hotspot-dot {
+  width: 7px;
+  height: 7px;
+
+  background: var(--station-color);
+  border-radius: 50%;
+}
+
+.transit-map-hotspot.selected
+  .transit-hotspot-dot {
+  background: #ffffff;
+}
+
+.transit-hotspot-label {
+  position: absolute;
+  top: 29px;
+  left: 50%;
+
+  display: none;
+  padding: 3px 6px;
+
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+
+  transform: translateX(-50%);
+
+  background: #17382e;
+  border-radius: 5px;
+  pointer-events: none;
+}
+
+.transit-map-hotspot:hover
+  .transit-hotspot-label,
+.transit-map-hotspot.selected
+  .transit-hotspot-label {
+  display: block;
+}
+
+/* ========================================
+   Zoom controls
+======================================== */
+
+.transit-zoom-controls {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 30;
+
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.transit-zoom-controls button {
+  display: grid;
+  place-items: center;
+
+  width: 40px;
+  height: 40px;
+  padding: 0;
+
+  color: #29342d;
+
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #d6ded3;
+  border-radius: 50%;
+  box-shadow: 0 3px 12px
+    rgba(23, 56, 46, 0.16);
+  cursor: pointer;
+}
+
+.transit-zoom-controls button:hover {
+  color: #ffffff;
+  background: #687b67;
+}
+
+.transit-map-zoom-label {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  z-index: 30;
+
+  padding: 5px 9px;
+
+  color: #687b67;
+  font-size: 11px;
+  font-weight: 700;
+
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e4e4d9;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+/* ========================================
+   Selected station chips
+======================================== */
+
+.selected-station-section {
+  margin-top: 20px;
+}
+
+.selected-station-section h3 {
+  margin: 0 0 10px;
+
+  color: #29342d;
+  font-size: 15px;
+}
+
+.selected-station-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.selected-station-chips button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  padding: 8px 11px;
+
+  color: #29342d;
+  font-family: inherit;
+  font-size: 12px;
+
+  background: #ffffff;
+  border: 1px solid #d6ded3;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.selected-station-chips button:hover {
+  background: #e6ede3;
+}
+
+.selected-station-chips button > span {
+  width: 9px;
+  height: 9px;
+
+  border-radius: 50%;
+}
+
+/* ========================================
+   Footer
+======================================== */
+
+.transit-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  gap: 12px;
+
+  padding: 17px 24px;
+
+  background: #ffffff;
+  border-top: 1px solid #e4e4d9;
+}
+
+.transit-modal-footer button {
+  min-width: 110px;
+  padding: 11px 20px;
+
+  color: #29342d;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+
+  background: #ffffff;
+  border: 1px solid #a9bba3;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.transit-modal-footer button:hover {
+  opacity: 0.88;
+}
+
+.transit-modal-footer button:last-child {
+  color: #ffffff;
+  background: #687b67;
+  border-color: #687b67;
+}
+
+.transit-modal-footer button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+/* ========================================
+   Tablet and mobile
+======================================== */
+
+@media (max-width: 900px) {
+  .transit-modal-body {
+    grid-template-columns: 300px minmax(0, 1fr);
+  }
+
+  .transit-map-scroll-area {
+    height: 430px;
+  }
+}
+
+@media (max-width: 700px) {
+  .transit-modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .transit-modal {
+    width: 100%;
+    height: 94vh;
+
+    border-radius: 22px 22px 0 0;
+  }
+
+  .transit-modal-header {
+    padding: 18px 20px;
+  }
+
+  .transit-modal-header h2 {
+    font-size: 23px;
+  }
+
+  .transit-modal-search {
+    margin: 15px 16px 0;
+  }
+
+  .transit-modal-body {
+    display: block;
+    overflow-y: auto;
+  }
+
+  .transit-line-panel {
+    max-height: 300px;
+    padding: 17px;
+
+    border-right: 0;
+    border-bottom: 1px solid #e4e4d9;
+  }
+
+  .transit-map-panel {
+    overflow: visible;
+    padding: 18px 16px;
+  }
+
+  .transit-map-heading {
+    align-items: flex-start;
+  }
+
+  .transit-map-scroll-area {
+    height: 390px;
+  }
+
+  .transit-zoom-controls {
+    top: 12px;
+    right: 12px;
+  }
+
+  .transit-zoom-controls button {
+    width: 37px;
+    height: 37px;
+  }
+
+  .transit-modal-footer {
+    padding: 14px 16px;
+  }
+
+  .transit-modal-footer button {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.transit-coordinate-marker {
+  position: absolute;
+  z-index: 50;
+
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.transit-coordinate-marker > span {
+  display: block;
+
+  width: 18px;
+  height: 18px;
+
+  background: rgba(185, 88, 88, 0.35);
+  border: 3px solid #b95858;
+  border-radius: 50%;
+}
+
+.transit-coordinate-marker > strong {
+  position: absolute;
+  top: 23px;
+  left: 50%;
+
+  padding: 5px 8px;
+
+  color: #ffffff;
+  font-size: 10px;
+  white-space: nowrap;
+
+  transform: translateX(-50%);
+
+  background: #29342d;
+  border-radius: 5px;
+}

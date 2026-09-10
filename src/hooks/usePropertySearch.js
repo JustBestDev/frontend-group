@@ -10,6 +10,7 @@ export default function usePropertySearch() {
   const [priceRange, setPriceRange] = useState("ALL");
   const [bedrooms, setBedrooms] = useState("ALL");
   const [province, setProvince] = useState("ALL");
+  const [selectedStations, setSelectedStations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -53,7 +54,15 @@ export default function usePropertySearch() {
   }, [properties]);
 
   const filteredProperties = useMemo(() => {
-    return filterProperties(properties, { search, propertyType, rentType, priceRange, bedrooms, province });
+    return filterProperties(properties, {
+      search,
+      propertyType,
+      rentType,
+      priceRange,
+      bedrooms,
+      province,
+      selectedStations,
+    });
   }, [
     properties,
     search,
@@ -62,6 +71,7 @@ export default function usePropertySearch() {
     priceRange,
     bedrooms,
     province,
+    selectedStations,
   ]);
 
   const clearFilters = () => {
@@ -71,6 +81,7 @@ export default function usePropertySearch() {
     setPriceRange("ALL");
     setBedrooms("ALL");
     setProvince("ALL");
+    setSelectedStations([]);
   };
 
   return {
@@ -86,6 +97,8 @@ export default function usePropertySearch() {
     setBedrooms,
     province,
     setProvince,
+    selectedStations,
+    setSelectedStations,
     loading,
     error,
     provinces,

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router";
 import {
   BedDouble,
@@ -8,6 +9,8 @@ import {
   Search,
 } from "lucide-react";
 import usePropertySearch from "../hooks/usePropertySearch.js";
+import TransitMapModal from "../components/search/TransitMapModal.jsx";
+import LocationSearchMenu from "../components/search/locationSearchMenu.jsx";
 
 const filterSelectClass =
   "h-11 min-w-0 flex-1 basis-44 rounded-xl border border-[#cfd7cd] bg-[#fbfcfa] px-4 text-[13px] text-[#5e6d5e] outline-none transition hover:border-sage focus:border-sage-dark focus:ring-3 focus:ring-sage-dark/15";
@@ -16,8 +19,17 @@ const HomePage = () => {
   const {
     search, setSearch, propertyType, setPropertyType, rentType, setRentType,
     priceRange, setPriceRange, bedrooms, setBedrooms, province, setProvince,
+    selectedStations, setSelectedStations,
     loading, error, provinces, filteredProperties, fetchProperties, clearFilters,
   } = usePropertySearch();
+  const [isSearchMenuOpen, setIsSearchMenuOpen] = useState(false);
+  const [isTransitModalOpen, setIsTransitModalOpen] = useState(false);
+
+  const handleApplyStations = (stationKeys) => {
+    setSelectedStations(stationKeys);
+    setIsTransitModalOpen(false);
+    setIsSearchMenuOpen(false);
+  };
 
   return (
     <main className="min-h-screen bg-[#f7f5ee] text-[#465346]">
@@ -35,16 +47,46 @@ const HomePage = () => {
 
       <section className="mx-auto -mt-10.75 w-[calc(100%-40px)] max-w-295 pb-17.5">
         <div className="rounded-[18px] border border-[#e0e5dd] bg-white p-4 shadow-[0_15px_45px_rgba(68,83,68,0.12)] sm:p-5">
-          <div className="flex items-center gap-3 rounded-[14px] border border-[#cfd8cc] bg-[#fbfcfa] px-4.5 text-[#839083] transition focus-within:border-[#829583] focus-within:ring-4 focus-within:ring-[#829583]/15">
-            <Search size={21} aria-hidden="true" />
+          <div className="property-search-wrapper">
+            <div className="flex items-center gap-3 rounded-[14px] border border-[#cfd8cc] bg-[#fbfcfa] px-4.5 text-[#839083] transition focus-within:border-[#829583] focus-within:ring-4 focus-within:ring-[#829583]/15">
+              <Search size={21} aria-hidden="true" />
 
-            <input
-              type="search"
-              className="w-full bg-transparent py-4 text-base text-[#475547] outline-none placeholder:text-[#8a958a]"
-              placeholder="Search location or property"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              <input
+                type="search"
+                className="w-full bg-transparent py-4 text-base text-[#475547] outline-none placeholder:text-[#8a958a]"
+                placeholder="Search location, station or property"
+                value={search}
+                onFocus={() => setIsSearchMenuOpen(true)}
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  setIsSearchMenuOpen(true);
+                }}
+              />
+            </div>
+
+            <LocationSearchMenu
+              isOpen={isSearchMenuOpen}
+              onTransitClick={() => {
+                setIsSearchMenuOpen(false);
+                setIsTransitModalOpen(true);
+              }}
             />
+
+            {selectedStations.length > 0 && (
+              <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-sage-light px-4 py-2 text-sm text-forest">
+                <span>
+                  {selectedStations.length} station
+                  {selectedStations.length === 1 ? "" : "s"} selected
+                </span>
+                <button
+                  type="button"
+                  className="font-bold hover:underline"
+                  onClick={() => setSelectedStations([])}
+                >
+                  Clear stations
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col gap-3 pt-4.5">
@@ -200,6 +242,8 @@ const HomePage = () => {
                 property.location ||
                 property.city ||
                 "Location not provided";
+              const stationName = property.address?.nearestStationName;
+              const stationCode = property.address?.nearestStationCode;
 
               return (
                 <article
@@ -237,6 +281,12 @@ const HomePage = () => {
                       </span>
                     </p>
 
+                    {stationName && (
+                      <p className="mb-3 overflow-hidden text-ellipsis whitespace-nowrap text-[13px] text-[#889188]">
+                        🚆 {stationCode ? `${stationCode} ` : ""}{stationName}
+                      </p>
+                    )}
+
                     <div className="flex items-center justify-between gap-3 border-t border-[#edf0ea] pt-4">
                       <strong className="text-[17px] text-[#607861]">
                         {(property.monthlyRent ?? property.price) != null
@@ -257,6 +307,13 @@ const HomePage = () => {
           </div>
         )}
       </section>
+
+      <TransitMapModal
+        isOpen={isTransitModalOpen}
+        selectedStationKeys={selectedStations}
+        onClose={() => setIsTransitModalOpen(false)}
+        onApply={handleApplyStations}
+      />
     </main>
   );
 };

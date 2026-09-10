@@ -38,4 +38,3 @@ export const parsePostGender = (rawDescription = "") => {
     cleanDescription: rawDescription,
   };
 };
-
