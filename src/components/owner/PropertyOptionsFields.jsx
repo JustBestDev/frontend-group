@@ -73,7 +73,10 @@ const PropertyOptionsFields = ({
   const quietHours = houseRules.find(({ code }) => code === "QUIET_HOURS");
 
   return (
-    <section className="grid gap-6 md:col-span-2" aria-label="Property options">
+    <section
+      className="grid gap-7 border-t border-line pt-7 md:col-span-2"
+      aria-label="Property options"
+    >
       {loading && <p className="text-sm text-muted-copy">Loading amenities and house rules...</p>}
       {error && <p className="rounded-xl bg-red-50 p-3 text-sm text-danger" role="alert">{error}</p>}
 
@@ -110,7 +113,7 @@ const PropertyOptionsFields = ({
             </div>
           </fieldset>
 
-          <fieldset>
+          <fieldset className="border-t border-line pt-7">
             <legend className="font-serif text-2xl text-ink">House Rules</legend>
             <p className="mt-1 text-sm text-muted-copy">Choose the rules that apply to tenants.</p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
