@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Banknote, CheckCircle2, DoorOpen, ImagePlus, Trash2, UploadCloud, Users } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router";
 import { createPropertyRoomApi, deleteRoomApi, getOwnerPropertyApi, uploadRoomImagesApi } from "../../services/ownerApi.js";
 import "../../styles/pages/createRoomDetail.css";
+import useImagePreviews from "../../hooks/useImagePreviews.js";
 
 const initialForm = { roomName: "", description: "", monthlyRent: "", status: "AVAILABLE", capacity: "" };
 
@@ -15,9 +16,8 @@ export default function CreateRoomDetail() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const previews = useMemo(() => images.map((file) => ({ file, url: URL.createObjectURL(file) })), [images]);
+  const previews = useImagePreviews(images);
 
-  useEffect(() => () => previews.forEach(({ url }) => URL.revokeObjectURL(url)), [previews]);
   useEffect(() => {
     let active = true;
     getOwnerPropertyApi(propertyId).then(({ data }) => active && setProperty(data)).catch((requestError) => active && setError(requestError.response?.data?.message || "Unable to load property")).finally(() => active && setLoading(false));
@@ -212,7 +212,7 @@ export default function CreateRoomDetail() {
           )}</div>
       </div>
     </section>
-    <div className="mx-auto grid w-full max-w-320 gap-3 sm:flex sm:justify-end">
+    <div className="mx-auto grid w-full max-w-7xl gap-3 sm:flex sm:justify-end">
       <Link
         className="inline-flex items-center justify-center rounded-xl border border-line px-5 py-3 font-bold transition hover:bg-sage-light focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sage-dark"
         to={`/owner/properties/${propertyId}`}
