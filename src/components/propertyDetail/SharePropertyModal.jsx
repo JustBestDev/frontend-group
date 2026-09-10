@@ -117,21 +117,25 @@ const SharePropertyModal = ({
 
         {/* Property Preview Card */}
         <div className="flex items-center gap-4 p-4 sm:p-5 rounded-2xl bg-[#f7f5ee] border border-[#e1e5dd] mb-6">
-          <img
-            src={galleryImages[0]}
-            alt={property?.title || property?.name || "Property preview"}
-            className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover shrink-0 shadow-xs"
-          />
+          {galleryImages[0] && (
+            <img
+              src={galleryImages[0]}
+              alt={property?.title || property?.name || "Property preview"}
+              className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover shrink-0 shadow-xs"
+            />
+          )}
           <div className="min-w-0 flex-1">
             <h4 className="text-base sm:text-lg font-bold text-[#1c1c16] truncate">
               {property?.title ||
                 property?.name ||
                 `Property #${propertyId}`}
             </h4>
-            <p className="text-xs sm:text-sm text-muted-copy truncate flex items-center gap-1.5 mt-1">
-              <MapPin className="w-3.5 h-3.5 text-[#4f614d] shrink-0" />
-              <span>{address}</span>
-            </p>
+            {address && (
+              <p className="text-xs sm:text-sm text-muted-copy truncate flex items-center gap-1.5 mt-1">
+                <MapPin className="w-3.5 h-3.5 text-[#4f614d] shrink-0" />
+                <span>{address}</span>
+              </p>
+            )}
             <p className="text-sm sm:text-base font-bold text-[#4f614d] mt-1.5">
               {displayPrice
                 ? `฿${Number(displayPrice).toLocaleString()}/month`
