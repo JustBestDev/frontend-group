@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
+import { createBrowserRouter, Navigate, RouterProvider, useNavigate, useParams } from "react-router";
 import AdminLayout from "../layouts/AdminLayout.jsx";
 import HomeLayout from "../layouts/HomeLayout.jsx";
 import LoginPage from "../pages/LoginPage.jsx";
@@ -31,6 +31,19 @@ import OwnerRentalRequestsPage from "../pages/owner/OwnerRentalRequestsPage.jsx"
 import OwnerRentalDetailPage from "../pages/owner/OwnerRentalDetailPage.jsx";
 import OwnerRentalRequestDetailPage from "../pages/owner/OwnerRentalRequestDetailPage.jsx";
 import UserDetail from "../pages/admin/UserDetail.jsx";
+import UserProfileModal from "../components/profile/UserProfileModal.jsx";
+
+const OwnerUserProfileRoute = () => {
+  const { userId } = useParams();
+  const navigate = useNavigate();
+
+  return (
+    <UserProfileModal
+      userId={userId}
+      onClose={() => navigate("/owner/rental-requests")}
+    />
+  );
+};
 
 const createGuestRouter = () => createBrowserRouter([
   {
@@ -129,6 +142,7 @@ const createOwnerRouter = () => createBrowserRouter([
       { path: "rentals/:rentalId", Component: OwnerRentalDetailPage },
       { path: "rental-requests", Component: OwnerRentalRequestsPage },
       { path: "rental-requests/:requestId", Component: OwnerRentalRequestDetailPage },
+      { path: "users/:userId", Component: OwnerUserProfileRoute },
       { path: "messages", Component: ConversationList },
       { path: "profile", Component: OwnerProfilePage },
     ],

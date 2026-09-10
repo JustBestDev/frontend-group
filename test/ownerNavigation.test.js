@@ -5,9 +5,12 @@ import {
   findOwnerRentalRequest,
   findOwnerRoom,
   ownerEditRoomPath,
+  ownerPropertyPath,
   ownerRentalPath,
   ownerRentalRequestPath,
+  ownerRentalRequestRoomPath,
   ownerRoomPath,
+  ownerUserProfilePath,
 } from "../src/utils/ownerRoutes.js";
 
 test("owner room items navigate to the selected room", () => {
@@ -32,6 +35,19 @@ test("owner rental items navigate to the selected rental", () => {
 
 test("owner rental request items navigate to the selected request", () => {
   assert.equal(ownerRentalRequestPath(78), "/owner/rental-requests/78");
+});
+
+test("rental request requester and property links use owner routes", () => {
+  assert.equal(ownerUserProfilePath(91), "/owner/users/91");
+  assert.equal(ownerPropertyPath(12), "/owner/properties/12");
+});
+
+test("rental request room links use the selected room and omit missing rooms", () => {
+  assert.equal(
+    ownerRentalRequestRoomPath({ propertyId: 12, room: { id: 34 } }),
+    "/owner/properties/12/rooms/34",
+  );
+  assert.equal(ownerRentalRequestRoomPath({ propertyId: 12, room: null }), null);
 });
 
 test("owner detail lookups return undefined for inaccessible or missing items", () => {
