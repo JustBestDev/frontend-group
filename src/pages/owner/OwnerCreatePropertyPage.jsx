@@ -17,6 +17,10 @@ import {
   uploadPropertyImagesApi,
 } from "../../services/ownerApi.js";
 import {
+  isTodayOrLater,
+  toLocalDateInputValue,
+} from "../../utils/date.js";
+import {
   hasValidQuietHours,
   toHouseRulesPayload,
 } from "../../utils/propertyOptions.js";
@@ -27,6 +31,7 @@ const inputClass =
 const fieldClass = "grid gap-1.5 text-sm font-semibold text-ink";
 
 const OwnerCreatePropertyPage = () => {
+  const today = toLocalDateInputValue();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [propertyId, setPropertyId] = useState(null);
@@ -81,7 +86,15 @@ const OwnerCreatePropertyPage = () => {
   const nextStep = async () => {
     const groups =
       step === 1
-        ? ["title", "description", "propertyType", "rentType", "monthlyRent", "totalBedrooms"]
+        ? [
+            "title",
+            "description",
+            "propertyType",
+            "rentType",
+            "monthlyRent",
+            "availableDate",
+            "totalBedrooms",
+          ]
         : ["province"];
     if (step < 3 && !(await trigger(groups))) return;
     if (step === 1 && !hasValidQuietHours(houseRules)) {
@@ -250,9 +263,19 @@ const OwnerCreatePropertyPage = () => {
                   Available date
                   <input
                     type="date"
+                    min={today}
                     className={inputClass}
-                    {...register("availableDate")}
+                    {...register("availableDate", {
+                      validate: (value) =>
+                        isTodayOrLater(value, today) ||
+                        "Available date cannot be before today",
+                    })}
                   />
+                  {errors.availableDate && (
+                    <small className="text-danger">
+                      {errors.availableDate.message}
+                    </small>
+                  )}
                 </label>
                 <label className={fieldClass}>
                   Total bedrooms
