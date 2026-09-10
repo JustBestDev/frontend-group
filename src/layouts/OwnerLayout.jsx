@@ -8,22 +8,19 @@ import {
   UserRound,
   House,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
+import { NavLink, Outlet, useNavigate } from "react-router";
 import useAuthStore from "../stores/authStore.js";
-import api from "../services/api.js";
-import { createSocketClient, SOCKET_EVENTS } from "../services/socket.js";
+import useRoleNotifications from "../hooks/useRoleNotifications.js";
 
 import roomHubWordmark from "../assets/roomhub-wordmark.svg";
 import roomHubAppIcon from "../assets/roomhub-app-icon.svg";
 
 const OwnerLayout = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const logout = useAuthStore((state) => state.logout);
   const token = useAuthStore((state) => state.token);
   const user = useAuthStore((state) => state.user);
-  const [notificationCounts, setNotificationCounts] = useState({ rentalRequests: 0, messages: 0 });
+  const notificationCounts = useRoleNotifications("owner", token, user?.id || user?.userId);
   const menuItems = [
     { name: "Homepage", path: "/", icon: House, end: true },
     { name: "My Properties", path: "/owner/properties", icon: Building2 },
@@ -38,49 +35,6 @@ const OwnerLayout = () => {
     logout();
     navigate("/properties");
   };
-
-  const refreshNotifications = useCallback(async () => {
-    try {
-      const [rentalResponse, messageResponse] = await Promise.all([
-        api.get("/rental-requests/owner/unread-count"),
-        api.get("/conversations/unread-count"),
-      ]);
-      setNotificationCounts({
-        rentalRequests: Number(rentalResponse.data?.data?.count) || 0,
-        messages: Number(messageResponse.data?.data?.count) || 0,
-      });
-    } catch {
-      // Navigation remains usable if notification counts cannot be loaded.
-    }
-  }, []);
-
-  useEffect(() => {
-    // Notification totals are server state and should follow route changes.
-    // oxlint-disable-next-line react/set-state-in-effect
-    refreshNotifications();
-  }, [location.pathname, refreshNotifications]);
-
-  useEffect(() => {
-    const intervalId = window.setInterval(refreshNotifications, 10000);
-    const handleRefresh = () => refreshNotifications();
-    window.addEventListener("owner-notifications:refresh", handleRefresh);
-    return () => {
-      window.clearInterval(intervalId);
-      window.removeEventListener("owner-notifications:refresh", handleRefresh);
-    };
-  }, [refreshNotifications]);
-
-  useEffect(() => {
-    if (!token) return undefined;
-    const socket = createSocketClient(token);
-    const handleNewMessage = ({ message }) => {
-      if (String(message?.senderId) !== String(user?.id || user?.userId)) refreshNotifications();
-    };
-    socket.on(SOCKET_EVENTS.NEW_MESSAGE, handleNewMessage);
-    socket.on(SOCKET_EVENTS.MESSAGES_READ, refreshNotifications);
-    socket.connect();
-    return () => socket.disconnect();
-  }, [refreshNotifications, token, user?.id, user?.userId]);
 
   return (
     <div className="min-h-screen bg-cream md:flex">

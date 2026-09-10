@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
+import { NavLink, Outlet, useNavigate } from "react-router";
 import {
   Bell,
   Building2,
@@ -13,20 +12,18 @@ import {
   UsersRound, House
 } from "lucide-react";
 import useAuthStore from "../stores/authStore.js";
-import api from "../services/api.js";
-import { createSocketClient, SOCKET_EVENTS } from "../services/socket.js";
+import useRoleNotifications from "../hooks/useRoleNotifications.js";
 
 import roomHubWordmark from "../assets/roomhub-wordmark.svg";
 import roomHubAppIcon from "../assets/roomhub-app-icon.svg";
 
 const AdminLayout = () => {
   const navigate = useNavigate();
-  const location = useLocation();
 
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
   const token = useAuthStore((state) => state.token);
-  const [notificationCounts, setNotificationCounts] = useState({ ownerApplications: 0, properties: 0, messages: 0 });
+  const notificationCounts = useRoleNotifications("admin", token, user?.id || user?.userId);
 
   const handleLogout = () => {
     logout();
@@ -41,50 +38,6 @@ const AdminLayout = () => {
     { name: "Property Approvals", path: "/admin/properties", icon: Building2, },
     { name: "Conversations", path: "/admin/conversations", icon: MessageCircle, },
   ];
-
-  const refreshNotifications = useCallback(async () => {
-    try {
-      const [adminResponse, messageResponse] = await Promise.all([
-        api.get("/admin/notifications/unread-counts"),
-        api.get("/conversations/unread-count"),
-      ]);
-      setNotificationCounts({
-        ownerApplications: Number(adminResponse.data?.data?.ownerApplications) || 0,
-        properties: Number(adminResponse.data?.data?.properties) || 0,
-        messages: Number(messageResponse.data?.data?.count) || 0,
-      });
-    } catch {
-      // Notification failures should not prevent admin navigation.
-    }
-  }, []);
-
-  useEffect(() => {
-    // Notification totals are server state and should follow route changes.
-    // oxlint-disable-next-line react/set-state-in-effect
-    refreshNotifications();
-  }, [location.pathname, refreshNotifications]);
-
-  useEffect(() => {
-    const intervalId = window.setInterval(refreshNotifications, 30000);
-    const handleRefresh = () => refreshNotifications();
-    window.addEventListener("notifications:refresh", handleRefresh);
-    return () => {
-      window.clearInterval(intervalId);
-      window.removeEventListener("notifications:refresh", handleRefresh);
-    };
-  }, [refreshNotifications]);
-
-  useEffect(() => {
-    if (!token) return undefined;
-    const socket = createSocketClient(token);
-    const handleNewMessage = ({ message }) => {
-      if (String(message?.senderId) !== String(user?.id || user?.userId)) refreshNotifications();
-    };
-    socket.on(SOCKET_EVENTS.NEW_MESSAGE, handleNewMessage);
-    socket.on(SOCKET_EVENTS.MESSAGES_READ, refreshNotifications);
-    socket.connect();
-    return () => socket.disconnect();
-  }, [refreshNotifications, token, user?.id, user?.userId]);
 
   const totalNotifications = notificationCounts.ownerApplications + notificationCounts.properties + notificationCounts.messages;
 
