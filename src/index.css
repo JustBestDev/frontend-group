@@ -30,3 +30,5 @@
 @import "./styles/pages/admin-detail.css";
 @import "./styles/components/reject-modal.css";
 @import "./styles/pages/room-detail.css";
+@import "./styles/components/location-search.css";
+@import "./styles/components/transit-map-modal.css";
