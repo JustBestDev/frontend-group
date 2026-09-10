@@ -147,7 +147,7 @@ export default function RoomDetail({ owner = false }) {
       <main className="min-h-screen bg-[#f7f5ee] flex items-center justify-center p-6">
         <div className="flex flex-col items-center gap-3 bg-white p-8 rounded-2xl border border-[#e1e5dd] shadow-xs">
           <div className="w-9 h-9 border-3 border-[#4f614d] border-t-transparent rounded-full animate-spin" />
-          <p className="text-[#6f7a73] text-sm font-medium">
+          <p className="text-muted-copy text-sm font-medium">
             Loading room details...
           </p>
         </div>
@@ -309,7 +309,7 @@ export default function RoomDetail({ owner = false }) {
               </div>
 
               <div>
-                <h1 className="break-words font-serif text-2xl sm:text-3xl font-bold text-[#1c1c16] tracking-tight">
+                <h1 className="wrap-break-word font-serif text-2xl sm:text-3xl font-bold text-[#1c1c16] tracking-tight">
                   {room.roomName}
                 </h1>
               </div>
@@ -441,21 +441,24 @@ export default function RoomDetail({ owner = false }) {
                   type="button"
                   onClick={handleRentalRequest}
                   disabled={room.status !== "AVAILABLE"}
-                  className={`w-full py-3.5 px-4 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer active:scale-98 ${room.status !== "AVAILABLE"
-                    ? "bg-sage-light text-[#294c25] border border-[#b8deb0] cursor-default"
-                    : "bg-[#4f614d] text-white hover:bg-[#41513f]"
-                    }`}
+                  className={`w-full py-3.5 px-4 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-xs ${
+                    room.status !== "AVAILABLE"
+                      ? "bg-[#f1f0ea] text-[#889188] border border-[#e1ded5] cursor-not-allowed"
+                      : "bg-[#4f614d] text-white hover:bg-[#41513f] cursor-pointer active:scale-98"
+                  }`}
                 >
                   {room.status === "AVAILABLE"
                     ? "Request to Rent This Room"
-                    : "Room Unavailable"}
+                    : room.status === "RESERVED"
+                      ? "Room Reserved"
+                      : "Room Unavailable"}
                 </button>
 
                 <button
                   type="button"
                   onClick={handleContactOwner}
                   disabled={isContactingOwner}
-                  className="w-full py-3 px-4 rounded-xl border border-[#4f614d] text-[#4f614d] bg-white hover:bg-[#e6ede3]/40 text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                  className="w-full py-3 px-4 rounded-xl border border-[#4f614d] text-[#4f614d] bg-white hover:bg-sage-light/40 text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
                 >
                   {isContactingOwner ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -484,7 +487,7 @@ export default function RoomDetail({ owner = false }) {
               {/* Safety notice */}
               <div className="flex items-center gap-2 text-xs text-muted-copy pt-2 border-t border-[#f1eee4]">
                 <ShieldCheck className="w-4 h-4 text-[#4f614d] shrink-0" />
-                <span>Verified roommate listing & protected deposit</span>
+                <span>Always inspect the property before transferring any deposit</span>
               </div>
             </div>
             )}
@@ -492,7 +495,7 @@ export default function RoomDetail({ owner = false }) {
             {/* Listed by Owner Card */}
             {!owner && host && (
               <div className="bg-white border border-[#e1e5dd] rounded-2xl p-6 shadow-xs space-y-4">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#6f7a73]">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-copy">
                   Property Host
                 </span>
 
@@ -513,17 +516,30 @@ export default function RoomDetail({ owner = false }) {
                     <h4 className="font-bold text-sm text-[#1c1c16]">
                       {hostDisplayName}
                     </h4>
-                    <div className="flex items-center gap-1 text-xs text-[#4f614d] font-semibold mt-0.5">
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                      <span>Verified Host</span>
-                    </div>
+                    {hostProfile?.isVerified ? (
+                      <div className="flex items-center gap-1 text-xs text-[#4f614d] font-semibold mt-0.5">
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>Verified Host</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 text-xs text-muted-copy font-medium mt-0.5">
+                        <UserRound className="w-3.5 h-3.5" />
+                        <span>Property Host</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                <div className="p-3 bg-[#f7f5ee] rounded-xl text-xs text-[#6f7a73] space-y-1">
-                  <p>• Usually responds within an hour</p>
-                  <p>• Schedule room viewing at least 1 day in advance</p>
-                </div>
+                {hostProfile?.bio ? (
+                  <div className="p-3 bg-[#f7f5ee] rounded-xl text-xs text-[#414753] leading-relaxed">
+                    <p className="line-clamp-3">{hostProfile.bio}</p>
+                  </div>
+                ) : (
+                  <div className="p-3 bg-[#f7f5ee] rounded-xl text-xs text-muted-copy space-y-1">
+                    <p>• Message host directly to check availability</p>
+                    <p>• Schedule a room viewing before making a deposit</p>
+                  </div>
+                )}
 
                 <button
                   type="button"
