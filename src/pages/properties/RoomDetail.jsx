@@ -86,10 +86,31 @@ export default function RoomDetail({ owner = false }) {
   };
 
   if (isLoading) {
-    return <div className="">Loading ...</div>;
+    return owner ? (
+      <div className="owner-loading">Loading room...</div>
+    ) : (
+      <div>Loading ...</div>
+    );
   }
 
   if (error || !room) {
+    if (owner) {
+      return (
+        <section className="mx-auto w-full max-w-330">
+          <Link
+            to={location.state?.backTo || `/owner/properties/${propertyId}`}
+            className="mb-5 inline-flex items-center gap-2 text-sm font-bold text-sage-dark"
+          >
+            <ArrowLeft size={17} />
+            {location.state?.backLabel || "Back to Property"}
+          </Link>
+          <p className="owner-alert" role="alert">
+            {error || "Room not found"}
+          </p>
+        </section>
+      );
+    }
+
     return (
       <main className="grid min-h-screen place-content-center bg-[#f7f5ee] p-6 text-center">
         <p className="rounded-xl bg-[#fde8e6] px-5 py-4 text-danger" role="alert">
@@ -100,7 +121,7 @@ export default function RoomDetail({ owner = false }) {
   }
 
   return (
-    <main className="min-h-screen bg-[#f7f5ee] text-[#1c1c16] antialiased py-6 md:py-8 px-4 sm:px-6 lg:px-8">
+    <main className={owner ? "owner-resource-page mx-auto w-full max-w-330 text-[#1c1c16] antialiased" : "min-h-screen bg-[#f7f5ee] text-[#1c1c16] antialiased py-6 md:py-8 px-4 sm:px-6 lg:px-8"}>
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-[#1c1c16] text-white px-4 py-3 rounded-xl shadow-lg animate-fade-in text-sm font-medium">
@@ -216,7 +237,7 @@ export default function RoomDetail({ owner = false }) {
               </div>
 
               <div>
-                <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#1c1c16] tracking-tight">
+                <h1 className="break-words font-serif text-2xl sm:text-3xl font-bold text-[#1c1c16] tracking-tight">
                   {room.roomName}
                 </h1>
               </div>

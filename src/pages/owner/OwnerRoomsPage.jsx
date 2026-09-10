@@ -70,7 +70,7 @@ const OwnerRoomsPage = () => {
                     <Link
                       to={ownerRoomPath(room.propertyId, room.id)}
                       state={{ backTo: "/owner/rooms", backLabel: "Back to Rooms" }}
-                      className="group/room block rounded-sm outline-none focus-visible:ring-3 focus-visible:ring-sage-dark/25"
+                      className="group/room block cursor-pointer rounded-sm outline-none focus-visible:ring-3 focus-visible:ring-sage-dark/25"
                     >
                       <strong className="transition group-hover/room:text-sage-dark group-hover/room:underline">
                         {room.roomName}
@@ -81,7 +81,7 @@ const OwnerRoomsPage = () => {
                   <td>{room.propertyTitle}</td>
                   <td>{room.capacity || "โ€”"}</td>
                   <td>เธฟ{Number(room.monthlyRent || 0).toLocaleString()}</td>
-                  <td><span className={`owner-status status-${room.status?.toLowerCase()}`}>{room.status}</span>
+                  <td><span className={`owner-status status-${room.status?.toLowerCase()} whitespace-nowrap`}>{room.status}</span>
                   </td>
                 </tr>
               )}

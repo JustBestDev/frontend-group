@@ -83,10 +83,10 @@ const OwnerRentalDetailPage = () => {
       <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="owner-eyebrow">Rental #{rental.id}</p>
-          <h1>{rental.property?.title || `Property #${rental.propertyId}`}</h1>
+          <h1 className="break-words">{rental.property?.title || `Property #${rental.propertyId}`}</h1>
           <p>{target}</p>
         </div>
-        <span className={`owner-status status-${rental.status?.toLowerCase()}`}>
+        <span className={`owner-status status-${rental.status?.toLowerCase()} whitespace-nowrap`}>
           {rental.status}
         </span>
       </header>

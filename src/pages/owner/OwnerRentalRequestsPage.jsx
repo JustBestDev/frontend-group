@@ -170,7 +170,7 @@ const RequestCard = ({ request, reviewingId, onReview }) => {
         <div className="flex flex-wrap gap-2">
           <Link
             to={ownerRentalRequestPath(request.id)}
-            className="inline-flex items-center rounded-xl border border-sage-dark px-4 py-2.5 text-sm font-bold text-sage-dark transition hover:bg-sage-light focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sage-dark"
+            className="inline-flex cursor-pointer items-center rounded-xl border border-sage-dark px-4 py-2.5 text-sm font-bold text-sage-dark transition hover:bg-sage-light focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sage-dark"
           >
             View details
           </Link>

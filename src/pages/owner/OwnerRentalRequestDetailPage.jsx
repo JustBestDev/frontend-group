@@ -112,10 +112,10 @@ const OwnerRentalRequestDetailPage = () => {
       <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="owner-eyebrow">Request #{request.id}</p>
-          <h1>{request.requester?.username || `User #${request.requesterId}`}</h1>
+          <h1 className="break-all">{request.requester?.username || `User #${request.requesterId}`}</h1>
           <p>Submitted {formatDate(request.createdAt)}</p>
         </div>
-        <span className={`owner-status status-${request.status.toLowerCase()}`}>
+        <span className={`owner-status status-${request.status.toLowerCase()} whitespace-nowrap`}>
           {request.status}
         </span>
       </header>

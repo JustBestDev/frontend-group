@@ -77,7 +77,7 @@ const OwnerRentalsPage = () => {
                   <td>
                     <Link
                       to={ownerRentalPath(rental.id)}
-                      className="group/rental block rounded-sm outline-none focus-visible:ring-3 focus-visible:ring-sage-dark/25"
+                      className="group/rental block cursor-pointer rounded-sm outline-none focus-visible:ring-3 focus-visible:ring-sage-dark/25"
                     >
                       <strong className="transition group-hover/rental:text-sage-dark group-hover/rental:underline">
                         {rental.property?.title || `Property #${rental.propertyId}`}
@@ -86,16 +86,16 @@ const OwnerRentalsPage = () => {
                     </Link>
                   </td>
                   <td>
-                    {formatDate(rental.startDate)}{formatDate(rental.endDate)}
+                    {formatDate(rental.startDate)} → {formatDate(rental.endDate)}
                   </td>
                   <td>
-                    {Number(rental.monthlyRent || 0).toLocaleString()}
+                    ฿{Number(rental.monthlyRent || 0).toLocaleString()}
                   </td>
                   <td>
                     {rental.members?.length || 0}
                   </td>
                   <td>
-                    <span className={`owner-status status-${rental.status?.toLowerCase()}`}>
+                    <span className={`owner-status status-${rental.status?.toLowerCase()} whitespace-nowrap`}>
                       {rental.status}
                     </span>
                   </td>

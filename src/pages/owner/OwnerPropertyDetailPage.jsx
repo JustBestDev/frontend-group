@@ -10,8 +10,9 @@ import {
   Save,
   Users,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useReducer, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
+import PropertyImageLightbox from "../../components/owner/PropertyImageLightbox.jsx";
 import PropertyOptionsFields from "../../components/owner/PropertyOptionsFields.jsx";
 import {
   createPropertyAddressApi,
@@ -25,6 +26,7 @@ import {
   propertyOptionIcons,
   toHouseRulesPayload,
 } from "../../utils/propertyOptions.js";
+import { imagePreviewReducer } from "../../utils/imagePreview.js";
 import {
   ownerEditRoomPath,
   ownerRoomPath,
@@ -65,6 +67,23 @@ const OwnerPropertyDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [previewIndex, dispatchPreview] = useReducer(
+    imagePreviewReducer,
+    null,
+  );
+  const imageCount = property?.images?.length || 0;
+  const closePreview = useCallback(
+    () => dispatchPreview({ type: "close" }),
+    [],
+  );
+  const nextPreview = useCallback(
+    () => dispatchPreview({ type: "next", total: imageCount }),
+    [imageCount],
+  );
+  const previousPreview = useCallback(
+    () => dispatchPreview({ type: "previous", total: imageCount }),
+    [imageCount],
+  );
 
   useEffect(() => {
     let active = true;
@@ -189,6 +208,7 @@ const OwnerPropertyDetailPage = () => {
 
   const cover =
     property.images?.find((image) => image.isCover) || property.images?.[0];
+  const coverIndex = cover ? property.images.indexOf(cover) : -1;
 
   if (!editing) {
     const summaryItems = [
@@ -257,20 +277,27 @@ const OwnerPropertyDetailPage = () => {
 
         <div className="relative overflow-hidden rounded-3xl bg-sage-light shadow-[0_18px_50px_rgba(50,66,54,.12)]">
           {cover ? (
-            <img
-              src={cover.imageUrl}
-              alt={property.title}
-              className="h-72 w-full object-cover sm:h-96 lg:h-112"
-            />
+            <button
+              type="button"
+              onClick={() => dispatchPreview({ type: "open", index: coverIndex })}
+              aria-label={`Open ${property.title} image preview`}
+              className="block w-full cursor-zoom-in focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-white"
+            >
+              <img
+                src={cover.imageUrl}
+                alt={`${property.title} cover`}
+                className="h-72 w-full object-cover sm:h-96 lg:h-112"
+              />
+            </button>
           ) : (
             <div className="grid h-72 place-items-center text-sage-dark sm:h-96">
               <Building2 size={64} />
             </div>
           )}
 
-          <div className="absolute inset-x-0 bottom-0 h-2/5 bg-linear-to-t from-black/65 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-linear-to-t from-black/65 to-transparent" />
 
-          <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-4 p-6 text-white md:p-8">
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-4 p-6 text-white md:p-8">
             <div>
               <p className="mb-2 text-xs font-extrabold uppercase tracking-[.18em] text-white/75">
                 {property.propertyType?.replaceAll("_", " ")}
@@ -284,6 +311,12 @@ const OwnerPropertyDetailPage = () => {
               {property.publishStatus}
             </span>
           </div>
+
+          {imageCount > 1 && (
+            <span className="pointer-events-none absolute right-4 top-4 rounded-full bg-black/65 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-sm">
+              View all {imageCount} photos
+            </span>
+          )}
         </div>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(300px,.7fr)]">
@@ -460,13 +493,13 @@ const OwnerPropertyDetailPage = () => {
                           backTo: `/owner/properties/${property.id}`,
                           backLabel: "Back to Property",
                         }}
-                        className="inline-flex items-center justify-center rounded-xl bg-sage-dark px-4 py-2.5 text-sm font-bold text-white transition hover:brightness-95 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sage-dark"
+                        className="inline-flex cursor-pointer items-center justify-center rounded-xl bg-sage-dark px-4 py-2.5 text-sm font-bold text-white transition hover:brightness-95 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sage-dark"
                       >
                         View room
                       </Link>
                       <Link
                         to={ownerEditRoomPath(property.id, room.id)}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-sage-dark px-4 py-2.5 text-sm font-bold text-sage-dark transition hover:bg-sage-light focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sage-dark"
+                        className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-sage-dark px-4 py-2.5 text-sm font-bold text-sage-dark transition hover:bg-sage-light focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sage-dark"
                       >
                         <Pencil size={15} />
                         Edit room
@@ -495,6 +528,16 @@ const OwnerPropertyDetailPage = () => {
             </p>
           )}
         </section>
+        {previewIndex != null && (
+          <PropertyImageLightbox
+            images={property.images}
+            index={previewIndex}
+            propertyTitle={property.title}
+            onClose={closePreview}
+            onNext={nextPreview}
+            onPrevious={previousPreview}
+          />
+        )}
       </section>
     );
   }
