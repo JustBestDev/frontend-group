@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { getGalleryImages, getPropertyDetails } from "../src/utils/propertyDetail.js";
+import {
+  buildCommunityPostPayload,
+  getGalleryImages,
+  getPropertyDetails,
+} from "../src/utils/propertyDetail.js";
 
 test("gallery uses listing images without fabricated fillers", () => {
   assert.deepEqual(getGalleryImages({ images: [{ imageUrl: "listing.jpg" }] }), ["listing.jpg"]);
@@ -51,6 +55,23 @@ test("individual-room pricing is derived from actual room rents", () => {
 
   assert.equal(details.roomStartingPrice, 7800);
   assert.equal(details.displayPrice, 7800);
+  assert.equal(details.selectedRoom.id, 2);
+});
+
+test("room-context community shares include the selected room", () => {
+  const payload = buildCommunityPostPayload(
+    { id: 12, title: "Forest House" },
+    12,
+    { title: "Room B roommates", requireMember: 2, roomId: 9 },
+  );
+
+  assert.deepEqual(payload, {
+    propertyId: 12,
+    roomId: 9,
+    title: "Room B roommates",
+    description: "",
+    requiredMembers: 2,
+  });
 });
 
 test("missing room rents and address stay undisclosed", () => {

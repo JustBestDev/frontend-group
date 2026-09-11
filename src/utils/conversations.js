@@ -24,6 +24,52 @@ export const getCreatedMessage = (response) => {
 export const getConversationId = (conversation) =>
   conversation?.id || conversation?.conversationId;
 
+export const getMessagePreview = (message) => {
+  const content = message?.content || message?.message;
+  if (content?.trim()) return content.trim();
+  if (message?.type === "PROPERTY_SHARE") return "Shared a property";
+  if (message?.type === "ROOM_SHARE") return "Shared a room";
+  return "No messages yet";
+};
+
+export const isSharedListingMessage = (message) =>
+  message?.type === "PROPERTY_SHARE" || message?.type === "ROOM_SHARE";
+
+export const getSharedListingPath = (message, ownerPortal = false) => {
+  const isRoom = message?.type === "ROOM_SHARE";
+  const listing = isRoom ? message?.sharedRoom : message?.sharedProperty;
+  if (!listing) return null;
+  const propertyId = isRoom ? listing.property?.id : listing.id;
+  if (!propertyId) return null;
+  if (ownerPortal) {
+    return isRoom
+      ? `/owner/properties/${propertyId}/rooms/${listing.id}`
+      : `/owner/properties/${listing.id}`;
+  }
+  return isRoom
+    ? `/properties/${propertyId}/${listing.id}`
+    : `/properties/${listing.id}`;
+};
+
+export const shareListingWithHost = async (
+  api,
+  { propertyId, ownerId, roomId },
+) => {
+  const response = await api.post("/conversations", {
+    propertyId: Number(propertyId),
+    memberId: Number(ownerId),
+  });
+  const conversation = response.data.conversation || response.data.data?.conversation;
+  const conversationId = getConversationId(conversation);
+  if (!conversationId) throw new Error("Conversation was not returned");
+
+  await api.post(`/conversations/${conversationId}/messages`, roomId
+    ? { type: "ROOM_SHARE", roomId: Number(roomId) }
+    : { type: "PROPERTY_SHARE", propertyId: Number(propertyId) });
+
+  return conversationId;
+};
+
 export const getSocketMessage = (payload) => {
   const nestedData = payload?.data;
   const message =

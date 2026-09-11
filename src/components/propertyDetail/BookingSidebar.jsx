@@ -16,11 +16,15 @@ const BookingSidebar = ({
   setSelectedRoomId,
   handleRequestToRent,
   handleShare,
+  handleRoomShare,
   handleContactOwner,
   isContactingOwner,
 }) => {
   const selectedStatus = (selectedRoom?.status || selectedRoom?.roomStatus || "UNKNOWN").toUpperCase();
   const selectedIsAvailable = selectedStatus === "AVAILABLE";
+  const shareUnavailable = isWholeUnit
+    ? isWholeUnitUnavailable
+    : !selectedRoom || !selectedIsAvailable;
 
   return (
     <aside className="space-y-5 rounded-[20px] bg-white p-6 shadow-[0_16px_38px_rgba(50,66,54,.1)] sm:p-7">
@@ -59,9 +63,19 @@ const BookingSidebar = ({
           <span className="flex w-full items-center justify-center rounded-xl bg-[#ecebe6] px-4 py-3 text-sm font-bold text-muted-copy">No room available</span>
         )}
 
-        {isWholeUnit && (
-          <button type="button" onClick={handleShare} disabled={isWholeUnitUnavailable} className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition ${isWholeUnitUnavailable ? "cursor-not-allowed bg-[#ecebe6] text-muted-copy" : "cursor-pointer bg-sage-light text-forest hover:bg-[#dbe6d7]"}`}><Users className="size-4" />{isWholeUnitUnavailable ? "Cannot Share Unavailable Property" : "Find Roommates / Share"}</button>
-        )}
+        <button
+          type="button"
+          onClick={isWholeUnit ? handleShare : handleRoomShare}
+          disabled={shareUnavailable}
+          className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition ${shareUnavailable ? "cursor-not-allowed bg-[#ecebe6] text-muted-copy" : "cursor-pointer bg-sage-light text-forest hover:bg-[#dbe6d7]"}`}
+        >
+          <Users className="size-4" />
+          {isWholeUnit && isWholeUnitUnavailable
+            ? "Cannot Share Unavailable Property"
+            : !isWholeUnit && (!selectedRoom || !selectedIsAvailable)
+              ? "Cannot Share Unavailable Room"
+              : "Find Roommates / Share"}
+        </button>
 
         <button type="button" onClick={handleContactOwner} disabled={isContactingOwner} className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-forest transition hover:bg-[#f3f1e9] disabled:cursor-wait">
           {isContactingOwner ? <Loader2 className="size-4 animate-spin" /> : <MessageCircle className="size-4" />} {isContactingOwner ? "Opening conversation..." : "Contact Host"}

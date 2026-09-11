@@ -14,6 +14,7 @@ import AmenitiesAndRules from "../components/propertyDetail/AmenitiesAndRules.js
 import BookingSidebar from "../components/propertyDetail/BookingSidebar.jsx";
 import OwnerCard from "../components/propertyDetail/OwnerCard.jsx";
 import SharePropertyModal from "../components/propertyDetail/SharePropertyModal.jsx";
+import { shareListingWithHost } from "../utils/conversations.js";
 
 const PropertyDetailPage = () => {
   const { propertyId } = useParams();
@@ -31,6 +32,7 @@ const PropertyDetailPage = () => {
 
   // Gallery and Modal State
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [roomToShare, setRoomToShare] = useState(null);
   const [isRentalRequestOpen, setIsRentalRequestOpen] = useState(false);
   const [isContactingOwner, setIsContactingOwner] = useState(false);
   // Interaction State
@@ -38,6 +40,7 @@ const PropertyDetailPage = () => {
   const [toastMessage, setToastMessage] = useState("");
 
   const toastTimer = useRef(null);
+  const contactInFlight = useRef(false);
   useEffect(() => () => clearTimeout(toastTimer.current), []);
 
   const showToast = (message) => {
@@ -68,7 +71,16 @@ const PropertyDetailPage = () => {
     displayPrice,
   } = propertyDetails;
 
-  const handleShare = () => setIsShareModalOpen(true);
+  const handleShare = () => {
+    setRoomToShare(null);
+    setIsShareModalOpen(true);
+  };
+
+  const handleRoomShare = () => {
+    if (!selectedRoom) return;
+    setRoomToShare(selectedRoom);
+    setIsShareModalOpen(true);
+  };
 
   // Toggle Save
   const handleToggleSave = () => {
@@ -81,6 +93,7 @@ const PropertyDetailPage = () => {
 
   // Contact Owner Handler
   const handleContactOwner = async () => {
+    if (contactInFlight.current) return;
     if (!token || !user) {
       navigate("/login");
       return;
@@ -92,20 +105,27 @@ const PropertyDetailPage = () => {
       return;
     }
 
+    const roomId = isWholeUnit
+      ? null
+      : selectedRoom?.id || selectedRoom?.roomId || selectedRoomId;
+    if (!isWholeUnit && !roomId) {
+      showToast("Please choose a room before contacting the host");
+      return;
+    }
+
+    contactInFlight.current = true;
     setIsContactingOwner(true);
     try {
-      const response = await api.post("/conversations", {
+      const conversationId = await shareListingWithHost(api, {
         propertyId: Number(property.id || propertyId),
-        memberId: Number(ownerId),
+        ownerId,
+        roomId,
       });
-      const conversation = response.data.conversation || response.data.data?.conversation;
-      const conversationId = conversation?.id || conversation?.conversationId;
-
-      if (!conversationId) throw new Error("Conversation was not returned");
       navigate("/Message", { state: { conversationId } });
     } catch (requestError) {
-      showToast(requestError.response?.data?.message || "Unable to contact the host");
+      showToast(requestError.response?.data?.message || "Unable to share this listing with the host");
     } finally {
+      contactInFlight.current = false;
       setIsContactingOwner(false);
     }
   };
@@ -246,6 +266,7 @@ const PropertyDetailPage = () => {
               setSelectedRoomId={setSelectedRoomId}
               handleRequestToRent={handleRequestToRent}
               handleShare={handleShare}
+              handleRoomShare={handleRoomShare}
               handleContactOwner={handleContactOwner}
               isContactingOwner={isContactingOwner}
             />
@@ -272,6 +293,7 @@ const PropertyDetailPage = () => {
       {isShareModalOpen && (
         <SharePropertyModal
           property={property}
+          room={roomToShare}
           propertyId={propertyId}
           galleryImages={galleryImages}
           address={address}
@@ -280,7 +302,10 @@ const PropertyDetailPage = () => {
           isReserved={isReserved}
           isRented={isRented}
           showToast={showToast}
-          onClose={() => setIsShareModalOpen(false)}
+          onClose={() => {
+            setIsShareModalOpen(false);
+            setRoomToShare(null);
+          }}
         />
       )}
     </div>

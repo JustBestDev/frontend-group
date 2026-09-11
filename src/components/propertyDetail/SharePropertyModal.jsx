@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { Copy, Loader2, MapPin, Users, X } from "lucide-react";
 import api from "../../services/api.js";
+import ShareListingToConversation from "../conversations/ShareListingToConversation.jsx";
+import { buildCommunityPostPayload } from "../../utils/propertyDetail.js";
 
 const SharePropertyModal = ({
   property,
+  room,
   propertyId,
   galleryImages,
   address,
@@ -14,23 +17,22 @@ const SharePropertyModal = ({
   showToast,
   onClose,
 }) => {
+  const roomId = room?.id || room?.roomId;
+  const roomTitle = room?.roomName || room?.name;
+  const roomImage = room?.images?.[0]?.imageUrl || room?.images?.[0]?.url || room?.imageUrl;
+  const previewTitle = roomTitle || property?.title || property?.name || `Property #${propertyId}`;
+  const previewImage = roomImage || galleryImages[0];
+  const shareUrl = roomId
+    ? `${window.location.origin}/properties/${property?.id || propertyId}/${roomId}`
+    : window.location.href;
   const [isSharingToCommunity, setIsSharingToCommunity] = useState(false);
-  const [postTitle, setPostTitle] = useState(property?.title || property?.name || "");
+  const [postTitle, setPostTitle] = useState(previewTitle);
   const [postDescription, setPostDescription] = useState("");
   const [requireMember, setRequireMember] = useState(1);
   const [genderPreference, setGenderPreference] = useState("ANY");
 
   const saveShareToDatabase = async (propertyData, postData = {}) => {
-    const payload = {
-      propertyId: propertyData?.id || propertyId,
-      title:
-        postData.title ||
-        propertyData?.title ||
-        propertyData?.name ||
-        `Listing #${propertyData?.id}`,
-      description: postData.description || "",
-      requiredMembers: Number(postData.requireMember) || 1,
-    };
+    const payload = buildCommunityPostPayload(propertyData, propertyId, postData);
     const response = await api.post("/community-posts", payload);
     if (response.status === 200) {
       showToast("Shared to community post successfully ✅");
@@ -62,6 +64,7 @@ const SharePropertyModal = ({
         title: postTitle.trim(),
         description: formattedDescription,
         requireMember: Number(requireMember) || 1,
+        roomId,
       });
       showToast("Shared to Community successfully!");
       onClose();
@@ -79,8 +82,8 @@ const SharePropertyModal = ({
   // Direct link copy
   const handleCopyLink = async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href);
-      showToast("Property link copied to clipboard!");
+      await navigator.clipboard.writeText(shareUrl);
+      showToast(`${roomId ? "Room" : "Property"} link copied to clipboard!`);
     } catch {
       showToast("Failed to copy link");
     }
@@ -102,7 +105,7 @@ const SharePropertyModal = ({
               Share Listing
             </h3>
             <p className="text-xs sm:text-sm text-muted-copy mt-1">
-              Choose where you'd like to share this property listing
+              Choose where you'd like to share this {roomId ? "room" : "property"} listing
             </p>
           </div>
           <button
@@ -117,18 +120,16 @@ const SharePropertyModal = ({
 
         {/* Property Preview Card */}
         <div className="flex items-center gap-4 p-4 sm:p-5 rounded-2xl bg-[#f7f5ee] border border-[#e1e5dd] mb-6">
-          {galleryImages[0] && (
+          {previewImage && (
             <img
-              src={galleryImages[0]}
-              alt={property?.title || property?.name || "Property preview"}
+              src={previewImage}
+              alt={`${previewTitle} preview`}
               className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover shrink-0 shadow-xs"
             />
           )}
           <div className="min-w-0 flex-1">
             <h4 className="text-base sm:text-lg font-bold text-[#1c1c16] truncate">
-              {property?.title ||
-                property?.name ||
-                `Property #${propertyId}`}
+              {previewTitle}
             </h4>
             {address && (
               <p className="text-xs sm:text-sm text-muted-copy truncate flex items-center gap-1.5 mt-1">
@@ -282,6 +283,16 @@ const SharePropertyModal = ({
         </div>
 
         {/* Copy Direct Link */}
+        <div className="mb-6">
+          <ShareListingToConversation
+            type={roomId ? "ROOM_SHARE" : "PROPERTY_SHARE"}
+            listingId={roomId || property?.id || propertyId}
+            propertyId={property?.id || propertyId}
+            ownerId={property?.owner?.id || property?.ownerId || property?.user?.id}
+            onShared={onClose}
+          />
+        </div>
+
         <div>
           <label className="block text-xs sm:text-sm font-bold uppercase tracking-wider text-muted-copy mb-2">
             Copy Listing Link
@@ -290,7 +301,7 @@ const SharePropertyModal = ({
             <input
               type="text"
               readOnly
-              value={window.location.href}
+              value={shareUrl}
               className="flex-1 text-xs sm:text-sm px-4 py-2.5 sm:py-3 bg-[#f7f5ee] border border-[#e1e5dd] rounded-xl text-muted-copy select-all truncate focus:outline-none font-mono"
             />
             <button

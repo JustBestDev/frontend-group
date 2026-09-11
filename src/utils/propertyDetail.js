@@ -13,6 +13,16 @@ export function getGalleryImages(property) {
   return list;
 }
 
+export function buildCommunityPostPayload(property, propertyId, postData = {}) {
+  return {
+    propertyId: property?.id || propertyId,
+    ...(postData.roomId ? { roomId: Number(postData.roomId) } : {}),
+    title: postData.title || property?.title || property?.name || `Listing #${property?.id || propertyId}`,
+    description: postData.description || "",
+    requiredMembers: Number(postData.requireMember) || 1,
+  };
+}
+
 export function getPropertyDetails(property, selectedRoomId) {
   // Extracted and computed property data
   const rooms = Array.isArray(property.rooms) ? property.rooms : [];

@@ -14,13 +14,20 @@ import {
   ChevronDown,
   ChevronUp,
   ExternalLink,
+  ImageOff,
 } from "lucide-react";
 import useAuthStore from "../stores/authStore.js";
 import RentalRequestModal from "../components/rentalRequest/RentalRequestModal.jsx";
 import EditProfileModal from "../components/profile/EditProfileModal.jsx";
+import UserProfileModal from "../components/profile/UserProfileModal.jsx";
 import useCommunityPosts from "../hooks/useCommunityPosts.js";
 import useZodiacMatches from "../hooks/useZodiacMatches.js";
-import { getCommunityReadiness, parsePostGender } from "../utils/communityRental.js";
+import {
+  getCommunityListing,
+  getCommunityReadiness,
+  parsePostGender,
+} from "../utils/communityRental.js";
+import { formatZodiacWithSymbol } from "../utils/zodiac.js";
 
 const fallbackImage =
   "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80";
@@ -39,6 +46,7 @@ function CommunityPage() {
   const navigate = useNavigate();
   const userId = useAuthStore((state) => state.user?.id);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [profileUserId, setProfileUserId] = useState(null);
   const [searchText, setSearchText] = useState("");
   const [propertyTypeFilter, setPropertyTypeFilter] = useState("ALL");
   const [genderFilter, setGenderFilter] = useState("ALL");
@@ -533,6 +541,10 @@ function CommunityPage() {
                     (member) => member.memberRole === "CREATOR",
                   )?.user;
                 const creatorId = post.creatorId ?? creator?.id;
+                const listing = getCommunityListing(post);
+                const creatorZodiac = formatZodiacWithSymbol(
+                  creator?.profile?.zodiac,
+                );
                 const isCreator = Number(creatorId) === Number(userId);
                 const communityMembers = zodiacMode
                   ? post.members || []
@@ -540,7 +552,7 @@ function CommunityPage() {
                 const memberZodiacs = communityMembers
                   .map((member) => member.user?.profile?.zodiac)
                   .filter(Boolean)
-                  .map(formatZodiac);
+                  .map(formatZodiacWithSymbol);
                 const memberIds = new Set(
                   communityMembers
                     .map((member) => member.userId ?? member.user?.id)
@@ -618,11 +630,25 @@ function CommunityPage() {
                               ? "Not enough zodiac data"
                               : `${post.compatibilityScore}% Match`}
                           </span>
-                          <span>
-                            Creator: {creator?.profile?.firstName ||
-                              creator?.username ||
-                              "Community member"}
+                          <span className="inline-flex items-center gap-1">
+                            Creator:
+                            {creatorId != null ? (
+                              <button
+                                type="button"
+                                onClick={() => setProfileUserId(creatorId)}
+                                className="rounded-sm font-semibold text-[#52685b] underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#748a75]"
+                              >
+                                {creator?.profile?.firstName || creator?.username || "Community member"}
+                              </button>
+                            ) : (
+                              creator?.profile?.firstName || creator?.username || "Community member"
+                            )}
                           </span>
+                          {creatorZodiac && (
+                            <span className="rounded-full bg-[#f2f0e9] px-2 py-1 font-semibold text-[#697568]">
+                              {creatorZodiac}
+                            </span>
+                          )}
                           <span
                             className={`ml-auto rounded-full border px-2.5 py-1 font-bold ${post.status === "FULL"
                               ? "border-[#edd7cb] bg-[#f8ede6] text-terracotta"
@@ -638,8 +664,16 @@ function CommunityPage() {
                         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[#687568]">
                           {memberZodiacs.length > 0 && (
                             <>
-                            <Users className="h-4 w-4" />
-                              <span>Members: {memberZodiacs.join(" · ")}</span>
+                              <Users className="h-4 w-4" />
+                              <span>Members:</span>
+                              {memberZodiacs.map((zodiac, index) => (
+                                <span
+                                  key={`${post.id}-${zodiac}-${index}`}
+                                  className="rounded-full bg-[#f2f0e9] px-2 py-1 font-medium text-[#697568]"
+                                >
+                                  {zodiac}
+                                </span>
+                              ))}
                             </>
                           )}
                           <span className="rounded-full bg-[#f2f0e9] px-2 py-1">
@@ -650,19 +684,34 @@ function CommunityPage() {
                     ) : (
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-full overflow-hidden shrink-0 border-2 border-[#e1e7df] shadow-xs">
-                          <img
-                            alt="User Avatar"
-                            className="w-full h-full object-cover"
-                            src={creator?.profile?.profileImageUrl || fallbackImage}
-                          />
-                        </div>
-                        <div>
-                          <div className="text-[15px] font-bold text-[#475547]">
-                            {creator?.profile?.firstName ||
-                              creator?.username ||
-                              "Community member"}
+                        {creatorId != null ? (
+                          <button
+                            type="button"
+                            onClick={() => setProfileUserId(creatorId)}
+                            aria-label={`View ${creator?.profile?.firstName || creator?.username || "creator"} profile`}
+                            className="h-11 w-11 shrink-0 overflow-hidden rounded-full border-2 border-[#e1e7df] shadow-xs transition hover:border-[#748a75] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#748a75]"
+                          >
+                            <img alt="" className="h-full w-full object-cover" src={creator?.profile?.profileImageUrl || fallbackImage} />
+                          </button>
+                        ) : (
+                          <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full border-2 border-[#e1e7df] shadow-xs">
+                            <img alt="" className="h-full w-full object-cover" src={creator?.profile?.profileImageUrl || fallbackImage} />
                           </div>
+                        )}
+                        <div>
+                          {creatorId != null ? (
+                            <button
+                              type="button"
+                              onClick={() => setProfileUserId(creatorId)}
+                              className="rounded-sm text-[15px] font-bold text-[#475547] transition hover:text-[#294c3f] hover:underline hover:underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#748a75]"
+                            >
+                              {creator?.profile?.firstName || creator?.username || "Community member"}
+                            </button>
+                          ) : (
+                            <div className="text-[15px] font-bold text-[#475547]">
+                              {creator?.profile?.firstName || creator?.username || "Community member"}
+                            </div>
+                          )}
                           <div className="text-[12px] text-[#889188] flex flex-wrap items-center gap-1.5 mt-0.5 font-medium">
                             <span>
                               {post.createdAt
@@ -721,45 +770,63 @@ function CommunityPage() {
                     </div>
                     )}
 
-                    {/* Property Preview (If Available) */}
-                    {post.property && (
+                    {/* Listing Preview (If Available) */}
+                    {listing && (
                       <Link
-                        to={`/properties/${post.propertyId || post.property.id}`}
+                        to={listing.path}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="group flex flex-col md:flex-row gap-5 p-3.5 rounded-xl bg-[#fafbf8] border border-[#e1e5dd] hover:border-[#748a75] hover:bg-[#f6f8f5] hover:shadow-xs transition-all cursor-pointer text-inherit no-underline"
                       >
                         <div className="relative w-full md:w-70 h-47.5 rounded-lg overflow-hidden shrink-0 bg-[#e8ede5]">
-                          <img
-                            alt="Property"
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            src={post.property.images?.[0]?.imageUrl || fallbackImage}
-                          />
+                          {listing.imageUrl ? (
+                            <img
+                              alt={listing.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              src={listing.imageUrl}
+                            />
+                          ) : (
+                            <div className="grid size-full place-items-center bg-[#edf0ea] text-[#879387]">
+                              <ImageOff className="size-8" aria-label="No listing image" />
+                            </div>
+                          )}
                         </div>
 
                         <div className="flex flex-col justify-center gap-2 py-1 min-w-0 flex-1">
                           <div>
                             <div className="flex items-center gap-2 justify-between">
                               <h3 className="text-[18px] font-bold text-[#475547] group-hover:text-[#2f3d30] transition-colors leading-tight font-serif truncate">
-                                {post.property.title}
+                                {listing.title}
                               </h3>
                               <ExternalLink className="w-4 h-4 text-[#889188] opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                             </div>
                             <div className="text-[13px] text-[#889188] mt-1">
-                              {post.property.address?.province}
+                              {listing.subtitle}
                             </div>
                           </div>
 
                           <div className="text-[18px] font-bold text-[#607861]">
-                            ฿ {Number(post.property.monthlyRent).toLocaleString()}
+                            ฿ {Number(listing.monthlyRent).toLocaleString()}
                           </div>
 
                           <div className="flex flex-wrap items-center gap-4 text-[13px] text-[#607060] pt-1">
-                            {(!zodiacMode || Array.isArray(post.property.rooms)) && (
+                            {listing.isRoom ? (
+                              <>
+                                <span className="font-semibold capitalize">
+                                  {String(listing.status || "available").toLowerCase()}
+                                </span>
+                                {listing.capacity && (
+                                  <div className="flex items-center gap-1.5">
+                                    <Users className="w-4 h-4 text-[#889188]" />
+                                    <span>Up to {listing.capacity} people</span>
+                                  </div>
+                                )}
+                              </>
+                            ) : (!zodiacMode || Number.isInteger(listing.roomCount)) && (
                               <div className="flex items-center gap-1.5">
                                 <BedSingle className="w-4 h-4 text-[#889188]" />
                                 <span>
-                                  {post.property.rooms?.length ?? 0} rooms
+                                  {listing.roomCount ?? 0} rooms
                                 </span>
                               </div>
                             )}
@@ -1090,6 +1157,12 @@ function CommunityPage() {
           setBirthdateRequired(false);
         }}
       />
+      {profileUserId != null && (
+        <UserProfileModal
+          userId={profileUserId}
+          onClose={() => setProfileUserId(null)}
+        />
+      )}
     </main>
   );
 }
