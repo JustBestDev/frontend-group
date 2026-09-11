@@ -10,6 +10,7 @@ import {
   Users,
   BedSingle,
   AlertCircle,
+  ArrowLeft,
   ChevronDown,
   ChevronUp,
   ExternalLink,
@@ -25,7 +26,7 @@ const fallbackImage =
   "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80";
 
 const formatZodiac = (zodiac) =>
-  zodiac ? zodiac.charAt(0) + zodiac.slice(1).toLowerCase() : "Unknown";
+  zodiac ? zodiac.charAt(0) + zodiac.slice(1).toLowerCase() : "";
 
 function CommunityPage() {
   const navigate = useNavigate();
@@ -175,18 +176,20 @@ function CommunityPage() {
         </div>
       )}
       <section className="w-full max-w-7xl mx-auto px-4 sm:px-6">
-        {/* Page Header (Consistent with ConversationList) */}
-        <div className="mb-6 flex shrink-0 items-end justify-between gap-6 max-sm:flex-col max-sm:items-stretch">
+        <div className="mb-8 flex shrink-0 items-end justify-between gap-6 max-sm:flex-col max-sm:items-stretch">
           <div>
             <p className="mb-1 text-xs font-extrabold uppercase tracking-[0.18em] text-terracotta">
               Community & Roommates
             </p>
-            <h1 className="m-0 font-serif text-3xl leading-tight text-ink md:text-4xl">
-              Community
+            <h1 className="m-0 max-w-3xl font-serif text-3xl leading-tight text-ink md:text-4xl">
+              {zodiacMode
+                ? "Find people you'd feel at home with."
+                : "Community"}
             </h1>
             <p className="mt-2 text-muted-copy">
-              Connect with roommates, explore listings, and share your living
-              experience.
+              {zodiacMode
+                ? "Explore communities ranked by your zodiac compatibility."
+                : "Connect with roommates, explore listings, and share your living experience."}
             </p>
           </div>
           <button
@@ -200,9 +203,17 @@ function CommunityPage() {
                 : handleFindByZodiac
             }
             disabled={zodiacLoading}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#748a75] px-5 py-3 text-sm font-bold text-white shadow-xs transition hover:bg-[#627863] disabled:cursor-not-allowed disabled:opacity-60"
+            className={`inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold shadow-xs transition disabled:cursor-not-allowed disabled:opacity-60 ${
+              zodiacMode
+                ? "bg-[#ebe9e2] text-[#365047] hover:bg-[#dfddd5]"
+                : "bg-[#173f34] text-white hover:bg-[#0f3028]"
+            }`}
           >
-            <Sparkles className="h-4 w-4" />
+            {zodiacMode ? (
+              <ArrowLeft className="h-4 w-4" />
+            ) : (
+              <Sparkles className="h-4 w-4" />
+            )}
             {zodiacLoading
               ? "Finding matches..."
               : zodiacMode
@@ -236,6 +247,28 @@ function CommunityPage() {
                   Add birth date
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {zodiacMode && (
+          <div className="relative mb-8 overflow-hidden rounded-[20px] bg-[#153f34] px-6 py-8 text-white shadow-[0_12px_30px_rgba(21,63,52,0.18)] sm:px-9 sm:py-10">
+            <Sparkles
+              className="absolute -bottom-8 right-5 h-36 w-36 text-white opacity-[0.06]"
+              strokeWidth={1.25}
+              aria-hidden="true"
+            />
+            <div className="relative">
+              <span className="inline-flex rounded-full bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] text-[#dce9df]">
+                Your zodiac: {formatZodiac(userZodiac)}
+              </span>
+              <h2 className="mt-4 font-serif text-2xl leading-tight sm:text-3xl">
+                Communities matched to your vibe
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#b8cbc2]">
+                Ranked using the zodiac compatibility available for current
+                community members.
+              </p>
             </div>
           </div>
         )}
@@ -353,17 +386,6 @@ function CommunityPage() {
               </div>
             )}
 
-            {zodiacMode && (
-              <div className="rounded-[18px] border border-[#d8ddd6] bg-white px-5 py-4 shadow-[0_8px_25px_rgba(67,81,67,0.07)]">
-                <p className="text-sm font-bold text-[#475547]">
-                  Your zodiac: {formatZodiac(userZodiac)}
-                </p>
-                <p className="mt-1 text-xs text-[#879387]">
-                  {zodiacMatches.length} ranked matches found
-                </p>
-              </div>
-            )}
-
             {/* Community Feed Posts */}
             <div className="flex flex-col gap-6">
               {displayedPosts.map((post) => {
@@ -377,6 +399,10 @@ function CommunityPage() {
                 const communityMembers = zodiacMode
                   ? post.members || []
                   : membersByPost[post.id] || [];
+                const memberZodiacs = communityMembers
+                  .map((member) => member.user?.profile?.zodiac)
+                  .filter(Boolean)
+                  .map(formatZodiac);
                 const memberIds = new Set(
                   communityMembers
                     .map((member) => member.userId ?? member.user?.id)
@@ -434,9 +460,56 @@ function CommunityPage() {
                 return (
                   <article
                     key={post.id}
-                    className="bg-white border border-[#e1e5dd] rounded-[18px] p-6 flex flex-col gap-4 shadow-[0_8px_25px_rgba(67,81,67,0.07)] hover:-translate-y-1 hover:shadow-[0_14px_35px_rgba(67,81,67,0.13)] transition-all"
+                    className={`flex flex-col gap-4 rounded-[18px] border border-[#e1e5dd] bg-white p-5 shadow-[0_8px_25px_rgba(67,81,67,0.07)] transition-all hover:-translate-y-1 hover:shadow-[0_14px_35px_rgba(67,81,67,0.13)] sm:p-6 ${zodiacMode ? "lg:p-8" : ""}`}
                   >
                     {/* Post Header */}
+                    {zodiacMode ? (
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-[#6f7a73]">
+                          <span
+                            className={`rounded-full px-3 py-1.5 font-extrabold ${post.compatibilityScore == null
+                              ? "bg-[#edf0ea] text-[#687568]"
+                              : post.compatibilityScore >= 85
+                                ? "bg-[#dcebd8] text-[#4d684e]"
+                                : post.compatibilityScore >= 65
+                                  ? "bg-[#f4ead6] text-[#8a682f]"
+                                  : "bg-[#f3e3df] text-[#98594b]"
+                              }`}
+                          >
+                            {post.compatibilityScore == null
+                              ? "Not enough zodiac data"
+                              : `${post.compatibilityScore}% Match`}
+                          </span>
+                          <span>
+                            Creator: {creator?.profile?.firstName ||
+                              creator?.username ||
+                              "Community member"}
+                          </span>
+                          <span
+                            className={`ml-auto rounded-full border px-2.5 py-1 font-bold ${post.status === "FULL"
+                              ? "border-[#edd7cb] bg-[#f8ede6] text-terracotta"
+                              : "border-[#cfd7cd] bg-[#eef3eb] text-[#546b55]"
+                              }`}
+                          >
+                            {post.status}
+                          </span>
+                        </div>
+                        <h2 className="mt-4 font-serif text-xl leading-snug text-[#25463c] sm:text-2xl">
+                          {post.title}
+                        </h2>
+                        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[#687568]">
+                          {memberZodiacs.length > 0 && (
+                            <>
+                            <Users className="h-4 w-4" />
+                              <span>Members: {memberZodiacs.join(" · ")}</span>
+                            </>
+                          )}
+                          <span className="rounded-full bg-[#f2f0e9] px-2 py-1">
+                            {post.matchedMembers} of {post.totalMembers} matched
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-11 h-11 rounded-full overflow-hidden shrink-0 border-2 border-[#e1e7df] shadow-xs">
@@ -508,6 +581,7 @@ function CommunityPage() {
                         <MoreHorizontal className="w-5 h-5" />
                       </button>
                     </div>
+                    )}
 
                     {/* Property Preview (If Available) */}
                     {post.property && (
@@ -543,12 +617,14 @@ function CommunityPage() {
                           </div>
 
                           <div className="flex flex-wrap items-center gap-4 text-[13px] text-[#607060] pt-1">
-                            <div className="flex items-center gap-1.5">
-                              <BedSingle className="w-4 h-4 text-[#889188]" />
-                              <span>
-                                {post.property.rooms?.length ?? 0} rooms
-                              </span>
-                            </div>
+                            {(!zodiacMode || Array.isArray(post.property.rooms)) && (
+                              <div className="flex items-center gap-1.5">
+                                <BedSingle className="w-4 h-4 text-[#889188]" />
+                                <span>
+                                  {post.property.rooms?.length ?? 0} rooms
+                                </span>
+                              </div>
+                            )}
                             <div className="flex items-center gap-1.5">
                               <Users className="w-4 h-4 text-[#889188]" />
                               <span>
@@ -567,43 +643,9 @@ function CommunityPage() {
                       </p>
                     )}
 
-                    {zodiacMode && (
-                      <div className="rounded-xl border border-[#e1e5dd] bg-[#fafbf8] px-4 py-3">
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                          <div>
-                            <div className="text-sm font-bold text-[#475547]">
-                              {communityMembers
-                                .map((member) =>
-                                  formatZodiac(member.user?.profile?.zodiac),
-                                )
-                                .join(" · ") || "Unknown"}
-                            </div>
-                            {Number(post.matchedMembers) <
-                              Number(post.totalMembers) && (
-                                <div className="mt-1 text-xs text-[#879387]">
-                                  Zodiac data: {post.matchedMembers} of{" "}
-                                  {post.totalMembers} members
-                                </div>
-                              )}
-                          </div>
-                          <span
-                            className={`rounded-full px-3 py-1.5 text-sm font-extrabold ${post.compatibilityScore == null
-                              ? "bg-[#edf0ea] text-[#687568]"
-                              : post.compatibilityScore >= 85
-                                ? "bg-[#dcebd8] text-[#4d684e]"
-                                : post.compatibilityScore >= 65
-                                  ? "bg-[#f4ead6] text-[#8a682f]"
-                                  : "bg-[#f3e3df] text-[#98594b]"
-                              }`}
-                          >
-                            {post.compatibilityScore == null
-                              ? "Not enough zodiac data"
-                              : `${post.compatibilityScore}% Match`}
-                          </span>
-                        </div>
-                        {canExplainMatch && (
-                          <>
-                            <button
+                    {zodiacMode && canExplainMatch && (
+                      <div className="rounded-xl bg-[#f8f6f0] px-4 py-3">
+                        <button
                               type="button"
                               onClick={() =>
                                 setExpandedMatchId(
@@ -612,7 +654,7 @@ function CommunityPage() {
                               }
                               aria-expanded={isMatchExpanded}
                               aria-controls={`zodiac-reasons-${post.id}`}
-                              className="mt-3 flex items-center gap-1.5 border-t border-[#e1e5dd] pt-3 text-xs font-bold text-[#607861] transition-colors hover:text-[#475547]"
+                              className="flex w-full items-center justify-between gap-1.5 text-xs font-bold text-[#36574b] transition-colors hover:text-[#173f34]"
                             >
                               Why this match?
                               {isMatchExpanded ? (
@@ -620,25 +662,20 @@ function CommunityPage() {
                               ) : (
                                 <ChevronDown className="h-4 w-4" />
                               )}
-                            </button>
-                            {isMatchExpanded && (
-                              <div
-                                id={`zodiac-reasons-${post.id}`}
-                                className="mt-3 rounded-lg border border-[#e1e5dd] bg-white px-4 py-3"
-                              >
-                                <p className="mb-2 text-xs text-[#879387]">
-                                  Based on zodiac traits and sign relationships.
-                                </p>
-                                <ul className="list-disc space-y-1 pl-4 text-[13px] leading-relaxed text-[#596859]">
-                                  {compatibilityReasons.map((reason, index) => (
-                                    <li key={`${post.id}-${index}-${reason}`}>
-                                      {reason}
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                          </>
+                        </button>
+                        {isMatchExpanded && (
+                          <div
+                            id={`zodiac-reasons-${post.id}`}
+                            className="mt-3 border-t border-[#deddd5] pt-3"
+                          >
+                            <ul className="list-disc space-y-1 pl-4 text-[13px] leading-relaxed text-[#596859]">
+                              {compatibilityReasons.map((reason, index) => (
+                                <li key={`${post.id}-${index}-${reason}`}>
+                                  {reason}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
                         )}
                       </div>
                     )}
@@ -776,6 +813,7 @@ function CommunityPage() {
           </div>
 
           {/* Right Sidebar (32%) */}
+          {!zodiacMode && (
           <aside className="w-full lg:w-[45%] flex flex-col gap-6">
             {/* About Community Card */}
             <div className="bg-white border border-[#e1e5dd] rounded-[18px] p-6 shadow-[0_8px_25px_rgba(67,81,67,0.07)]">
@@ -885,6 +923,7 @@ function CommunityPage() {
               </ul>
             </div>
           </aside>
+          )}
         </div>
       </section>
       {selectedGroupPost && (
