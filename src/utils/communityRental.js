@@ -46,13 +46,16 @@ export const getCommunityListing = (post) => {
   const property = post?.property;
   if (!property) return null;
   const room = post.room;
+  const roomImages = room?.images || [];
+  const propertyImages = property.images || [];
   const propertyId = post.propertyId || property.id;
   return {
     isRoom: Boolean(room),
     title: room?.roomName || property.title,
     subtitle: room ? property.title : property.address?.province,
     monthlyRent: room?.monthlyRent ?? property.monthlyRent,
-    imageUrl: preferredImage(room?.images) || preferredImage(property.images),
+    imageUrl: preferredImage(roomImages) || preferredImage(propertyImages),
+    photoCount: roomImages.length || propertyImages.length,
     status: room?.status,
     capacity: room?.capacity,
     roomCount: property.rooms?.length,
