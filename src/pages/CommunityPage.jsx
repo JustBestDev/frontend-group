@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import {
   CalendarDays,
@@ -28,6 +28,13 @@ const fallbackImage =
 const formatZodiac = (zodiac) =>
   zodiac ? zodiac.charAt(0) + zodiac.slice(1).toLowerCase() : "";
 
+const filterChipClass = (active) =>
+  `flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-full px-5 text-sm font-bold transition [&::-webkit-details-marker]:hidden ${
+    active
+      ? "bg-[#dfe8dc] text-[#25463c]"
+      : "bg-[#f0eee7] text-[#526052] hover:bg-[#e5e9df]"
+  }`;
+
 function CommunityPage() {
   const navigate = useNavigate();
   const userId = useAuthStore((state) => state.user?.id);
@@ -41,6 +48,8 @@ function CommunityPage() {
   const [minBudget, setMinBudget] = useState("");
   const [maxBudget, setMaxBudget] = useState("");
   const [sortOrder, setSortOrder] = useState("NEWEST");
+  const [activeFilter, setActiveFilter] = useState(null);
+  const activeFilterRef = useRef(null);
   const {
     setRentalRequests,
     posts, requestingPostId, joinFeedback, setJoinFeedback,
@@ -60,6 +69,26 @@ function CommunityPage() {
     handleFindByZodiac,
   } = useZodiacMatches(setJoinFeedback);
   const [selectedGroupPost, setSelectedGroupPost] = useState(null);
+
+  useEffect(() => {
+    if (!activeFilter) return undefined;
+
+    const closeOnOutsideClick = (event) => {
+      if (!activeFilterRef.current?.contains(event.target)) {
+        setActiveFilter(null);
+      }
+    };
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setActiveFilter(null);
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [activeFilter]);
 
   const filteredPosts = (posts || [])
     .filter((post) => {
@@ -278,104 +307,213 @@ function CommunityPage() {
           <div className="w-full lg:w-full flex flex-col gap-6">
             {/* Community search and filters */}
             {!zodiacMode && (
-              <div className="rounded-[18px] border border-[#e1e5dd] bg-white p-4 sm:p-5 shadow-[0_15px_45px_rgba(68,83,68,0.12)]">
-                <div className="flex items-center gap-3 rounded-full border border-[#d8ddd6] bg-[#fafbf8] px-4 py-2.5">
-                  <Search className="h-4 w-4 shrink-0 text-[#879387]" />
+              <div className="space-y-5 rounded-[22px] border border-[#dfded3] bg-[#fbfaf6] p-5 shadow-[0_6px_20px_rgba(47,68,57,0.06)] sm:p-6">
+                <div className="flex min-h-16 items-center gap-3 rounded-2xl bg-white px-5 shadow-[0_2px_12px_rgba(47,68,57,0.07)] sm:px-6">
+                  <Search className="h-5 w-5 shrink-0 text-[#607861]" />
                   <input
                     type="search"
                     value={searchText}
                     onChange={(event) => setSearchText(event.target.value)}
-                    placeholder="Search posts, properties, or destinations..."
-                    className="w-full bg-transparent text-sm text-[#475547] outline-none placeholder:text-[#879387]"
+                    placeholder="Search communities, areas, or lifestyles..."
+                    className="min-w-0 flex-1 bg-transparent text-base text-[#29342d] outline-none placeholder:text-[#879387]"
                   />
                 </div>
 
-                <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-                  <label className="grid gap-1.5 text-xs font-bold text-[#596859]">
-                    Category
-                    <select
-                      value={propertyTypeFilter}
-                      onChange={(event) => setPropertyTypeFilter(event.target.value)}
-                      className="h-10 rounded-full border border-[#d8ddd6] bg-white px-3.5 text-sm font-normal text-[#475547] outline-none focus:border-[#748a75]"
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <div
+                    className="relative"
+                    ref={activeFilter === "category" ? activeFilterRef : null}
+                  >
+                    <button
+                      type="button"
+                      aria-expanded={activeFilter === "category"}
+                      onClick={() =>
+                        setActiveFilter((current) =>
+                          current === "category" ? null : "category",
+                        )
+                      }
+                      className={filterChipClass(propertyTypeFilter !== "ALL")}
                     >
-                      <option value="ALL">All Categories</option>
-                      <option value="HOUSE">House</option>
-                      <option value="CONDO">Condo</option>
-                      <option value="APARTMENT">Apartment</option>
-                      <option value="DORMITORY">Dormitory</option>
-                      <option value="OTHER">Other</option>
-                    </select>
-                  </label>
-                  <label className="grid gap-1.5 text-xs font-bold text-[#596859]">
-                    Roommate Gender
-                    <select
-                      value={genderFilter}
-                      onChange={(event) => setGenderFilter(event.target.value)}
-                      className="h-10 rounded-full border border-[#d8ddd6] bg-white px-3.5 text-sm font-normal text-[#475547] outline-none focus:border-[#748a75]"
-                    >
-                      <option value="ALL">All Genders</option>
-                      <option value="FEMALE">Female Only</option>
-                      <option value="MALE">Male Only</option>
-                      <option value="ANY">No Restriction</option>
-                    </select>
-                  </label>
-                  <label className="grid gap-1.5 text-xs font-bold text-[#596859]">
-                    From Date
-                    <span className="relative">
-                      <CalendarDays className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#596859]" />
-                      <input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} className="h-10 w-full rounded-full border border-[#d8ddd6] bg-white px-3.5 text-sm font-normal text-[#475547] outline-none focus:border-[#748a75]" />
-                    </span>
-                  </label>
-                  <label className="grid gap-1.5 text-xs font-bold text-[#596859]">
-                    To Date
-                    <span className="relative">
-                      <CalendarDays className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#596859]" />
-                      <input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} className="h-10 w-full rounded-full border border-[#d8ddd6] bg-white px-3.5 text-sm font-normal text-[#475547] outline-none focus:border-[#748a75]" />
-                    </span>
-                  </label>
-                  <label className="grid gap-1.5 text-xs font-bold text-[#596859]">
-                    Group Size
-                    <select value={groupSizeFilter} onChange={(event) => setGroupSizeFilter(event.target.value)} className="h-10 rounded-full border border-[#d8ddd6] bg-white px-3.5 text-sm font-normal text-[#475547] outline-none focus:border-[#748a75]">
-                      <option value="ALL">Any Group Size</option>
-                      <option value="1-2">1-2 members</option>
-                      <option value="3-4">3-4 members</option>
-                      <option value="5+">5+ members</option>
-                    </select>
-                  </label>
-                </div>
-
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <label className="grid gap-1.5 text-xs font-bold text-[#596859]">
-                    Minimum Budget
-                    <input type="number" min="0" value={minBudget} onChange={(event) => setMinBudget(event.target.value)} placeholder="Minimum budget" className="h-10 rounded-full border border-[#d8ddd6] bg-white px-3.5 text-sm font-normal text-[#475547] outline-none placeholder:text-[#879387] focus:border-[#748a75]" />
-                  </label>
-                  <label className="grid gap-1.5 text-xs font-bold text-[#596859]">
-                    Maximum Budget
-                    <input type="number" min="0" value={maxBudget} onChange={(event) => setMaxBudget(event.target.value)} placeholder="Maximum budget" className="h-10 rounded-full border border-[#d8ddd6] bg-white px-3.5 text-sm font-normal text-[#475547] outline-none placeholder:text-[#879387] focus:border-[#748a75]" />
-                  </label>
-                </div>
-
-                <div className="mt-4 flex items-center justify-between gap-3 border-t border-[#edf0ea] pt-3">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-[#879387]">
-                      {filteredPosts.length} posts found
-                    </span>
-                    {hasActiveFilters && (
-                      <button
-                        type="button"
-                        onClick={clearFilters}
-                        className="text-xs font-bold text-terracotta underline-offset-2 hover:underline"
-                      >
-                        Clear filters
-                      </button>
+                      {propertyTypeFilter === "ALL"
+                        ? "Category"
+                        : propertyTypeFilter.charAt(0) + propertyTypeFilter.slice(1).toLowerCase()}
+                      <ChevronDown className={`h-4 w-4 transition ${activeFilter === "category" ? "rotate-180" : ""}`} />
+                    </button>
+                    {activeFilter === "category" && (
+                    <div className="absolute left-0 top-12 z-20 w-64 max-w-[calc(100vw-2rem)] rounded-2xl bg-white p-4 shadow-[0_16px_40px_rgba(35,59,48,0.18)]">
+                      <label className="grid gap-2 text-xs font-bold text-[#596859]">
+                        Property category
+                        <select value={propertyTypeFilter} onChange={(event) => setPropertyTypeFilter(event.target.value)} className="h-11 rounded-xl bg-[#f5f3ed] px-3 text-sm font-normal text-[#475547] outline-none focus:ring-2 focus:ring-[#a9bba3]">
+                          <option value="ALL">All Categories</option>
+                          <option value="HOUSE">House</option>
+                          <option value="CONDO">Condo</option>
+                          <option value="APARTMENT">Apartment</option>
+                          <option value="DORMITORY">Dormitory</option>
+                          <option value="OTHER">Other</option>
+                        </select>
+                      </label>
+                    </div>
                     )}
                   </div>
-                  <label className="flex items-center gap-2 text-xs font-bold text-[#596859]">
-                    Sort by
+
+                  <div
+                    className="relative"
+                    ref={activeFilter === "gender" ? activeFilterRef : null}
+                  >
+                    <button
+                      type="button"
+                      aria-expanded={activeFilter === "gender"}
+                      onClick={() =>
+                        setActiveFilter((current) =>
+                          current === "gender" ? null : "gender",
+                        )
+                      }
+                      className={filterChipClass(genderFilter !== "ALL")}
+                    >
+                      {genderFilter === "ALL"
+                        ? "Gender"
+                        : genderFilter === "ANY"
+                          ? "No restriction"
+                          : `${genderFilter.charAt(0)}${genderFilter.slice(1).toLowerCase()} only`}
+                      <ChevronDown className={`h-4 w-4 transition ${activeFilter === "gender" ? "rotate-180" : ""}`} />
+                    </button>
+                    {activeFilter === "gender" && (
+                    <div className="absolute left-0 top-12 z-20 w-64 max-w-[calc(100vw-2rem)] rounded-2xl bg-white p-4 shadow-[0_16px_40px_rgba(35,59,48,0.18)]">
+                      <label className="grid gap-2 text-xs font-bold text-[#596859]">
+                        Roommate gender
+                        <select value={genderFilter} onChange={(event) => setGenderFilter(event.target.value)} className="h-11 rounded-xl bg-[#f5f3ed] px-3 text-sm font-normal text-[#475547] outline-none focus:ring-2 focus:ring-[#a9bba3]">
+                          <option value="ALL">All Genders</option>
+                          <option value="FEMALE">Female Only</option>
+                          <option value="MALE">Male Only</option>
+                          <option value="ANY">No Restriction</option>
+                        </select>
+                      </label>
+                    </div>
+                    )}
+                  </div>
+
+                  <div
+                    className="relative"
+                    ref={activeFilter === "moveIn" ? activeFilterRef : null}
+                  >
+                    <button
+                      type="button"
+                      aria-expanded={activeFilter === "moveIn"}
+                      onClick={() =>
+                        setActiveFilter((current) =>
+                          current === "moveIn" ? null : "moveIn",
+                        )
+                      }
+                      className={filterChipClass(Boolean(fromDate || toDate))}
+                    >
+                      <CalendarDays className="h-4 w-4" />
+                      {fromDate || toDate
+                        ? `${fromDate || "Any"} – ${toDate || "Any"}`
+                        : "Move-in"}
+                      <ChevronDown className={`h-4 w-4 transition ${activeFilter === "moveIn" ? "rotate-180" : ""}`} />
+                    </button>
+                    {activeFilter === "moveIn" && (
+                    <div className="absolute left-0 top-12 z-20 grid w-72 max-w-[calc(100vw-2rem)] gap-3 rounded-2xl bg-white p-4 shadow-[0_16px_40px_rgba(35,59,48,0.18)]">
+                      <label className="grid gap-2 text-xs font-bold text-[#596859]">
+                        From
+                        <input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} className="h-11 rounded-xl bg-[#f5f3ed] px-3 text-sm font-normal text-[#475547] outline-none focus:ring-2 focus:ring-[#a9bba3]" />
+                      </label>
+                      <label className="grid gap-2 text-xs font-bold text-[#596859]">
+                        To
+                        <input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} className="h-11 rounded-xl bg-[#f5f3ed] px-3 text-sm font-normal text-[#475547] outline-none focus:ring-2 focus:ring-[#a9bba3]" />
+                      </label>
+                    </div>
+                    )}
+                  </div>
+
+                  <div
+                    className="relative"
+                    ref={activeFilter === "budget" ? activeFilterRef : null}
+                  >
+                    <button
+                      type="button"
+                      aria-expanded={activeFilter === "budget"}
+                      onClick={() =>
+                        setActiveFilter((current) =>
+                          current === "budget" ? null : "budget",
+                        )
+                      }
+                      className={filterChipClass(Boolean(minBudget || maxBudget))}
+                    >
+                      {minBudget || maxBudget
+                        ? `฿${minBudget || "0"} – ฿${maxBudget || "Any"}`
+                        : "Budget"}
+                      <ChevronDown className={`h-4 w-4 transition ${activeFilter === "budget" ? "rotate-180" : ""}`} />
+                    </button>
+                    {activeFilter === "budget" && (
+                    <div className="absolute left-0 top-12 z-20 grid w-72 max-w-[calc(100vw-2rem)] grid-cols-2 gap-3 rounded-2xl bg-white p-4 shadow-[0_16px_40px_rgba(35,59,48,0.18)]">
+                      <label className="grid gap-2 text-xs font-bold text-[#596859]">
+                        Minimum
+                        <input type="number" min="0" value={minBudget} onChange={(event) => setMinBudget(event.target.value)} placeholder="No min" className="h-11 min-w-0 rounded-xl bg-[#f5f3ed] px-3 text-sm font-normal text-[#475547] outline-none placeholder:text-[#879387] focus:ring-2 focus:ring-[#a9bba3]" />
+                      </label>
+                      <label className="grid gap-2 text-xs font-bold text-[#596859]">
+                        Maximum
+                        <input type="number" min="0" value={maxBudget} onChange={(event) => setMaxBudget(event.target.value)} placeholder="No max" className="h-11 min-w-0 rounded-xl bg-[#f5f3ed] px-3 text-sm font-normal text-[#475547] outline-none placeholder:text-[#879387] focus:ring-2 focus:ring-[#a9bba3]" />
+                      </label>
+                    </div>
+                    )}
+                  </div>
+
+                  <div
+                    className="relative"
+                    ref={activeFilter === "groupSize" ? activeFilterRef : null}
+                  >
+                    <button
+                      type="button"
+                      aria-expanded={activeFilter === "groupSize"}
+                      onClick={() =>
+                        setActiveFilter((current) =>
+                          current === "groupSize" ? null : "groupSize",
+                        )
+                      }
+                      className={filterChipClass(groupSizeFilter !== "ALL")}
+                    >
+                      {groupSizeFilter === "ALL"
+                        ? "Group size"
+                        : `${groupSizeFilter} members`}
+                      <ChevronDown className={`h-4 w-4 transition ${activeFilter === "groupSize" ? "rotate-180" : ""}`} />
+                    </button>
+                    {activeFilter === "groupSize" && (
+                    <div className="absolute right-0 top-12 z-20 w-64 max-w-[calc(100vw-2rem)] rounded-2xl bg-white p-4 shadow-[0_16px_40px_rgba(35,59,48,0.18)]">
+                      <label className="grid gap-2 text-xs font-bold text-[#596859]">
+                        Group size
+                        <select value={groupSizeFilter} onChange={(event) => setGroupSizeFilter(event.target.value)} className="h-11 rounded-xl bg-[#f5f3ed] px-3 text-sm font-normal text-[#475547] outline-none focus:ring-2 focus:ring-[#a9bba3]">
+                          <option value="ALL">Any Group Size</option>
+                          <option value="1-2">1-2 members</option>
+                          <option value="3-4">3-4 members</option>
+                          <option value="5+">5+ members</option>
+                        </select>
+                      </label>
+                    </div>
+                    )}
+                  </div>
+                  {hasActiveFilters && (
+                    <button
+                      type="button"
+                      onClick={clearFilters}
+                      className="min-h-11 px-2 text-sm font-bold text-terracotta underline-offset-2 hover:underline"
+                    >
+                      Clear filters
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#e8e5dc] pt-4">
+                  <span className="text-sm font-bold text-[#596859]">
+                    {filteredPosts.length}{" "}
+                    {filteredPosts.length === 1 ? "community" : "communities"}
+                  </span>
+                  <label className="ml-auto flex items-center gap-1 text-xs font-medium text-[#7c887c]">
+                    Sort:
                     <select
                       value={sortOrder}
                       onChange={(event) => setSortOrder(event.target.value)}
-                      className="h-9 rounded-full border border-[#d8ddd6] bg-white px-3 text-sm font-normal text-[#475547] outline-none focus:border-[#748a75]"
+                      className="h-9 rounded-full bg-transparent px-2 text-sm font-bold text-[#526052] outline-none hover:bg-[#eeece4] focus:bg-[#eeece4]"
                     >
                       <option value="NEWEST">Newest</option>
                       <option value="LOWEST_RENT">Lowest rent</option>
