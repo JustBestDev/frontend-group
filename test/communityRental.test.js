@@ -56,13 +56,16 @@ test("room-linked cards prefer the room cover and existing room route", () => {
   assert.equal(listing.title, "Room B");
   assert.equal(listing.monthlyRent, 9000);
   assert.equal(listing.imageUrl, "room-cover.jpg");
+  assert.equal(listing.photoCount, 2);
   assert.equal(listing.path, "/properties/12/9");
 });
 
 test("listing images fall back from room to property, then to no image", () => {
-  assert.equal(getCommunityListing({
+  const roomFallback = getCommunityListing({
     property: { id: 12, title: "Home", images: [{ imageUrl: "property.jpg" }] },
     room: { id: 9, roomName: "Room", images: [] },
-  }).imageUrl, "property.jpg");
+  });
+  assert.equal(roomFallback.imageUrl, "property.jpg");
+  assert.equal(roomFallback.photoCount, 1);
   assert.equal(getCommunityListing({ property: { id: 12, title: "Home" } }).imageUrl, null);
 });

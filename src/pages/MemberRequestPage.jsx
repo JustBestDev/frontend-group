@@ -21,7 +21,10 @@ import {
   AlertCircle,
 } from "lucide-react";
 import useMemberRequests from "../hooks/useMemberRequests.js";
-import { parsePostGender } from "../utils/communityRental.js";
+import {
+  getCommunityListing,
+  parsePostGender,
+} from "../utils/communityRental.js";
 
 export default function MemberRequestPage() {
   const { postId } = useParams();
@@ -39,6 +42,8 @@ export default function MemberRequestPage() {
     );
   if (!post)
     return <div className="p-8 text-danger">Community post not found.</div>;
+
+  const listing = getCommunityListing(post);
 
   return (
     <main className="min-h-screen bg-[#f7f5ee] text-[#465346] pt-6 sm:pt-8 pb-16">
@@ -79,14 +84,17 @@ export default function MemberRequestPage() {
           <div className="flex flex-col lg:flex-row items-stretch">
             {/* Thumbnail & Visual */}
             <div className="lg:w-2/5 min-h-60 relative overflow-hidden bg-[#ebe8de]">
-              <img
-                className="w-full h-full object-cover min-h-60"
-                alt={post.property?.title || post.title}
-                src={
-                  post.property?.images?.[0]?.imageUrl ||
-                  "https://placehold.co/1200x800/png?text=Property"
-                }
-              />
+              {listing?.imageUrl ? (
+                <img
+                  className="w-full h-full object-cover min-h-60"
+                  alt={listing.title}
+                  src={listing.imageUrl}
+                />
+              ) : (
+                <div className="grid min-h-60 size-full place-items-center text-[#879387]">
+                  <Camera className="size-8" aria-label="No listing image" />
+                </div>
+              )}
               <div className="absolute top-3.5 left-3.5 flex items-center gap-1.5 bg-white/95 backdrop-blur-md px-3 py-1 rounded-full shadow-sm">
                 <span className="relative flex h-2.5 w-2.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#4f614d] opacity-75"></span>
@@ -98,7 +106,7 @@ export default function MemberRequestPage() {
               </div>
               <div className="absolute bottom-3.5 right-3.5 bg-[#1c1c16]/80 text-white px-2.5 py-1 rounded-lg text-xs font-medium backdrop-blur-sm flex items-center gap-1.5">
                 <Camera className="w-3.5 h-3.5" />
-                {post.property?.images?.length || 0} Photos
+                {listing?.photoCount || 0} Photos
               </div>
             </div>
 
