@@ -38,3 +38,26 @@ export const parsePostGender = (rawDescription = "") => {
     cleanDescription: rawDescription,
   };
 };
+
+const preferredImage = (images = []) =>
+  images.find((image) => image.isCover)?.imageUrl || images[0]?.imageUrl || null;
+
+export const getCommunityListing = (post) => {
+  const property = post?.property;
+  if (!property) return null;
+  const room = post.room;
+  const propertyId = post.propertyId || property.id;
+  return {
+    isRoom: Boolean(room),
+    title: room?.roomName || property.title,
+    subtitle: room ? property.title : property.address?.province,
+    monthlyRent: room?.monthlyRent ?? property.monthlyRent,
+    imageUrl: preferredImage(room?.images) || preferredImage(property.images),
+    status: room?.status,
+    capacity: room?.capacity,
+    roomCount: property.rooms?.length,
+    path: room
+      ? `/properties/${propertyId}/${room.id}`
+      : `/properties/${propertyId}`,
+  };
+};

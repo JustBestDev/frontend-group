@@ -1,14 +1,5 @@
-const FALLBACK_GALLERY = [
-  "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=800&q=80",
-];
-
 export function getGalleryImages(property) {
-
-  if (!property) return FALLBACK_GALLERY;
+  if (!property) return [];
   const list = [];
   if (Array.isArray(property.images) && property.images.length > 0) {
     property.images.forEach((img) => {
@@ -19,20 +10,22 @@ export function getGalleryImages(property) {
     list.push(property.imageUrl);
   }
 
-  // Fill with pleasant fallbacks if fewer than 5
-  if (list.length === 0) return FALLBACK_GALLERY;
-  let fallbackIdx = 0;
-  while (list.length < 5) {
-    list.push(FALLBACK_GALLERY[fallbackIdx % FALLBACK_GALLERY.length]);
-    fallbackIdx++;
-  }
   return list;
+}
 
+export function buildCommunityPostPayload(property, propertyId, postData = {}) {
+  return {
+    propertyId: property?.id || propertyId,
+    ...(postData.roomId ? { roomId: Number(postData.roomId) } : {}),
+    title: postData.title || property?.title || property?.name || `Listing #${property?.id || propertyId}`,
+    description: postData.description || "",
+    requiredMembers: Number(postData.requireMember) || 1,
+  };
 }
 
 export function getPropertyDetails(property, selectedRoomId) {
   // Extracted and computed property data
-  const rooms = property.rooms || [];
+  const rooms = Array.isArray(property.rooms) ? property.rooms : [];
   const isWholeUnit = property.rentType === "WHOLE_UNIT";
   const activeRentalStatus = property.activeRental?.status?.toUpperCase();
   const hasActiveRental = Boolean(
@@ -66,7 +59,11 @@ export function getPropertyDetails(property, selectedRoomId) {
         (room) =>
           (room.status || room.roomStatus || "").toUpperCase() === "AVAILABLE",
       );
-  const occupiedRoomsCount = rooms.length - availableRooms.length;
+  const roomStatusCounts = rooms.reduce((counts, room) => {
+    const status = (room.status || room.roomStatus || "UNKNOWN").toUpperCase();
+    counts[status] = (counts[status] || 0) + 1;
+    return counts;
+  }, {});
   const isUnavailableForCommunity = isWholeUnit
     ? isWholeUnitUnavailable
     : rooms.length > 0 && availableRooms.length === 0;
@@ -74,17 +71,19 @@ export function getPropertyDetails(property, selectedRoomId) {
   const address =
     property.address?.fullAddress ||
     [
+      property.address?.building,
       property.address?.addressLine,
-      property.address?.subdistrict,
+      property.address?.road,
+      property.address?.subDistrict || property.address?.subdistrict,
       property.address?.district,
       property.address?.province,
-      property.address?.postalCode,
+      property.address?.postcode || property.address?.postalCode,
     ]
       .filter(Boolean)
       .join(", ") ||
     property.location ||
     property.city ||
-    "Bangkok, Thailand";
+    "";
 
   const owner = property.owner || property.user || {};
   const ownerProfile = owner.profile || {};
@@ -95,13 +94,19 @@ export function getPropertyDetails(property, selectedRoomId) {
     owner.username ||
     "Property Host";
 
-  const selectedRoom =
-    rooms.find((r) => String(r.id || r.roomId) === String(selectedRoomId)) ||
-    rooms[0];
+  const selectedRoom = rooms.find(
+    (room) => String(room.id || room.roomId) === String(selectedRoomId),
+  ) || availableRooms[0] || rooms[0];
+
+  const roomRents = rooms
+    .filter((room) => room.monthlyRent != null)
+    .map((room) => Number(room.monthlyRent))
+    .filter((rent) => Number.isFinite(rent));
+  const roomStartingPrice = roomRents.length ? Math.min(...roomRents) : null;
 
   const displayPrice = isWholeUnit
-    ? property.monthlyRent || 0
-    : selectedRoom?.monthlyRent || property.monthlyRent || 0;
+    ? property.monthlyRent ?? null
+    : selectedRoom?.monthlyRent ?? null;
 
   return {
     rooms,
@@ -113,7 +118,8 @@ export function getPropertyDetails(property, selectedRoomId) {
     isUnavailableForCommunity,
     wholeUnitStatus,
     availableRooms,
-    occupiedRoomsCount,
+    roomStatusCounts,
+    roomStartingPrice,
     address,
     ownerProfile,
     ownerDisplayName,

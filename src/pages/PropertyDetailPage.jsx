@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { Building2, Check, RefreshCw } from "lucide-react";
 import api from "../services/api.js";
 import useAuthStore from "../stores/authStore";
@@ -14,9 +14,11 @@ import AmenitiesAndRules from "../components/propertyDetail/AmenitiesAndRules.js
 import BookingSidebar from "../components/propertyDetail/BookingSidebar.jsx";
 import OwnerCard from "../components/propertyDetail/OwnerCard.jsx";
 import SharePropertyModal from "../components/propertyDetail/SharePropertyModal.jsx";
+import { shareListingWithHost } from "../utils/conversations.js";
 
 const PropertyDetailPage = () => {
   const { propertyId } = useParams();
+  const { state } = useLocation();
   const navigate = useNavigate();
   const { token, user } = useAuthStore();
 
@@ -31,6 +33,7 @@ const PropertyDetailPage = () => {
 
   // Gallery and Modal State
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [roomToShare, setRoomToShare] = useState(null);
   const [isRentalRequestOpen, setIsRentalRequestOpen] = useState(false);
   const [isContactingOwner, setIsContactingOwner] = useState(false);
   // Interaction State
@@ -38,6 +41,7 @@ const PropertyDetailPage = () => {
   const [toastMessage, setToastMessage] = useState("");
 
   const toastTimer = useRef(null);
+  const contactInFlight = useRef(false);
   useEffect(() => () => clearTimeout(toastTimer.current), []);
 
   const showToast = (message) => {
@@ -59,8 +63,8 @@ const PropertyDetailPage = () => {
     isWholeUnitUnavailable,
     isUnavailableForCommunity,
     wholeUnitStatus,
-    availableRooms,
-    occupiedRoomsCount,
+    roomStatusCounts,
+    roomStartingPrice,
     address,
     ownerProfile,
     ownerDisplayName,
@@ -68,7 +72,16 @@ const PropertyDetailPage = () => {
     displayPrice,
   } = propertyDetails;
 
-  const handleShare = () => setIsShareModalOpen(true);
+  const handleShare = () => {
+    setRoomToShare(null);
+    setIsShareModalOpen(true);
+  };
+
+  const handleRoomShare = () => {
+    if (!selectedRoom) return;
+    setRoomToShare(selectedRoom);
+    setIsShareModalOpen(true);
+  };
 
   // Toggle Save
   const handleToggleSave = () => {
@@ -81,6 +94,7 @@ const PropertyDetailPage = () => {
 
   // Contact Owner Handler
   const handleContactOwner = async () => {
+    if (contactInFlight.current) return;
     if (!token || !user) {
       navigate("/login");
       return;
@@ -92,20 +106,27 @@ const PropertyDetailPage = () => {
       return;
     }
 
+    const roomId = isWholeUnit
+      ? null
+      : selectedRoom?.id || selectedRoom?.roomId || selectedRoomId;
+    if (!isWholeUnit && !roomId) {
+      showToast("Please choose a room before contacting the host");
+      return;
+    }
+
+    contactInFlight.current = true;
     setIsContactingOwner(true);
     try {
-      const response = await api.post("/conversations", {
+      const conversationId = await shareListingWithHost(api, {
         propertyId: Number(property.id || propertyId),
-        memberId: Number(ownerId),
+        ownerId,
+        roomId,
       });
-      const conversation = response.data.conversation || response.data.data?.conversation;
-      const conversationId = conversation?.id || conversation?.conversationId;
-
-      if (!conversationId) throw new Error("Conversation was not returned");
       navigate("/Message", { state: { conversationId } });
     } catch (requestError) {
-      showToast(requestError.response?.data?.message || "Unable to contact the host");
+      showToast(requestError.response?.data?.message || "Unable to share this listing with the host");
     } finally {
+      contactInFlight.current = false;
       setIsContactingOwner(false);
     }
   };
@@ -175,7 +196,7 @@ const PropertyDetailPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#f7f5ee] text-[#1c1c16] antialiased">
+    <div className="min-h-screen bg-cream text-ink antialiased">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-[#1c1c16] text-white px-4 py-3 rounded-xl shadow-lg animate-fade-in text-sm font-medium">
@@ -185,7 +206,7 @@ const PropertyDetailPage = () => {
       )}
 
       {/* Main Layout Container */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+      <main className="mx-auto max-w-350 px-4 py-6 sm:px-6 md:py-8 lg:px-10 lg:pb-20">
         {/* Top Breadcrumb & Share Actions */}
         <PropertyActions
           property={property}
@@ -199,9 +220,9 @@ const PropertyDetailPage = () => {
           galleryImages={galleryImages}
         />
         {/* Main 2-Column Content Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-8">
           {/* Left Column: Property Details & Rooms (8 cols) */}
-          <div className="lg:col-span-8 space-y-8">
+          <div className="space-y-11 lg:col-span-8">
             {/* Title, Address & Price Header */}
             <PropertySummary
               property={property}
@@ -209,18 +230,19 @@ const PropertyDetailPage = () => {
               address={address}
               isWholeUnit={isWholeUnit}
               rooms={rooms}
+              roomStartingPrice={roomStartingPrice}
+              nearestTransitStation={property.nearestTransitStation || state?.nearestTransitStation}
+              transitDistanceKm={property.transitDistanceKm ?? state?.transitDistanceKm}
               isReserved={isReserved}
               isRented={isRented}
               isWholeUnitUnavailable={isWholeUnitUnavailable}
             />
             <RoomSection
-              property={property}
               propertyId={propertyId}
               rooms={rooms}
               isWholeUnit={isWholeUnit}
               wholeUnitStatus={wholeUnitStatus}
-              availableRooms={availableRooms}
-              occupiedRoomsCount={occupiedRoomsCount}
+              roomStatusCounts={roomStatusCounts}
               galleryImages={galleryImages}
               selectedRoomId={selectedRoomId}
               setSelectedRoomId={setSelectedRoomId}
@@ -230,7 +252,7 @@ const PropertyDetailPage = () => {
           </div>
 
           {/* Right Column: Sticky Booking & Owner Card (4 cols) */}
-          <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
+          <div className="space-y-6 lg:sticky lg:top-24 lg:col-span-4">
             {/* Quick Booking & Room Selection Card */}
             <BookingSidebar
               property={property}
@@ -241,11 +263,13 @@ const PropertyDetailPage = () => {
               isWholeUnitUnavailable={isWholeUnitUnavailable}
               rooms={rooms}
               displayPrice={displayPrice}
+              roomStartingPrice={roomStartingPrice}
               selectedRoom={selectedRoom}
               selectedRoomId={selectedRoomId}
               setSelectedRoomId={setSelectedRoomId}
               handleRequestToRent={handleRequestToRent}
               handleShare={handleShare}
+              handleRoomShare={handleRoomShare}
               handleContactOwner={handleContactOwner}
               isContactingOwner={isContactingOwner}
             />
@@ -272,6 +296,7 @@ const PropertyDetailPage = () => {
       {isShareModalOpen && (
         <SharePropertyModal
           property={property}
+          room={roomToShare}
           propertyId={propertyId}
           galleryImages={galleryImages}
           address={address}
@@ -280,7 +305,10 @@ const PropertyDetailPage = () => {
           isReserved={isReserved}
           isRented={isRented}
           showToast={showToast}
-          onClose={() => setIsShareModalOpen(false)}
+          onClose={() => {
+            setIsShareModalOpen(false);
+            setRoomToShare(null);
+          }}
         />
       )}
     </div>

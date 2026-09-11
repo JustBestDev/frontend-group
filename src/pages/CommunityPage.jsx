@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import {
   CalendarDays,
@@ -10,27 +10,43 @@ import {
   Users,
   BedSingle,
   AlertCircle,
+  ArrowLeft,
   ChevronDown,
   ChevronUp,
   ExternalLink,
+  ImageOff,
 } from "lucide-react";
 import useAuthStore from "../stores/authStore.js";
 import RentalRequestModal from "../components/rentalRequest/RentalRequestModal.jsx";
 import EditProfileModal from "../components/profile/EditProfileModal.jsx";
+import UserProfileModal from "../components/profile/UserProfileModal.jsx";
 import useCommunityPosts from "../hooks/useCommunityPosts.js";
 import useZodiacMatches from "../hooks/useZodiacMatches.js";
-import { getCommunityReadiness, parsePostGender } from "../utils/communityRental.js";
+import {
+  getCommunityListing,
+  getCommunityReadiness,
+  parsePostGender,
+} from "../utils/communityRental.js";
+import { formatZodiacWithSymbol } from "../utils/zodiac.js";
 
 const fallbackImage =
   "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80";
 
 const formatZodiac = (zodiac) =>
-  zodiac ? zodiac.charAt(0) + zodiac.slice(1).toLowerCase() : "Unknown";
+  zodiac ? zodiac.charAt(0) + zodiac.slice(1).toLowerCase() : "";
+
+const filterChipClass = (active) =>
+  `flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-full px-5 text-sm font-bold transition [&::-webkit-details-marker]:hidden ${
+    active
+      ? "bg-[#dfe8dc] text-[#25463c]"
+      : "bg-[#f0eee7] text-[#526052] hover:bg-[#e5e9df]"
+  }`;
 
 function CommunityPage() {
   const navigate = useNavigate();
   const userId = useAuthStore((state) => state.user?.id);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [profileUserId, setProfileUserId] = useState(null);
   const [searchText, setSearchText] = useState("");
   const [propertyTypeFilter, setPropertyTypeFilter] = useState("ALL");
   const [genderFilter, setGenderFilter] = useState("ALL");
@@ -40,6 +56,8 @@ function CommunityPage() {
   const [minBudget, setMinBudget] = useState("");
   const [maxBudget, setMaxBudget] = useState("");
   const [sortOrder, setSortOrder] = useState("NEWEST");
+  const [activeFilter, setActiveFilter] = useState(null);
+  const activeFilterRef = useRef(null);
   const {
     setRentalRequests,
     posts, requestingPostId, joinFeedback, setJoinFeedback,
@@ -59,6 +77,26 @@ function CommunityPage() {
     handleFindByZodiac,
   } = useZodiacMatches(setJoinFeedback);
   const [selectedGroupPost, setSelectedGroupPost] = useState(null);
+
+  useEffect(() => {
+    if (!activeFilter) return undefined;
+
+    const closeOnOutsideClick = (event) => {
+      if (!activeFilterRef.current?.contains(event.target)) {
+        setActiveFilter(null);
+      }
+    };
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setActiveFilter(null);
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [activeFilter]);
 
   const filteredPosts = (posts || [])
     .filter((post) => {
@@ -175,18 +213,20 @@ function CommunityPage() {
         </div>
       )}
       <section className="w-full max-w-7xl mx-auto px-4 sm:px-6">
-        {/* Page Header (Consistent with ConversationList) */}
-        <div className="mb-6 flex shrink-0 items-end justify-between gap-6 max-sm:flex-col max-sm:items-stretch">
+        <div className="mb-8 flex shrink-0 items-end justify-between gap-6 max-sm:flex-col max-sm:items-stretch">
           <div>
             <p className="mb-1 text-xs font-extrabold uppercase tracking-[0.18em] text-terracotta">
               Community & Roommates
             </p>
-            <h1 className="m-0 font-serif text-3xl leading-tight text-ink md:text-4xl">
-              Community
+            <h1 className="m-0 max-w-3xl font-serif text-3xl leading-tight text-ink md:text-4xl">
+              {zodiacMode
+                ? "Find people you'd feel at home with."
+                : "Community"}
             </h1>
             <p className="mt-2 text-muted-copy">
-              Connect with roommates, explore listings, and share your living
-              experience.
+              {zodiacMode
+                ? "Explore communities ranked by your zodiac compatibility."
+                : "Connect with roommates, explore listings, and share your living experience."}
             </p>
           </div>
           <button
@@ -200,9 +240,17 @@ function CommunityPage() {
                 : handleFindByZodiac
             }
             disabled={zodiacLoading}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#748a75] px-5 py-3 text-sm font-bold text-white shadow-xs transition hover:bg-[#627863] disabled:cursor-not-allowed disabled:opacity-60"
+            className={`inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold shadow-xs transition disabled:cursor-not-allowed disabled:opacity-60 ${
+              zodiacMode
+                ? "bg-[#ebe9e2] text-[#365047] hover:bg-[#dfddd5]"
+                : "bg-[#173f34] text-white hover:bg-[#0f3028]"
+            }`}
           >
-            <Sparkles className="h-4 w-4" />
+            {zodiacMode ? (
+              <ArrowLeft className="h-4 w-4" />
+            ) : (
+              <Sparkles className="h-4 w-4" />
+            )}
             {zodiacLoading
               ? "Finding matches..."
               : zodiacMode
@@ -240,109 +288,240 @@ function CommunityPage() {
           </div>
         )}
 
+        {zodiacMode && (
+          <div className="relative mb-8 overflow-hidden rounded-[20px] bg-[#153f34] px-6 py-8 text-white shadow-[0_12px_30px_rgba(21,63,52,0.18)] sm:px-9 sm:py-10">
+            <Sparkles
+              className="absolute -bottom-8 right-5 h-36 w-36 text-white opacity-[0.06]"
+              strokeWidth={1.25}
+              aria-hidden="true"
+            />
+            <div className="relative">
+              <span className="inline-flex rounded-full bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] text-[#dce9df]">
+                Your zodiac: {formatZodiac(userZodiac)}
+              </span>
+              <h2 className="mt-4 font-serif text-2xl leading-tight sm:text-3xl">
+                Communities matched to your vibe
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#b8cbc2]">
+                Ranked using the zodiac compatibility available for current
+                community members.
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left Column (Main Feed - 68%) */}
           <div className="w-full lg:w-full flex flex-col gap-6">
             {/* Community search and filters */}
             {!zodiacMode && (
-              <div className="rounded-[18px] border border-[#e1e5dd] bg-white p-4 sm:p-5 shadow-[0_15px_45px_rgba(68,83,68,0.12)]">
-                <div className="flex items-center gap-3 rounded-full border border-[#d8ddd6] bg-[#fafbf8] px-4 py-2.5">
-                  <Search className="h-4 w-4 shrink-0 text-[#879387]" />
+              <div className="space-y-5 rounded-[22px] border border-[#dfded3] bg-[#fbfaf6] p-5 shadow-[0_6px_20px_rgba(47,68,57,0.06)] sm:p-6">
+                <div className="flex min-h-16 items-center gap-3 rounded-2xl bg-white px-5 shadow-[0_2px_12px_rgba(47,68,57,0.07)] sm:px-6">
+                  <Search className="h-5 w-5 shrink-0 text-[#607861]" />
                   <input
                     type="search"
                     value={searchText}
                     onChange={(event) => setSearchText(event.target.value)}
-                    placeholder="Search posts, properties, or destinations..."
-                    className="w-full bg-transparent text-sm text-[#475547] outline-none placeholder:text-[#879387]"
+                    placeholder="Search communities, areas, or lifestyles..."
+                    className="min-w-0 flex-1 bg-transparent text-base text-[#29342d] outline-none placeholder:text-[#879387]"
                   />
                 </div>
 
-                <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-                  <label className="grid gap-1.5 text-xs font-bold text-[#596859]">
-                    Category
-                    <select
-                      value={propertyTypeFilter}
-                      onChange={(event) => setPropertyTypeFilter(event.target.value)}
-                      className="h-10 rounded-full border border-[#d8ddd6] bg-white px-3.5 text-sm font-normal text-[#475547] outline-none focus:border-[#748a75]"
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <div
+                    className="relative"
+                    ref={activeFilter === "category" ? activeFilterRef : null}
+                  >
+                    <button
+                      type="button"
+                      aria-expanded={activeFilter === "category"}
+                      onClick={() =>
+                        setActiveFilter((current) =>
+                          current === "category" ? null : "category",
+                        )
+                      }
+                      className={filterChipClass(propertyTypeFilter !== "ALL")}
                     >
-                      <option value="ALL">All Categories</option>
-                      <option value="HOUSE">House</option>
-                      <option value="CONDO">Condo</option>
-                      <option value="APARTMENT">Apartment</option>
-                      <option value="DORMITORY">Dormitory</option>
-                      <option value="OTHER">Other</option>
-                    </select>
-                  </label>
-                  <label className="grid gap-1.5 text-xs font-bold text-[#596859]">
-                    Roommate Gender
-                    <select
-                      value={genderFilter}
-                      onChange={(event) => setGenderFilter(event.target.value)}
-                      className="h-10 rounded-full border border-[#d8ddd6] bg-white px-3.5 text-sm font-normal text-[#475547] outline-none focus:border-[#748a75]"
-                    >
-                      <option value="ALL">All Genders</option>
-                      <option value="FEMALE">Female Only</option>
-                      <option value="MALE">Male Only</option>
-                      <option value="ANY">No Restriction</option>
-                    </select>
-                  </label>
-                  <label className="grid gap-1.5 text-xs font-bold text-[#596859]">
-                    From Date
-                    <span className="relative">
-                      <CalendarDays className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#596859]" />
-                      <input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} className="h-10 w-full rounded-full border border-[#d8ddd6] bg-white px-3.5 text-sm font-normal text-[#475547] outline-none focus:border-[#748a75]" />
-                    </span>
-                  </label>
-                  <label className="grid gap-1.5 text-xs font-bold text-[#596859]">
-                    To Date
-                    <span className="relative">
-                      <CalendarDays className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#596859]" />
-                      <input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} className="h-10 w-full rounded-full border border-[#d8ddd6] bg-white px-3.5 text-sm font-normal text-[#475547] outline-none focus:border-[#748a75]" />
-                    </span>
-                  </label>
-                  <label className="grid gap-1.5 text-xs font-bold text-[#596859]">
-                    Group Size
-                    <select value={groupSizeFilter} onChange={(event) => setGroupSizeFilter(event.target.value)} className="h-10 rounded-full border border-[#d8ddd6] bg-white px-3.5 text-sm font-normal text-[#475547] outline-none focus:border-[#748a75]">
-                      <option value="ALL">Any Group Size</option>
-                      <option value="1-2">1-2 members</option>
-                      <option value="3-4">3-4 members</option>
-                      <option value="5+">5+ members</option>
-                    </select>
-                  </label>
-                </div>
-
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <label className="grid gap-1.5 text-xs font-bold text-[#596859]">
-                    Minimum Budget
-                    <input type="number" min="0" value={minBudget} onChange={(event) => setMinBudget(event.target.value)} placeholder="Minimum budget" className="h-10 rounded-full border border-[#d8ddd6] bg-white px-3.5 text-sm font-normal text-[#475547] outline-none placeholder:text-[#879387] focus:border-[#748a75]" />
-                  </label>
-                  <label className="grid gap-1.5 text-xs font-bold text-[#596859]">
-                    Maximum Budget
-                    <input type="number" min="0" value={maxBudget} onChange={(event) => setMaxBudget(event.target.value)} placeholder="Maximum budget" className="h-10 rounded-full border border-[#d8ddd6] bg-white px-3.5 text-sm font-normal text-[#475547] outline-none placeholder:text-[#879387] focus:border-[#748a75]" />
-                  </label>
-                </div>
-
-                <div className="mt-4 flex items-center justify-between gap-3 border-t border-[#edf0ea] pt-3">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-[#879387]">
-                      {filteredPosts.length} posts found
-                    </span>
-                    {hasActiveFilters && (
-                      <button
-                        type="button"
-                        onClick={clearFilters}
-                        className="text-xs font-bold text-terracotta underline-offset-2 hover:underline"
-                      >
-                        Clear filters
-                      </button>
+                      {propertyTypeFilter === "ALL"
+                        ? "Category"
+                        : propertyTypeFilter.charAt(0) + propertyTypeFilter.slice(1).toLowerCase()}
+                      <ChevronDown className={`h-4 w-4 transition ${activeFilter === "category" ? "rotate-180" : ""}`} />
+                    </button>
+                    {activeFilter === "category" && (
+                    <div className="absolute left-0 top-12 z-20 w-64 max-w-[calc(100vw-2rem)] rounded-2xl bg-white p-4 shadow-[0_16px_40px_rgba(35,59,48,0.18)]">
+                      <label className="grid gap-2 text-xs font-bold text-[#596859]">
+                        Property category
+                        <select value={propertyTypeFilter} onChange={(event) => setPropertyTypeFilter(event.target.value)} className="h-11 rounded-xl bg-[#f5f3ed] px-3 text-sm font-normal text-[#475547] outline-none focus:ring-2 focus:ring-[#a9bba3]">
+                          <option value="ALL">All Categories</option>
+                          <option value="HOUSE">House</option>
+                          <option value="CONDO">Condo</option>
+                          <option value="APARTMENT">Apartment</option>
+                          <option value="DORMITORY">Dormitory</option>
+                          <option value="OTHER">Other</option>
+                        </select>
+                      </label>
+                    </div>
                     )}
                   </div>
-                  <label className="flex items-center gap-2 text-xs font-bold text-[#596859]">
-                    Sort by
+
+                  <div
+                    className="relative"
+                    ref={activeFilter === "gender" ? activeFilterRef : null}
+                  >
+                    <button
+                      type="button"
+                      aria-expanded={activeFilter === "gender"}
+                      onClick={() =>
+                        setActiveFilter((current) =>
+                          current === "gender" ? null : "gender",
+                        )
+                      }
+                      className={filterChipClass(genderFilter !== "ALL")}
+                    >
+                      {genderFilter === "ALL"
+                        ? "Gender"
+                        : genderFilter === "ANY"
+                          ? "No restriction"
+                          : `${genderFilter.charAt(0)}${genderFilter.slice(1).toLowerCase()} only`}
+                      <ChevronDown className={`h-4 w-4 transition ${activeFilter === "gender" ? "rotate-180" : ""}`} />
+                    </button>
+                    {activeFilter === "gender" && (
+                    <div className="absolute left-0 top-12 z-20 w-64 max-w-[calc(100vw-2rem)] rounded-2xl bg-white p-4 shadow-[0_16px_40px_rgba(35,59,48,0.18)]">
+                      <label className="grid gap-2 text-xs font-bold text-[#596859]">
+                        Roommate gender
+                        <select value={genderFilter} onChange={(event) => setGenderFilter(event.target.value)} className="h-11 rounded-xl bg-[#f5f3ed] px-3 text-sm font-normal text-[#475547] outline-none focus:ring-2 focus:ring-[#a9bba3]">
+                          <option value="ALL">All Genders</option>
+                          <option value="FEMALE">Female Only</option>
+                          <option value="MALE">Male Only</option>
+                          <option value="ANY">No Restriction</option>
+                        </select>
+                      </label>
+                    </div>
+                    )}
+                  </div>
+
+                  <div
+                    className="relative"
+                    ref={activeFilter === "moveIn" ? activeFilterRef : null}
+                  >
+                    <button
+                      type="button"
+                      aria-expanded={activeFilter === "moveIn"}
+                      onClick={() =>
+                        setActiveFilter((current) =>
+                          current === "moveIn" ? null : "moveIn",
+                        )
+                      }
+                      className={filterChipClass(Boolean(fromDate || toDate))}
+                    >
+                      <CalendarDays className="h-4 w-4" />
+                      {fromDate || toDate
+                        ? `${fromDate || "Any"} – ${toDate || "Any"}`
+                        : "Move-in"}
+                      <ChevronDown className={`h-4 w-4 transition ${activeFilter === "moveIn" ? "rotate-180" : ""}`} />
+                    </button>
+                    {activeFilter === "moveIn" && (
+                    <div className="absolute left-0 top-12 z-20 grid w-72 max-w-[calc(100vw-2rem)] gap-3 rounded-2xl bg-white p-4 shadow-[0_16px_40px_rgba(35,59,48,0.18)]">
+                      <label className="grid gap-2 text-xs font-bold text-[#596859]">
+                        From
+                        <input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} className="h-11 rounded-xl bg-[#f5f3ed] px-3 text-sm font-normal text-[#475547] outline-none focus:ring-2 focus:ring-[#a9bba3]" />
+                      </label>
+                      <label className="grid gap-2 text-xs font-bold text-[#596859]">
+                        To
+                        <input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} className="h-11 rounded-xl bg-[#f5f3ed] px-3 text-sm font-normal text-[#475547] outline-none focus:ring-2 focus:ring-[#a9bba3]" />
+                      </label>
+                    </div>
+                    )}
+                  </div>
+
+                  <div
+                    className="relative"
+                    ref={activeFilter === "budget" ? activeFilterRef : null}
+                  >
+                    <button
+                      type="button"
+                      aria-expanded={activeFilter === "budget"}
+                      onClick={() =>
+                        setActiveFilter((current) =>
+                          current === "budget" ? null : "budget",
+                        )
+                      }
+                      className={filterChipClass(Boolean(minBudget || maxBudget))}
+                    >
+                      {minBudget || maxBudget
+                        ? `฿${minBudget || "0"} – ฿${maxBudget || "Any"}`
+                        : "Budget"}
+                      <ChevronDown className={`h-4 w-4 transition ${activeFilter === "budget" ? "rotate-180" : ""}`} />
+                    </button>
+                    {activeFilter === "budget" && (
+                    <div className="absolute left-0 top-12 z-20 grid w-72 max-w-[calc(100vw-2rem)] grid-cols-2 gap-3 rounded-2xl bg-white p-4 shadow-[0_16px_40px_rgba(35,59,48,0.18)]">
+                      <label className="grid gap-2 text-xs font-bold text-[#596859]">
+                        Minimum
+                        <input type="number" min="0" value={minBudget} onChange={(event) => setMinBudget(event.target.value)} placeholder="No min" className="h-11 min-w-0 rounded-xl bg-[#f5f3ed] px-3 text-sm font-normal text-[#475547] outline-none placeholder:text-[#879387] focus:ring-2 focus:ring-[#a9bba3]" />
+                      </label>
+                      <label className="grid gap-2 text-xs font-bold text-[#596859]">
+                        Maximum
+                        <input type="number" min="0" value={maxBudget} onChange={(event) => setMaxBudget(event.target.value)} placeholder="No max" className="h-11 min-w-0 rounded-xl bg-[#f5f3ed] px-3 text-sm font-normal text-[#475547] outline-none placeholder:text-[#879387] focus:ring-2 focus:ring-[#a9bba3]" />
+                      </label>
+                    </div>
+                    )}
+                  </div>
+
+                  <div
+                    className="relative"
+                    ref={activeFilter === "groupSize" ? activeFilterRef : null}
+                  >
+                    <button
+                      type="button"
+                      aria-expanded={activeFilter === "groupSize"}
+                      onClick={() =>
+                        setActiveFilter((current) =>
+                          current === "groupSize" ? null : "groupSize",
+                        )
+                      }
+                      className={filterChipClass(groupSizeFilter !== "ALL")}
+                    >
+                      {groupSizeFilter === "ALL"
+                        ? "Group size"
+                        : `${groupSizeFilter} members`}
+                      <ChevronDown className={`h-4 w-4 transition ${activeFilter === "groupSize" ? "rotate-180" : ""}`} />
+                    </button>
+                    {activeFilter === "groupSize" && (
+                    <div className="absolute right-0 top-12 z-20 w-64 max-w-[calc(100vw-2rem)] rounded-2xl bg-white p-4 shadow-[0_16px_40px_rgba(35,59,48,0.18)]">
+                      <label className="grid gap-2 text-xs font-bold text-[#596859]">
+                        Group size
+                        <select value={groupSizeFilter} onChange={(event) => setGroupSizeFilter(event.target.value)} className="h-11 rounded-xl bg-[#f5f3ed] px-3 text-sm font-normal text-[#475547] outline-none focus:ring-2 focus:ring-[#a9bba3]">
+                          <option value="ALL">Any Group Size</option>
+                          <option value="1-2">1-2 members</option>
+                          <option value="3-4">3-4 members</option>
+                          <option value="5+">5+ members</option>
+                        </select>
+                      </label>
+                    </div>
+                    )}
+                  </div>
+                  {hasActiveFilters && (
+                    <button
+                      type="button"
+                      onClick={clearFilters}
+                      className="min-h-11 px-2 text-sm font-bold text-terracotta underline-offset-2 hover:underline"
+                    >
+                      Clear filters
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#e8e5dc] pt-4">
+                  <span className="text-sm font-bold text-[#596859]">
+                    {filteredPosts.length}{" "}
+                    {filteredPosts.length === 1 ? "community" : "communities"}
+                  </span>
+                  <label className="ml-auto flex items-center gap-1 text-xs font-medium text-[#7c887c]">
+                    Sort:
                     <select
                       value={sortOrder}
                       onChange={(event) => setSortOrder(event.target.value)}
-                      className="h-9 rounded-full border border-[#d8ddd6] bg-white px-3 text-sm font-normal text-[#475547] outline-none focus:border-[#748a75]"
+                      className="h-9 rounded-full bg-transparent px-2 text-sm font-bold text-[#526052] outline-none hover:bg-[#eeece4] focus:bg-[#eeece4]"
                     >
                       <option value="NEWEST">Newest</option>
                       <option value="LOWEST_RENT">Lowest rent</option>
@@ -350,17 +529,6 @@ function CommunityPage() {
                     </select>
                   </label>
                 </div>
-              </div>
-            )}
-
-            {zodiacMode && (
-              <div className="rounded-[18px] border border-[#d8ddd6] bg-white px-5 py-4 shadow-[0_8px_25px_rgba(67,81,67,0.07)]">
-                <p className="text-sm font-bold text-[#475547]">
-                  Your zodiac: {formatZodiac(userZodiac)}
-                </p>
-                <p className="mt-1 text-xs text-[#879387]">
-                  {zodiacMatches.length} ranked matches found
-                </p>
               </div>
             )}
 
@@ -373,10 +541,18 @@ function CommunityPage() {
                     (member) => member.memberRole === "CREATOR",
                   )?.user;
                 const creatorId = post.creatorId ?? creator?.id;
+                const listing = getCommunityListing(post);
+                const creatorZodiac = formatZodiacWithSymbol(
+                  creator?.profile?.zodiac,
+                );
                 const isCreator = Number(creatorId) === Number(userId);
                 const communityMembers = zodiacMode
                   ? post.members || []
                   : membersByPost[post.id] || [];
+                const memberZodiacs = communityMembers
+                  .map((member) => member.user?.profile?.zodiac)
+                  .filter(Boolean)
+                  .map(formatZodiacWithSymbol);
                 const memberIds = new Set(
                   communityMembers
                     .map((member) => member.userId ?? member.user?.id)
@@ -434,24 +610,108 @@ function CommunityPage() {
                 return (
                   <article
                     key={post.id}
-                    className="bg-white border border-[#e1e5dd] rounded-[18px] p-6 flex flex-col gap-4 shadow-[0_8px_25px_rgba(67,81,67,0.07)] hover:-translate-y-1 hover:shadow-[0_14px_35px_rgba(67,81,67,0.13)] transition-all"
+                    className={`flex flex-col gap-4 rounded-[18px] border border-[#e1e5dd] bg-white p-5 shadow-[0_8px_25px_rgba(67,81,67,0.07)] transition-all hover:-translate-y-1 hover:shadow-[0_14px_35px_rgba(67,81,67,0.13)] sm:p-6 ${zodiacMode ? "lg:p-8" : ""}`}
                   >
                     {/* Post Header */}
+                    {zodiacMode ? (
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-[#6f7a73]">
+                          <span
+                            className={`rounded-full px-3 py-1.5 font-extrabold ${post.compatibilityScore == null
+                              ? "bg-[#edf0ea] text-[#687568]"
+                              : post.compatibilityScore >= 85
+                                ? "bg-[#dcebd8] text-[#4d684e]"
+                                : post.compatibilityScore >= 65
+                                  ? "bg-[#f4ead6] text-[#8a682f]"
+                                  : "bg-[#f3e3df] text-[#98594b]"
+                              }`}
+                          >
+                            {post.compatibilityScore == null
+                              ? "Not enough zodiac data"
+                              : `${post.compatibilityScore}% Match`}
+                          </span>
+                          <span className="inline-flex items-center gap-1">
+                            Creator:
+                            {creatorId != null ? (
+                              <button
+                                type="button"
+                                onClick={() => setProfileUserId(creatorId)}
+                                className="rounded-sm font-semibold text-[#52685b] underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#748a75]"
+                              >
+                                {creator?.profile?.firstName || creator?.username || "Community member"}
+                              </button>
+                            ) : (
+                              creator?.profile?.firstName || creator?.username || "Community member"
+                            )}
+                          </span>
+                          {creatorZodiac && (
+                            <span className="rounded-full bg-[#f2f0e9] px-2 py-1 font-semibold text-[#697568]">
+                              {creatorZodiac}
+                            </span>
+                          )}
+                          <span
+                            className={`ml-auto rounded-full border px-2.5 py-1 font-bold ${post.status === "FULL"
+                              ? "border-[#edd7cb] bg-[#f8ede6] text-terracotta"
+                              : "border-[#cfd7cd] bg-[#eef3eb] text-[#546b55]"
+                              }`}
+                          >
+                            {post.status}
+                          </span>
+                        </div>
+                        <h2 className="mt-4 font-serif text-xl leading-snug text-[#25463c] sm:text-2xl">
+                          {post.title}
+                        </h2>
+                        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[#687568]">
+                          {memberZodiacs.length > 0 && (
+                            <>
+                              <Users className="h-4 w-4" />
+                              <span>Members:</span>
+                              {memberZodiacs.map((zodiac, index) => (
+                                <span
+                                  key={`${post.id}-${zodiac}-${index}`}
+                                  className="rounded-full bg-[#f2f0e9] px-2 py-1 font-medium text-[#697568]"
+                                >
+                                  {zodiac}
+                                </span>
+                              ))}
+                            </>
+                          )}
+                          <span className="rounded-full bg-[#f2f0e9] px-2 py-1">
+                            {post.matchedMembers} of {post.totalMembers} matched
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-full overflow-hidden shrink-0 border-2 border-[#e1e7df] shadow-xs">
-                          <img
-                            alt="User Avatar"
-                            className="w-full h-full object-cover"
-                            src={creator?.profile?.profileImageUrl || fallbackImage}
-                          />
-                        </div>
-                        <div>
-                          <div className="text-[15px] font-bold text-[#475547]">
-                            {creator?.profile?.firstName ||
-                              creator?.username ||
-                              "Community member"}
+                        {creatorId != null ? (
+                          <button
+                            type="button"
+                            onClick={() => setProfileUserId(creatorId)}
+                            aria-label={`View ${creator?.profile?.firstName || creator?.username || "creator"} profile`}
+                            className="h-11 w-11 shrink-0 overflow-hidden rounded-full border-2 border-[#e1e7df] shadow-xs transition hover:border-[#748a75] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#748a75]"
+                          >
+                            <img alt="" className="h-full w-full object-cover" src={creator?.profile?.profileImageUrl || fallbackImage} />
+                          </button>
+                        ) : (
+                          <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full border-2 border-[#e1e7df] shadow-xs">
+                            <img alt="" className="h-full w-full object-cover" src={creator?.profile?.profileImageUrl || fallbackImage} />
                           </div>
+                        )}
+                        <div>
+                          {creatorId != null ? (
+                            <button
+                              type="button"
+                              onClick={() => setProfileUserId(creatorId)}
+                              className="rounded-sm text-[15px] font-bold text-[#475547] transition hover:text-[#294c3f] hover:underline hover:underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#748a75]"
+                            >
+                              {creator?.profile?.firstName || creator?.username || "Community member"}
+                            </button>
+                          ) : (
+                            <div className="text-[15px] font-bold text-[#475547]">
+                              {creator?.profile?.firstName || creator?.username || "Community member"}
+                            </div>
+                          )}
                           <div className="text-[12px] text-[#889188] flex flex-wrap items-center gap-1.5 mt-0.5 font-medium">
                             <span>
                               {post.createdAt
@@ -508,47 +768,68 @@ function CommunityPage() {
                         <MoreHorizontal className="w-5 h-5" />
                       </button>
                     </div>
+                    )}
 
-                    {/* Property Preview (If Available) */}
-                    {post.property && (
+                    {/* Listing Preview (If Available) */}
+                    {listing && (
                       <Link
-                        to={`/properties/${post.propertyId || post.property.id}`}
+                        to={listing.path}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="group flex flex-col md:flex-row gap-5 p-3.5 rounded-xl bg-[#fafbf8] border border-[#e1e5dd] hover:border-[#748a75] hover:bg-[#f6f8f5] hover:shadow-xs transition-all cursor-pointer text-inherit no-underline"
                       >
                         <div className="relative w-full md:w-70 h-47.5 rounded-lg overflow-hidden shrink-0 bg-[#e8ede5]">
-                          <img
-                            alt="Property"
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            src={post.property.images?.[0]?.imageUrl || fallbackImage}
-                          />
+                          {listing.imageUrl ? (
+                            <img
+                              alt={listing.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              src={listing.imageUrl}
+                            />
+                          ) : (
+                            <div className="grid size-full place-items-center bg-[#edf0ea] text-[#879387]">
+                              <ImageOff className="size-8" aria-label="No listing image" />
+                            </div>
+                          )}
                         </div>
 
                         <div className="flex flex-col justify-center gap-2 py-1 min-w-0 flex-1">
                           <div>
                             <div className="flex items-center gap-2 justify-between">
                               <h3 className="text-[18px] font-bold text-[#475547] group-hover:text-[#2f3d30] transition-colors leading-tight font-serif truncate">
-                                {post.property.title}
+                                {listing.title}
                               </h3>
                               <ExternalLink className="w-4 h-4 text-[#889188] opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                             </div>
                             <div className="text-[13px] text-[#889188] mt-1">
-                              {post.property.address?.province}
+                              {listing.subtitle}
                             </div>
                           </div>
 
                           <div className="text-[18px] font-bold text-[#607861]">
-                            ฿ {Number(post.property.monthlyRent).toLocaleString()}
+                            ฿ {Number(listing.monthlyRent).toLocaleString()}
                           </div>
 
                           <div className="flex flex-wrap items-center gap-4 text-[13px] text-[#607060] pt-1">
-                            <div className="flex items-center gap-1.5">
-                              <BedSingle className="w-4 h-4 text-[#889188]" />
-                              <span>
-                                {post.property.rooms?.length ?? 0} rooms
-                              </span>
-                            </div>
+                            {listing.isRoom ? (
+                              <>
+                                <span className="font-semibold capitalize">
+                                  {String(listing.status || "available").toLowerCase()}
+                                </span>
+                                {listing.capacity && (
+                                  <div className="flex items-center gap-1.5">
+                                    <Users className="w-4 h-4 text-[#889188]" />
+                                    <span>Up to {listing.capacity} people</span>
+                                  </div>
+                                )}
+                              </>
+                            ) : (!zodiacMode || Number.isInteger(listing.roomCount)) && (
+                              <div className="flex items-center gap-1.5">
+                                <BedSingle className="w-4 h-4 text-[#889188]" />
+                                <span>
+                                  {listing.roomCount ?? 0} rooms
+                                </span>
+                              </div>
+                            )}
                             <div className="flex items-center gap-1.5">
                               <Users className="w-4 h-4 text-[#889188]" />
                               <span>
@@ -567,43 +848,9 @@ function CommunityPage() {
                       </p>
                     )}
 
-                    {zodiacMode && (
-                      <div className="rounded-xl border border-[#e1e5dd] bg-[#fafbf8] px-4 py-3">
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                          <div>
-                            <div className="text-sm font-bold text-[#475547]">
-                              {communityMembers
-                                .map((member) =>
-                                  formatZodiac(member.user?.profile?.zodiac),
-                                )
-                                .join(" · ") || "Unknown"}
-                            </div>
-                            {Number(post.matchedMembers) <
-                              Number(post.totalMembers) && (
-                                <div className="mt-1 text-xs text-[#879387]">
-                                  Zodiac data: {post.matchedMembers} of{" "}
-                                  {post.totalMembers} members
-                                </div>
-                              )}
-                          </div>
-                          <span
-                            className={`rounded-full px-3 py-1.5 text-sm font-extrabold ${post.compatibilityScore == null
-                              ? "bg-[#edf0ea] text-[#687568]"
-                              : post.compatibilityScore >= 85
-                                ? "bg-[#dcebd8] text-[#4d684e]"
-                                : post.compatibilityScore >= 65
-                                  ? "bg-[#f4ead6] text-[#8a682f]"
-                                  : "bg-[#f3e3df] text-[#98594b]"
-                              }`}
-                          >
-                            {post.compatibilityScore == null
-                              ? "Not enough zodiac data"
-                              : `${post.compatibilityScore}% Match`}
-                          </span>
-                        </div>
-                        {canExplainMatch && (
-                          <>
-                            <button
+                    {zodiacMode && canExplainMatch && (
+                      <div className="rounded-xl bg-[#f8f6f0] px-4 py-3">
+                        <button
                               type="button"
                               onClick={() =>
                                 setExpandedMatchId(
@@ -612,7 +859,7 @@ function CommunityPage() {
                               }
                               aria-expanded={isMatchExpanded}
                               aria-controls={`zodiac-reasons-${post.id}`}
-                              className="mt-3 flex items-center gap-1.5 border-t border-[#e1e5dd] pt-3 text-xs font-bold text-[#607861] transition-colors hover:text-[#475547]"
+                              className="flex w-full items-center justify-between gap-1.5 text-xs font-bold text-[#36574b] transition-colors hover:text-[#173f34]"
                             >
                               Why this match?
                               {isMatchExpanded ? (
@@ -620,25 +867,20 @@ function CommunityPage() {
                               ) : (
                                 <ChevronDown className="h-4 w-4" />
                               )}
-                            </button>
-                            {isMatchExpanded && (
-                              <div
-                                id={`zodiac-reasons-${post.id}`}
-                                className="mt-3 rounded-lg border border-[#e1e5dd] bg-white px-4 py-3"
-                              >
-                                <p className="mb-2 text-xs text-[#879387]">
-                                  Based on zodiac traits and sign relationships.
-                                </p>
-                                <ul className="list-disc space-y-1 pl-4 text-[13px] leading-relaxed text-[#596859]">
-                                  {compatibilityReasons.map((reason, index) => (
-                                    <li key={`${post.id}-${index}-${reason}`}>
-                                      {reason}
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                          </>
+                        </button>
+                        {isMatchExpanded && (
+                          <div
+                            id={`zodiac-reasons-${post.id}`}
+                            className="mt-3 border-t border-[#deddd5] pt-3"
+                          >
+                            <ul className="list-disc space-y-1 pl-4 text-[13px] leading-relaxed text-[#596859]">
+                              {compatibilityReasons.map((reason, index) => (
+                                <li key={`${post.id}-${index}-${reason}`}>
+                                  {reason}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
                         )}
                       </div>
                     )}
@@ -776,6 +1018,7 @@ function CommunityPage() {
           </div>
 
           {/* Right Sidebar (32%) */}
+          {!zodiacMode && (
           <aside className="w-full lg:w-[45%] flex flex-col gap-6">
             {/* About Community Card */}
             <div className="bg-white border border-[#e1e5dd] rounded-[18px] p-6 shadow-[0_8px_25px_rgba(67,81,67,0.07)]">
@@ -885,6 +1128,7 @@ function CommunityPage() {
               </ul>
             </div>
           </aside>
+          )}
         </div>
       </section>
       {selectedGroupPost && (
@@ -913,6 +1157,12 @@ function CommunityPage() {
           setBirthdateRequired(false);
         }}
       />
+      {profileUserId != null && (
+        <UserProfileModal
+          userId={profileUserId}
+          onClose={() => setProfileUserId(null)}
+        />
+      )}
     </main>
   );
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
 import {
   ArrowLeft,
@@ -23,6 +23,8 @@ import { getMyPropertiesApi } from "../../services/ownerApi.js";
 import RentalRequestModal from "../../components/rentalRequest/RentalRequestModal.jsx";
 import useAuthStore from "../../stores/authStore.js";
 import OwnerCard from "../../components/propertyDetail/OwnerCard.jsx";
+import ShareListingToConversation from "../../components/conversations/ShareListingToConversation.jsx";
+import { shareListingWithHost } from "../../utils/conversations.js";
 import {
   findOwnerRoom,
   ownerEditRoomPath,
@@ -35,10 +37,12 @@ export default function RoomDetail({ owner = false }) {
   const { token, user } = useAuthStore();
   const [toastMessage, setToastMessage] = useState("");
   const [isRentalRequestOpen, setIsRentalRequestOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isContactingOwner, setIsContactingOwner] = useState(false);
   const [room, setRoom] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const contactInFlight = useRef(false);
 
   const fetchRoom = useCallback(async () => {
     try {
@@ -72,14 +76,7 @@ export default function RoomDetail({ owner = false }) {
     }, 2800);
   };
 
-  const handleShare = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      showToast("Property link copied to clipboard");
-    } catch {
-      showToast("Shared property link");
-    }
-  };
+  const handleShare = () => setIsShareModalOpen(true);
 
   const handleRentalRequest = () => {
     if (room?.status !== "AVAILABLE") {
@@ -98,6 +95,7 @@ export default function RoomDetail({ owner = false }) {
   };
 
   const handleContactOwner = async () => {
+    if (contactInFlight.current) return;
     if (!token || !user) {
       navigate("/login");
       return;
@@ -110,6 +108,7 @@ export default function RoomDetail({ owner = false }) {
       room?.property?.owner?.id ||
       room?.ownerId;
 
+    contactInFlight.current = true;
     setIsContactingOwner(true);
     try {
       if (!ownerId && resolvedPropertyId) {
@@ -127,22 +126,18 @@ export default function RoomDetail({ owner = false }) {
         return;
       }
 
-      const response = await api.post("/conversations", {
-        propertyId: Number(resolvedPropertyId),
-        memberId: Number(ownerId),
+      const conversationId = await shareListingWithHost(api, {
+        propertyId: resolvedPropertyId,
+        ownerId,
+        roomId: room.id || roomId,
       });
-      const conversation =
-        response.data.conversation || response.data.data?.conversation;
-      const conversationId =
-        conversation?.id || conversation?.conversationId;
-
-      if (!conversationId) throw new Error("Conversation was not returned");
       navigate("/Message", { state: { conversationId } });
     } catch (requestError) {
       showToast(
-        requestError.response?.data?.message || "Unable to contact the host",
+        requestError.response?.data?.message || "Unable to share this room with the host",
       );
     } finally {
+      contactInFlight.current = false;
       setIsContactingOwner(false);
     }
   };
@@ -518,6 +513,26 @@ export default function RoomDetail({ owner = false }) {
           targetName={room.roomName || `Room #${roomId}`}
           onClose={() => setIsRentalRequestOpen(false)}
         />
+      )}
+      {!owner && isShareModalOpen && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4 backdrop-blur-xs" onClick={() => setIsShareModalOpen(false)}>
+          <div className="w-full max-w-lg rounded-3xl border border-[#e1e5dd] bg-[#fffefa] p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+            <div className="mb-5 flex items-center justify-between gap-4">
+              <div>
+                <h3 className="m-0 font-serif text-2xl font-bold text-forest">Share room</h3>
+                <p className="mb-0 mt-1 text-sm text-muted-copy">Send this room to an existing property conversation.</p>
+              </div>
+              <button type="button" onClick={() => setIsShareModalOpen(false)} className="rounded-full px-3 py-2 text-xl text-muted-copy hover:bg-sage-light" aria-label="Close">×</button>
+            </div>
+            <ShareListingToConversation
+              type="ROOM_SHARE"
+              listingId={room.id || roomId}
+              propertyId={propertyId || room.propertyId || room.property?.id}
+              ownerId={room.property?.ownerId || room.property?.owner?.id || room.ownerId}
+              onShared={() => setIsShareModalOpen(false)}
+            />
+          </div>
+        </div>
       )}
     </main>
   );

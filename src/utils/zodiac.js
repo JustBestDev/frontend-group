@@ -28,6 +28,16 @@ const ZODIAC_SYMBOLS = {
   PISCES: "♓",
 };
 
+export function formatZodiacWithSymbol(zodiac) {
+  const code = zodiac?.code || zodiac;
+  if (typeof code !== "string") return "";
+  const normalized = code.toUpperCase();
+  const symbol = ZODIAC_SYMBOLS[normalized];
+  return symbol
+    ? `${symbol} ${normalized.charAt(0) + normalized.slice(1).toLowerCase()}`
+    : "";
+}
+
 export function getZodiacFromBirthdate(birthdate) {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(birthdate || "");
   if (!match) return null;

@@ -1,4 +1,6 @@
-import { Building2, BedDouble, Bath, MapPin } from "lucide-react";
+import { Bath, BedDouble, Building2, MapPin, Ruler, TrainFront } from "lucide-react";
+
+const formatLabel = (value) => value?.replaceAll("_", " ");
 
 const PropertySummary = ({
   property,
@@ -6,100 +8,75 @@ const PropertySummary = ({
   address,
   isWholeUnit,
   rooms,
+  roomStartingPrice,
+  nearestTransitStation,
+  transitDistanceKm,
   isReserved,
   isRented,
   isWholeUnitUnavailable,
 }) => {
+  const size = property.size ?? property.area;
+  const bathrooms = property.bathrooms ?? property.bathroomCount;
+  const bedrooms = isWholeUnit ? property.totalBedrooms : rooms.length;
+  const price = isWholeUnit ? property.monthlyRent : roomStartingPrice;
+  const specs = [
+    size != null && { icon: Ruler, label: "Unit size", value: `${size} sq.m.` },
+    bedrooms != null && bedrooms > 0 && {
+      icon: BedDouble,
+      label: "Configuration",
+      value: `${bedrooms} ${Number(bedrooms) === 1 ? "bedroom" : "bedrooms"}`,
+    },
+    bathrooms != null && {
+      icon: Bath,
+      label: "Bathrooms",
+      value: `${bathrooms} ${Number(bathrooms) === 1 ? "bathroom" : "bathrooms"}`,
+    },
+    { icon: Building2, label: "Lease style", value: isWholeUnit ? "Whole unit" : "Individual room" },
+  ].filter(Boolean);
 
   return (
-    <div className="bg-white p-6 sm:p-8 rounded-2xl border border-[#e1e5dd] shadow-xs">
-      <div className="flex flex-wrap items-center gap-2 mb-3">
-        <span className="px-3 py-1 rounded-full bg-sage-light text-[#294c25] text-xs font-bold uppercase tracking-wider">
-          {property.propertyType || "CONDO"}
-        </span>
-        <span className="px-3 py-1 rounded-full bg-[#f1f0ea] text-muted-copy text-xs font-semibold">
-          {property.rentType
-            ? property.rentType.replaceAll("_", " ")
-            : "ROOM SHARE"}
-        </span>
+    <section>
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        {property.propertyType && <span className="rounded-full bg-white px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-forest shadow-sm">{formatLabel(property.propertyType)}</span>}
+        {property.rentType && <span className="rounded-full bg-sage-light px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-forest">{formatLabel(property.rentType)}</span>}
         {isWholeUnit && (
-          <span
-            className={`px-3 py-1 rounded-full text-xs font-bold ${
-              isWholeUnitUnavailable
-                ? "bg-[#fde8e6] text-danger border border-[#f4c7c3]"
-                : "bg-sage-light text-[#294c25] border border-[#b8deb0]"
-            }`}
-          >
-            {isReserved
-              ? "Reserved"
-              : isRented
-                ? "Rented"
-                : isWholeUnitUnavailable
-                  ? "Unavailable"
-                  : "Available"}
+          <span className={`rounded-full px-3 py-1 text-[11px] font-bold ${isWholeUnitUnavailable ? "bg-[#fde8e6] text-danger" : "bg-[#dcebd8] text-[#315d38]"}`}>
+            {isReserved ? "Reserved" : isRented ? "Rented" : isWholeUnitUnavailable ? "Unavailable" : "Available"}
           </span>
         )}
-        <span className="text-xs text-[#889188] ml-auto">
-          Listing #{propertyId}
-        </span>
+        <span className="text-[11px] font-medium text-muted-copy">Listing #{propertyId}</span>
       </div>
 
-      <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1c1c16] tracking-tight mb-3">
-        {property.title ||
-          property.name ||
-          "Quality Living Space Ready to Move In"}
+      <h1 className="max-w-4xl font-serif text-3xl font-bold leading-tight tracking-tight text-forest sm:text-4xl lg:text-[42px]">
+        {property.title || property.name || `Property #${propertyId}`}
       </h1>
 
-      <p className="flex items-center gap-2 text-sm sm:text-[15px] text-muted-copy mb-6">
-        <MapPin className="w-4 h-4 text-[#4f614d] shrink-0" />
-        <span>{address}</span>
-      </p>
-
-      {/* Quick Specs Chips */}
-      <div className="flex flex-wrap items-center gap-3 sm:gap-6 pt-5 border-t border-[#f1eee4] text-sm text-[#414753]">
-        <div className="flex items-center gap-2 bg-[#f7f4ea] px-3.5 py-1.5 rounded-xl border border-line">
-          <Building2 className="w-4 h-4 text-[#4f614d]" />
-          <span className="font-medium">
-            {property.size || property.area
-              ? `${property.size || property.area} sq.m.`
-              : "Spacious Layout"}
+      {address && <p className="mt-3 flex items-start gap-2 text-sm text-muted-copy"><MapPin className="mt-0.5 size-4 shrink-0 text-sage-dark" /><span>{address}</span></p>}
+      {nearestTransitStation && transitDistanceKm != null && (
+        <p className="mt-2 flex items-center gap-2 text-sm text-muted-copy">
+          <TrainFront className="size-4 shrink-0 text-sage-dark" aria-hidden="true" />
+          <span>
+            Nearest transit: {nearestTransitStation.lineName ? `${nearestTransitStation.lineName} · ` : ""}
+            {nearestTransitStation.code ? `${nearestTransitStation.code} ` : ""}
+            {nearestTransitStation.name} · {Number(transitDistanceKm).toFixed(1)} km
           </span>
-        </div>
+        </p>
+      )}
 
-        <div className="flex items-center gap-2 bg-[#f7f4ea] px-3.5 py-1.5 rounded-xl border border-line">
-          <BedDouble className="w-4 h-4 text-[#4f614d]" />
-          <span className="font-medium">
-            {isWholeUnit
-              ? property.totalBedrooms == null
-                ? "— Bedrooms"
-                : `${property.totalBedrooms} ${Number(property.totalBedrooms) === 1 ? "Bedroom" : "Bedrooms"}`
-              : `${rooms.length} ${rooms.length === 1 ? "Bedroom" : "Bedrooms"}`}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2 bg-[#f7f4ea] px-3.5 py-1.5 rounded-xl border border-line">
-          <Bath className="w-4 h-4 text-[#4f614d]" />
-          <span className="font-medium">
-            {property.bathrooms
-              ? `${property.bathrooms} ${property.bathrooms === 1 ? "Bathroom" : "Bathrooms"}`
-              : "Modern Bathroom"}
-          </span>
-        </div>
+      <div className="mt-6 grid overflow-hidden rounded-2xl bg-white shadow-[0_12px_30px_rgba(50,66,54,.06)] sm:grid-cols-2 xl:grid-cols-4">
+        {specs.map(({ icon: Icon, label, value }) => (
+          <div key={label} className="flex min-h-22 items-center gap-3 px-5 py-4">
+            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-sage-light text-sage-dark"><Icon size={17} aria-hidden="true" /></span>
+            <span><span className="block text-[10px] font-bold uppercase tracking-[.12em] text-muted-copy">{label}</span><strong className="mt-1 block font-serif text-base text-forest">{value}</strong></span>
+          </div>
+        ))}
+        {price != null && (
+          <div className="flex min-h-22 items-center px-5 py-4">
+            <span><span className="block text-[10px] font-bold uppercase tracking-[.12em] text-muted-copy">Pricing</span><strong className="mt-1 block font-serif text-lg text-forest">{isWholeUnit ? "฿" : "From ฿"}{Number(price).toLocaleString()}</strong></span>
+          </div>
+        )}
       </div>
-
-      {/* Total Price Callout */}
-      <div className="mt-6 pt-5 border-t border-[#f1eee4] flex items-baseline gap-2">
-        <span className="font-serif text-3xl font-bold text-[#4f614d]">
-          ฿
-          {property.monthlyRent
-            ? Number(property.monthlyRent).toLocaleString()
-            : "Contact for Price"}
-        </span>
-        <span className="text-sm text-muted-copy">
-          / month ({isWholeUnit ? "Entire unit" : "Starting room price"})
-        </span>
-      </div>
-    </div>
+    </section>
   );
 };
 
