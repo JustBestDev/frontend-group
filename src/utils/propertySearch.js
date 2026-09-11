@@ -1,18 +1,45 @@
-export function filterProperties(properties, {
-  search,
-  propertyType,
-  rentType,
-  priceRange,
-  bedrooms,
-  province,
-  selectedStations = [],
-}) {
-  const searchText = search.trim().toLowerCase();
-  const selectedStationCodes = selectedStations.map((stationKey) =>
-    stationKey.split(":").at(-1).toUpperCase(),
-  );
+import {
+  getAllTransitStations,
+  haversineDistanceKm,
+} from "../data/bangkokTransit.js";
 
-  return properties.filter((property) => {
+export const DEFAULT_TRANSIT_RADIUS_KM = 1;
+
+const transitStationsByKey = new Map(
+  getAllTransitStations().map((station) => [station.key, station]),
+);
+
+const parseCoordinate = (value, minimum, maximum) => {
+  if (value === null || value === undefined || value === "") return null;
+
+  const coordinate = Number(value);
+  return Number.isFinite(coordinate) &&
+    coordinate >= minimum &&
+    coordinate <= maximum
+    ? coordinate
+    : null;
+};
+
+export function filterProperties(
+  properties,
+  {
+    search,
+    propertyType,
+    rentType,
+    priceRange,
+    bedrooms,
+    province,
+    selectedStations = [],
+    transitRadiusKm = DEFAULT_TRANSIT_RADIUS_KM,
+  },
+) {
+  const searchText = search.trim().toLowerCase();
+  const selectedTransitStations = selectedStations.map((stationKey) =>
+    transitStationsByKey.get(stationKey),
+  );
+  const hasTransitFilter = selectedStations.length > 0;
+
+  return properties.flatMap((property) => {
     const title = (property.title || property.name || "").toLowerCase();
 
     const location = [
@@ -79,18 +106,48 @@ export function filterProperties(properties, {
     const matchesBedrooms =
       bedrooms === "ALL" || roomCount >= Number(bedrooms);
 
-    const matchesStation =
-      selectedStationCodes.length === 0 ||
-      selectedStationCodes.includes(stationCode);
-
-    return (
+    const matchesExistingFilters =
       matchesSearch &&
       matchesType &&
       matchesRentType &&
       matchesPrice &&
       matchesBedrooms &&
-      matchesProvince &&
-      matchesStation
-    );
+      matchesProvince;
+
+    if (!matchesExistingFilters) return [];
+    if (!hasTransitFilter) return [property];
+    if (selectedTransitStations.some((station) => !station)) return [];
+
+    const latitude = parseCoordinate(property.address?.latitude, -90, 90);
+    const longitude = parseCoordinate(property.address?.longitude, -180, 180);
+
+    if (latitude === null || longitude === null) return [];
+
+    const nearest = selectedTransitStations.reduce((current, station) => {
+      const distanceKm = haversineDistanceKm(
+        latitude,
+        longitude,
+        station.lat,
+        station.lng,
+      );
+
+      return !current || distanceKm < current.distanceKm
+        ? { station, distanceKm }
+        : current;
+    }, null);
+
+    if (!nearest || nearest.distanceKm > transitRadiusKm) return [];
+
+    return [
+      {
+        ...property,
+        nearestTransitStation: {
+          code: nearest.station.code,
+          name: nearest.station.name,
+          lineName: nearest.station.lineName,
+        },
+        transitDistanceKm: Number(nearest.distanceKm.toFixed(2)),
+      },
+    ];
   });
 }
