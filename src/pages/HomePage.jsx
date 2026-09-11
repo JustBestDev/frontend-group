@@ -162,6 +162,9 @@ const HomePage = () => {
               ].filter(Boolean).join(", ") || property.location || property.city || "Location not provided";
               const stationName = property.address?.nearestStationName;
               const stationCode = property.address?.nearestStationCode;
+              const nearestTransitStation = property.nearestTransitStation;
+              const hasTransitMetadata =
+                nearestTransitStation && property.transitDistanceKm != null;
               const monthlyRent = property.monthlyRent ?? property.price;
 
               return (
@@ -169,7 +172,15 @@ const HomePage = () => {
                   className="group flex h-full min-w-0 flex-col overflow-hidden rounded-[18px] bg-white shadow-[0_7px_24px_rgba(48,59,49,0.055)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_14px_32px_rgba(48,59,49,0.11)]"
                   key={propertyId}
                 >
-                  <Link to={`/properties/${propertyId}`} className="relative aspect-4/3 overflow-hidden bg-[#ebe9e2]" aria-label={`View ${title}`}>
+                  <Link
+                    to={`/properties/${propertyId}`}
+                    state={hasTransitMetadata ? {
+                      nearestTransitStation,
+                      transitDistanceKm: property.transitDistanceKm,
+                    } : undefined}
+                    className="relative aspect-4/3 overflow-hidden bg-[#ebe9e2]"
+                    aria-label={`View ${title}`}
+                  >
                     {image ? (
                       <img src={image} alt={title} loading="lazy" className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.035]" />
                     ) : (
@@ -193,8 +204,19 @@ const HomePage = () => {
                       <MapPin className="shrink-0" size={14} aria-hidden="true" />
                       <span className="truncate">{location}</span>
                     </p>
-                    <div className="mb-4 mt-3 flex min-h-6 items-center justify-between gap-3 text-[12px] text-[#747e76]">
-                      {stationName ? (
+                    <div className="mb-4 mt-3 flex min-h-6 flex-wrap items-center justify-between gap-3 text-[12px] text-[#747e76] sm:flex-nowrap">
+                      {hasTransitMetadata ? (
+                        <span
+                          className="inline-flex min-w-0 items-center gap-1.5 rounded-md bg-[#edf3e9] px-2 py-1 text-[#5e755f]"
+                          title={nearestTransitStation.lineName}
+                        >
+                          <TrainFront className="shrink-0" size={13} aria-hidden="true" />
+                          <span className="truncate">
+                            {nearestTransitStation.code ? `${nearestTransitStation.code} ` : ""}
+                            {nearestTransitStation.name} · {Number(property.transitDistanceKm).toFixed(1)} km
+                          </span>
+                        </span>
+                      ) : stationName ? (
                         <span className="inline-flex min-w-0 items-center gap-1.5 rounded-md bg-[#edf3e9] px-2 py-1 text-[#5e755f]">
                           <TrainFront className="shrink-0" size={13} aria-hidden="true" />
                           <span className="truncate">{stationName}{stationCode ? ` (${stationCode})` : ""}</span>

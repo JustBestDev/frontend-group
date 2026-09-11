@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { Building2, Check, RefreshCw } from "lucide-react";
 import api from "../services/api.js";
 import useAuthStore from "../stores/authStore";
@@ -18,6 +18,7 @@ import { shareListingWithHost } from "../utils/conversations.js";
 
 const PropertyDetailPage = () => {
   const { propertyId } = useParams();
+  const { state } = useLocation();
   const navigate = useNavigate();
   const { token, user } = useAuthStore();
 
@@ -230,6 +231,8 @@ const PropertyDetailPage = () => {
               isWholeUnit={isWholeUnit}
               rooms={rooms}
               roomStartingPrice={roomStartingPrice}
+              nearestTransitStation={property.nearestTransitStation || state?.nearestTransitStation}
+              transitDistanceKm={property.transitDistanceKm ?? state?.transitDistanceKm}
               isReserved={isReserved}
               isRented={isRented}
               isWholeUnitUnavailable={isWholeUnitUnavailable}

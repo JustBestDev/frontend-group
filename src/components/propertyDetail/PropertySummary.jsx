@@ -1,4 +1,4 @@
-import { Bath, BedDouble, Building2, MapPin, Ruler } from "lucide-react";
+import { Bath, BedDouble, Building2, MapPin, Ruler, TrainFront } from "lucide-react";
 
 const formatLabel = (value) => value?.replaceAll("_", " ");
 
@@ -9,6 +9,8 @@ const PropertySummary = ({
   isWholeUnit,
   rooms,
   roomStartingPrice,
+  nearestTransitStation,
+  transitDistanceKm,
   isReserved,
   isRented,
   isWholeUnitUnavailable,
@@ -50,6 +52,16 @@ const PropertySummary = ({
       </h1>
 
       {address && <p className="mt-3 flex items-start gap-2 text-sm text-muted-copy"><MapPin className="mt-0.5 size-4 shrink-0 text-sage-dark" /><span>{address}</span></p>}
+      {nearestTransitStation && transitDistanceKm != null && (
+        <p className="mt-2 flex items-center gap-2 text-sm text-muted-copy">
+          <TrainFront className="size-4 shrink-0 text-sage-dark" aria-hidden="true" />
+          <span>
+            Nearest transit: {nearestTransitStation.lineName ? `${nearestTransitStation.lineName} · ` : ""}
+            {nearestTransitStation.code ? `${nearestTransitStation.code} ` : ""}
+            {nearestTransitStation.name} · {Number(transitDistanceKm).toFixed(1)} km
+          </span>
+        </p>
+      )}
 
       <div className="mt-6 grid overflow-hidden rounded-2xl bg-white shadow-[0_12px_30px_rgba(50,66,54,.06)] sm:grid-cols-2 xl:grid-cols-4">
         {specs.map(({ icon: Icon, label, value }) => (
